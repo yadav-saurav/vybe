@@ -37,10 +37,16 @@ public class AuthService {
     private static final String DUMMY_HASH = new BCryptPasswordEncoder().encode("vybe-dummy-password");
 
     private final UserRepository users;
+    private DemoGuard demo;
     private final PasswordEncoder encoder = new BCryptPasswordEncoder();
 
     public AuthService(UserRepository users) {
         this.users = users;
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    void setDemoGuard(DemoGuard demo) {
+        this.demo = demo;
     }
 
     @Transactional
@@ -93,6 +99,7 @@ public class AuthService {
     /** Changes the password and signs every other device out; the session in {@code keepToken} stays. */
     @Transactional
     public void changePassword(User user, String currentPassword, String newPassword, String keepToken) {
+        if (demo != null) demo.forbid(user, "change its password");
         requirePassword(user, currentPassword);
         if (currentPassword.equals(newPassword)) {
             throw ApiException.badRequest("same_password", "Choose a password you haven't used here");

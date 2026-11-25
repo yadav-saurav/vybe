@@ -1,3 +1,4 @@
+import { useAccount } from './account';
 import { create } from 'zustand';
 import type { Song } from '@vybe/shared';
 import { api, ApiError } from '../lib/api';
@@ -68,6 +69,8 @@ export const useImports = create<ImportsState>((set, get) => {
     setDragActive: (dragActive) => { if (get().dragActive !== dragActive) set({ dragActive }); },
 
     importFiles: async (files) => {
+      // The shared demo account can't upload: its files would be visible to every visitor.
+      if (useAccount.getState().isDemo) { useUI.getState().toast('Create your own account to import music'); return; }
       if (!files.length) return;
       const items: UploadItem[] = files.map((f) => ({ key: nextKey++, name: f.name, size: f.size, progress: 0, status: 'queued' }));
       // Finished rows from an earlier batch make way for the new one.

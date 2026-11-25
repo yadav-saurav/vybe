@@ -64,6 +64,19 @@ public abstract class ApiTestBase {
         }
     }
 
+    /** Signs in as the seeded demo account and returns its session cookie value. */
+    protected String signInDemo() {
+        try {
+            MvcResult r = mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/api/auth/signin")
+                            .contentType("application/json")
+                            .content("{\"email\":\"demo@vybe.app\",\"password\":\"vybe1234\"}"))
+                    .andReturn();
+            return r.getResponse().getCookie(SESSION).getValue();
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
     protected Cookie cookie(String token) {
         return new Cookie(SESSION, token);
     }

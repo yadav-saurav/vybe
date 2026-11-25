@@ -28,14 +28,17 @@ import java.util.List;
 public class ImportController {
 
     private final ImportService imports;
+    private final app.vybe.api.auth.DemoGuard demo;
 
-    public ImportController(ImportService imports) {
+    public ImportController(ImportService imports, app.vybe.api.auth.DemoGuard demo) {
         this.imports = imports;
+        this.demo = demo;
     }
 
     @PostMapping(value = "/api/me/imports", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ImportService.UploadResult upload(@CurrentUser User user,
                                              @RequestParam(value = "files", required = false) List<MultipartFile> files) {
+        demo.forbid(user, "import music (files would be visible to everyone who uses it)");
         return imports.upload(user.id(), files);
     }
 

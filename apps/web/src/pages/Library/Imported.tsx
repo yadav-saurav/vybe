@@ -1,3 +1,4 @@
+import { useAccount, DEMO_NOTE } from '../../stores/account';
 import { useEffect, useMemo, useRef, useState, type DragEvent, type KeyboardEvent } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import clsx from 'clsx';
@@ -57,10 +58,10 @@ export function ImportedView() {
     }
   };
 
+  const isDemo = useAccount((a) => a.isDemo);
   return (
     <>
-      <DropZone />
-      <UploadQueue />
+      {isDemo ? <p className={s.demoNote} role="note">{DEMO_NOTE}</p> : <><DropZone /><UploadQueue /></>}
 
       {error && <p className={l.none}>Couldn’t load your imported music. Check your connection and try again.</p>}
       {loading && !songs && <div className={clsx(s.listSkeleton, l.pulse)} aria-busy="true" />}

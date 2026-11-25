@@ -187,13 +187,6 @@ class PagesAndCatalogApiTest extends ApiTestBase {
         assertThat(perArtist.values()).allMatch(n -> n <= 2);
     }
 
-    private String signInDemo() throws Exception {
-        MvcResult r = mvc.perform(post("/api/auth/signin").contentType("application/json")
-                        .content("{\"email\":\"demo@vybe.app\",\"password\":\"vybe1234\"}"))
-                .andReturn();
-        return r.getResponse().getCookie("vybe_session").getValue();
-    }
-
     private String mixIdFor(String token) throws Exception {
         MvcResult r = mvc.perform(get("/api/pages/home").cookie(cookie(token))).andReturn();
         Map<?, ?> page = json.readValue(r.getResponse().getContentAsString(), Map.class);

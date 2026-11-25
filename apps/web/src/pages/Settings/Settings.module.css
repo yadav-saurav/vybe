@@ -39,3 +39,5 @@
 .bandRange { writing-mode: vertical-lr; direction: rtl; height: 110px; accent-color: var(--key); }
 .bandGain { font-size: var(--fs-caption); color: var(--text-2); font-variant-numeric: tabular-nums; }
 .bandFreq { font-size: var(--fs-caption); color: var(--text-2); }
+
+.demoNote { margin-top: 6px; padding: 10px 12px; border-radius: var(--r-md); background: var(--bg); color: var(--text-2); font-size: var(--fs-footnote); line-height: 1.4; }

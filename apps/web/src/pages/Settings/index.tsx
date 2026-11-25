@@ -12,6 +12,7 @@ import { promptInstall, useInstallState } from '../../lib/install';
 import { EQ_BANDS, EQ_PRESETS } from '../../features/player/eq';
 import { AccountSheets } from './AccountSheets';
 import { useAsync } from '../../lib/useAsync';
+import { useAccount, DEMO_NOTE } from '../../stores/account';
 import s from './Settings.module.css';
 
 const COLORS = ['#e11d48', '#f97316', '#eab308', '#22c55e', '#14b8a6', '#0ea5e9', '#6366f1', '#a855f7', '#ec4899', '#64748b'];
@@ -25,6 +26,7 @@ export default function SettingsPage() {
   const [name, setName] = useState(user?.displayName ?? '');
   const [color, setColor] = useState(user?.avatarColor ?? COLORS[0]);
   const install = useInstallState();
+  const isDemo = useAccount((a) => a.isDemo);
   const [sheet, setSheet] = useState<'password' | 'delete' | null>(null);
   const [eqOpen, setEqOpen] = useState(false);
   const { data: acct } = useAsync(user ? `settings:${user.id}` : null, (sig) => api.settings(sig));
@@ -62,10 +64,11 @@ export default function SettingsPage() {
               </div>
               {err && <p id="dn-err" className={s.err}>{err}</p>}
               <div className={s.row}>
-                <PillButton onClick={save} disabled={!dirty || saving || !name.trim()}>{saving ? 'Saving…' : 'Save'}</PillButton>
+                <PillButton onClick={save} disabled={isDemo || !dirty || saving || !name.trim()}>{saving ? 'Saving…' : 'Save'}</PillButton>
                 <Link to={`/profile/${user.id}`} className={s.link}>View profile</Link>
               </div>
               <p className={s.hint}>Signed in as {user.email}</p>
+              {isDemo && <p className={s.demoNote} role="note">{DEMO_NOTE}</p>}
             </div>
           </div>
         </Section>
@@ -81,7 +84,7 @@ export default function SettingsPage() {
         </Section>
       )}
 
-      {user && (
+      {user && !isDemo && (
         <Section title="Security">
           <Row label="Password" hint="Changing it signs you out on your other devices">
             <button className={s.textBtn} onClick={() => setSheet('password')}>Change Password</button>
@@ -98,7 +101,7 @@ export default function SettingsPage() {
             onChange={(e) => st.set({ crossfadeSec: Number(e.target.value) })} />
           <span className={s.value}>{st.crossfadeSec ? `${st.crossfadeSec}s` : 'Off'}</span>
         </Row>
-        <Row label="Sound Check" hint="Plays songs at a similar volume">
+        <Row label="Sound Check" hint="Evens out the volume of songs you import (Vybe’s own catalog is already level)">
           <Toggle on={st.soundCheck} onChange={(v) => st.set({ soundCheck: v })} label="Sound Check" />
         </Row>
         <Row label="Autoplay" hint="Keep playing similar music when your queue ends">

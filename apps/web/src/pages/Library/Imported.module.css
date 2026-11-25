@@ -59,3 +59,5 @@
   .zone, .fill { transition: none; }
   .zoneOver { transform: none; }
 }
+
+.demoNote { padding: 16px 18px; border-radius: var(--r-lg); background: var(--bg-hover); color: var(--text-2); font-size: var(--fs-callout); line-height: 1.45; margin-bottom: 18px; }

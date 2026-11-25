@@ -17,7 +17,7 @@ import java.util.regex.Pattern;
 @Service
 public class ProfileService {
 
-    public record AccountSettings(boolean shareActivity) { }
+    public record AccountSettings(boolean shareActivity, boolean isDemo) { }
     public record PublicUser(String id, String displayName, String avatarColor, String createdAt) { }
     public record Profile(PublicUser user, long followers, long following, boolean isFollowing, boolean isMe,
                           List<Playlist> playlists) { }
@@ -29,19 +29,22 @@ public class ProfileService {
     private final AuthService auth;
     private final ImportService imports;
     private final FriendsService friends;
+    private final DemoGuard demo;
 
     public ProfileService(UserRepository users, PlaylistRepository playlistRows, PlaylistService playlists,
-                          AuthService auth, ImportService imports, FriendsService friends) {
+                          AuthService auth, ImportService imports, FriendsService friends, DemoGuard demo) {
         this.users = users;
         this.playlistRows = playlistRows;
         this.playlists = playlists;
         this.auth = auth;
         this.imports = imports;
         this.friends = friends;
+        this.demo = demo;
     }
 
     @Transactional
     public User update(User me, String displayName, String avatarColor) {
+        demo.forbid(me, "edit its profile");
         String name = displayName == null ? me.displayName() : displayName.strip();
         if (name.isEmpty() || name.length() > 60) throw ApiException.badRequest("validation", "Display name must be 1-60 characters");
         String color = avatarColor == null ? me.avatarColor() : avatarColor;
@@ -82,13 +85,14 @@ public class ProfileService {
 
     /** Permanently deletes the account, its data and its imported files after re-checking the password. */
     public void deleteAccount(User me, String password) {
+        demo.forbid(me, "be deleted");
         auth.requirePassword(me, password);
         imports.deleteAllFor(me.id());
         auth.deleteUser(me.id());
     }
 
     public AccountSettings settings(User me) {
-        return new AccountSettings(friends.sharing(me.id()));
+        return new AccountSettings(friends.sharing(me.id()), demo.isDemo(me));
     }
 
     public AccountSettings updateSettings(User me, Boolean shareActivity) {
