@@ -180,24 +180,22 @@ public class PersonalMixService {
         return ids(Similarity.diversify(newest, MIX_SIZE, 3));
     }
 
-    /** Mix artwork reuses a station or genre tile, as the spec asks. */
+    /**
+     * Mix artwork comes from a song in the mix (station and genre tiles carry baked-in titles that
+     * clash with the mix-name overlay). Each mix picks a different index so cards stay distinct.
+     */
     private Artwork artworkFor(String kind, List<Song> songs, Profile profile) {
-        return switch (kind) {
-            case "favorites" -> liveStationArtwork();
-            case "discovery" -> genreArtwork(profile.genrePlays().entrySet().stream()
-                    .max(Map.Entry.comparingByValue()).map(Map.Entry::getKey).orElse(null));
-            case "chill" -> genreArtwork(catalog.genre("lofi") != null ? "lofi" : "ambient");
-            default -> genreArtwork(songs.isEmpty() ? null : songs.get(0).genreId());
-        };
-    }
-
-    private Artwork liveStationArtwork() {
-        for (Station st : catalog.stations()) {
-            if ("live".equals(st.kind())) {
-                return st.artwork();
-            }
+        if (!songs.isEmpty()) {
+            int idx = switch (kind) {
+                case "favorites" -> 0;
+                case "discovery" -> 1;
+                case "chill" -> 2;
+                default -> 3;
+            };
+            return songs.get(Math.min(idx, songs.size() - 1)).artwork();
         }
-        return catalog.genres().get(0).artwork();
+        return genreArtwork(profile.genrePlays().entrySet().stream()
+                .max(Map.Entry.comparingByValue()).map(Map.Entry::getKey).orElse(null));
     }
 
     private Artwork genreArtwork(String genreId) {
