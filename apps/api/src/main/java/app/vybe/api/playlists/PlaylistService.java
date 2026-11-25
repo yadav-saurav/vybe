@@ -35,7 +35,7 @@ public class PlaylistService {
     public record CreateRequest(String name, String description, List<String> trackIds) {
     }
 
-    public record PatchRequest(String name, String description, Boolean isPublic, List<String> trackIds) {
+    public record PatchRequest(String name, String description, Boolean isPublic, Boolean isCollaborative, List<String> trackIds) {
     }
 
     private final PlaylistRepository repo;
@@ -65,7 +65,7 @@ public class PlaylistService {
             return Optional.of(editorial);
         }
         return repo.find(id)
-                .filter(row -> row.isPublic() || (viewer != null && row.userId().equals(viewer.id())))
+                .filter(row -> row.isPublic() || row.isCollaborative() || (viewer != null && row.userId().equals(viewer.id())))
                 .map(row -> toPlaylist(row, repo.trackIds(row.id()), viewer == null ? null : viewer.id()));
     }
 
@@ -125,7 +125,7 @@ public class PlaylistService {
         String now = Timestamps.now();
         String id = Ids.random("pl_u_", 12);
         repo.insert(new PlaylistRepository.Row(id, user.id(), requireName(req.name()),
-                clean(req.description()), false, now, now));
+                clean(req.description()), false, now, now, false));
         repo.replaceTracks(id, trackIds);
         return loadOwned(id, user);
     }
@@ -136,8 +136,9 @@ public class PlaylistService {
         String name = patch.name() == null ? row.name() : requireName(patch.name());
         String description = patch.description() == null ? row.description() : clean(patch.description());
         boolean isPublic = patch.isPublic() == null ? row.isPublic() : patch.isPublic();
+        boolean collaborative = patch.isCollaborative() == null ? row.isCollaborative() : patch.isCollaborative();
         repo.update(new PlaylistRepository.Row(id, user.id(), name, description, isPublic,
-                row.createdAt(), Timestamps.now()));
+                row.createdAt(), Timestamps.now(), collaborative));
         if (patch.trackIds() != null) {
             repo.replaceTracks(id, validatedTracks(patch.trackIds(), user.id()));
         }
@@ -147,10 +148,18 @@ public class PlaylistService {
     /** Appends (or inserts at {@code position}) tracks. Duplicates are allowed. */
     @Transactional
     public Playlist addTracks(User user, String id, List<String> trackIds, Integer position) {
-        owned(id, user);
+        PlaylistRepository.Row row = repo.find(id).orElseThrow(() -> ApiException.notFound("No playlist with id " + id));
+        boolean owner = row.userId().equals(user.id());
+        if (!owner && !row.isCollaborative()) {
+            throw ApiException.forbidden("You can only change your own playlists");
+        }
+        // Collaborators append catalog songs only; imported files are private to their owner.
+        if (!owner && trackIds != null && trackIds.stream().anyMatch(ImportService::isImportId)) {
+            throw ApiException.badRequest("import_not_shareable", "Imported songs can't be added to someone else's playlist");
+        }
         List<String> incoming = validatedTracks(trackIds, user.id());
         List<String> current = new ArrayList<>(repo.trackIds(id));
-        int at = position == null ? current.size() : position;
+        int at = position == null || !owner ? current.size() : position;
         if (at < 0 || at > current.size()) {
             throw ApiException.badRequest("invalid_position", "position must be between 0 and " + current.size());
         }
@@ -160,7 +169,7 @@ public class PlaylistService {
         current.addAll(at, incoming);
         repo.replaceTracks(id, current);
         repo.touch(id, Timestamps.now());
-        return loadOwned(id, user);
+        return toPlaylist(repo.find(id).orElseThrow(), repo.trackIds(id), user.id());
     }
 
     /** Removes the track at {@code index} (0-based position). */
@@ -204,7 +213,7 @@ public class PlaylistService {
         String curator = auth.userById(row.userId()).map(User::displayName).orElse("Vybe listener");
         return new Playlist(row.id(), "user", row.name(), curator, row.description(),
                 Text.firstSentence(row.description(), 80), artwork, trackIds, duration,
-                row.updatedAt(), row.isPublic(), row.userId());
+                row.updatedAt(), row.isPublic(), row.userId(), row.isCollaborative());
     }
 
     private Playlist loadOwned(String id, User user) {

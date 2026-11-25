@@ -125,7 +125,7 @@ public class PersonalMixService {
         long duration = songs.stream().mapToLong(Song::durationMs).sum();
         String[] copy = copyFor(kind);
         return new Playlist(mixId(kind, user.id()), "personal-mix", copy[0], "Vybe", copy[1], copy[2],
-                artworkFor(kind, songs, profile), tracks, duration, user.createdAt(), false, user.id());
+                artworkFor(kind, songs, profile), tracks, duration, user.createdAt(), false, user.id(), null);
     }
 
     private static String[] copyFor(String kind) {
@@ -230,7 +230,7 @@ public class PersonalMixService {
         Artwork art = songs.isEmpty() ? genreArtwork(genreId) : songs.get(0).artwork();
         return new Playlist(mixId("daily" + n, user.id()), "personal-mix", "Daily Mix " + n, "Vybe",
                 gName + " favourites mixed with new songs you'll like. Updated daily.", shortDesc, art, tracks,
-                songs.stream().mapToLong(Song::durationMs).sum(), user.createdAt(), false, user.id());
+                songs.stream().mapToLong(Song::durationMs).sum(), user.createdAt(), false, user.id(), null);
     }
 
     /**

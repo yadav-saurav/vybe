@@ -200,6 +200,11 @@ public class LibraryService {
             PlaylistRepository.Row row = playlistRows.find(id).orElse(null);
             if (row != null && row.userId().equals(userId)) {
                 out.add(playlists.toPlaylist(row, playlistRows.trackIds(id)));
+            } else if (row != null) {
+                // Someone else's playlist saved to the library: only while it is still public or collaborative.
+                if (row.isPublic() || row.isCollaborative()) {
+                    out.add(playlists.toPlaylist(row, playlistRows.trackIds(id), userId));
+                }
             } else {
                 Playlist editorial = catalog.playlist(id);
                 if (editorial != null) {
@@ -302,7 +307,8 @@ public class LibraryService {
             case "song" -> songs.exists(userId, id);
             case "album" -> catalog.album(id) != null;
             case "artist" -> catalog.artist(id) != null;
-            default -> catalog.playlist(id) != null && "editorial".equals(catalog.playlist(id).kind());
+            default -> (catalog.playlist(id) != null && "editorial".equals(catalog.playlist(id).kind()))
+                    || playlistRows.find(id).filter(r -> r.isPublic() || r.isCollaborative() || r.userId().equals(userId)).isPresent();
         };
         if (!exists) {
             throw ApiException.notFound("No " + type + " with id " + id);

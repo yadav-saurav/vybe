@@ -97,7 +97,7 @@ function PlaylistView({ page, reload }: { page: PlaylistPage; reload: () => void
   const item: ContentItem = { type: 'playlist', data: playlist };
   const durationMs = tracks.reduce((sum, t) => sum + t.durationMs, 0);
   const subtitle = isMix ? `Made for ${user?.displayName ?? playlist.curatorName}` : playlist.curatorName;
-  const meta = isMix ? 'Updated Today' : `Updated ${updatedLabel(playlist.updatedAt)}`;
+  const meta = isMix ? 'Updated Today' : `${playlist.isCollaborative ? 'Collaborative · ' : ''}Updated ${updatedLabel(playlist.updatedAt)}`;
   const notes = playlist.description.trim() || undefined;
 
   const list = tracks.length === 0 ? (
@@ -107,7 +107,7 @@ function PlaylistView({ page, reload }: { page: PlaylistPage; reload: () => void
           <p>This playlist is empty.</p>
           <Link to="/search" className={s.findLink}>Find music to add</Link>
         </>
-      ) : <p>No songs yet.</p>}
+      ) : <p>{playlist.isCollaborative ? 'No songs yet. Save this playlist with Add, then add songs from any song’s ··· menu.' : 'No songs yet.'}</p>}
     </div>
   ) : isOwner ? (
     <ReorderTracks onMove={onMove}>
@@ -126,7 +126,7 @@ function PlaylistView({ page, reload }: { page: PlaylistPage; reload: () => void
         subtitle={subtitle}
         meta={meta}
         notes={notes}
-        showLibraryToggle={!isOwner && playlist.kind === 'editorial'}
+        showLibraryToggle={!isOwner && (playlist.kind === 'editorial' || !!playlist.isCollaborative)}
         extraActions={isOwner ? (
           <HeaderPill icon="edit" onClick={() => useUI.getState().openPlaylistEditor({ mode: 'edit', playlistId: playlist.id })}>Edit</HeaderPill>
         ) : undefined}

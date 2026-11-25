@@ -33,6 +33,7 @@ public class PlaylistController {
             @Size(max = 120) String name,
             @Size(max = 1000) String description,
             Boolean isPublic,
+            Boolean isCollaborative,
             @Size(max = PlaylistService.MAX_TRACKS) List<String> trackIds) {
     }
 
@@ -60,7 +61,7 @@ public class PlaylistController {
     public Pages.PlaylistWrapper update(@CurrentUser User user, @PathVariable String id,
                                         @Valid @RequestBody PatchRequest body) {
         return wrap(playlists.update(user, id, new PlaylistService.PatchRequest(
-                body.name(), body.description(), body.isPublic(), body.trackIds())));
+                body.name(), body.description(), body.isPublic(), body.isCollaborative(), body.trackIds())));
     }
 
     @PostMapping("/{id}/tracks")

@@ -33,6 +33,7 @@ function EditorForm({ spec, onClose }: { spec: Spec; onClose: () => void }) {
   const [name, setName] = useState('');
   const [desc, setDesc] = useState('');
   const [isPublic, setIsPublic] = useState(false);
+  const [isCollab, setIsCollab] = useState(false);
   const [trackCount, setTrackCount] = useState<number | null>(editing ? null : seedIds.length);
   const [loading, setLoading] = useState(editing);
   const [nameError, setNameError] = useState<string | null>(null);
@@ -48,6 +49,7 @@ function EditorForm({ spec, onClose }: { spec: Spec; onClose: () => void }) {
         setName(playlist.name);
         setDesc(playlist.description ?? '');
         setIsPublic(!!playlist.isPublic);
+        setIsCollab(!!playlist.isCollaborative);
         setTrackCount(playlist.trackIds?.length ?? tracks.length);
         setLoading(false);
       })
@@ -77,14 +79,14 @@ function EditorForm({ spec, onClose }: { spec: Spec; onClose: () => void }) {
     try {
       if (spec.mode === 'create') {
         const { playlist } = await api.createPlaylist(trimmed, desc.trim(), seedIds);
-        const finalPlaylist = isPublic ? (await api.updatePlaylist(playlist.id, { isPublic: true })).playlist : playlist;
+        const finalPlaylist = isPublic || isCollab ? (await api.updatePlaylist(playlist.id, { isPublic, isCollaborative: isCollab })).playlist : playlist;
         invalidate('library:');
         onClose();
         ui.toast(`Created “${finalPlaylist.name}”`);
         await useLibrary.getState().load();
         navigate(`/playlist/${finalPlaylist.id}`);
       } else {
-        await api.updatePlaylist(spec.playlistId, { name: trimmed, description: desc.trim(), isPublic });
+        await api.updatePlaylist(spec.playlistId, { name: trimmed, description: desc.trim(), isPublic, isCollaborative: isCollab });
         invalidate('library:');
         invalidate(`playlist:${spec.playlistId}`);
         onClose();
@@ -136,6 +138,15 @@ function EditorForm({ spec, onClose }: { spec: Spec; onClose: () => void }) {
         </span>
         <button type="button" role="switch" aria-checked={isPublic} aria-labelledby="ple-public-label" aria-describedby="ple-public-hint"
           disabled={loading} className={`${f.switch} ${isPublic ? f.switchOn : ''}`} onClick={() => setIsPublic((v) => !v)} />
+      </div>
+
+      <div className={f.row}>
+        <span className={f.rowText}>
+          <span id="ple-collab-label" className={f.rowTitle}>Let others add songs</span>
+          <span className={f.hint} id="ple-collab-hint">Anyone with the link can add songs. Only you can remove or reorder them.</span>
+        </span>
+        <button type="button" role="switch" aria-checked={isCollab} aria-labelledby="ple-collab-label" aria-describedby="ple-collab-hint"
+          disabled={loading} className={`${f.switch} ${isCollab ? f.switchOn : ''}`} onClick={() => setIsCollab((v) => !v)} />
       </div>
 
       <p className={f.hint} aria-live="polite">{countText}</p>

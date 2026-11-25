@@ -12,7 +12,7 @@ public class PlaylistRepository {
 
     /** A user playlist row (without its tracks). */
     public record Row(String id, String userId, String name, String description, boolean isPublic,
-                      String createdAt, String updatedAt) {
+                      String createdAt, String updatedAt, boolean isCollaborative) {
     }
 
     private final JdbcTemplate jdbc;
@@ -21,16 +21,16 @@ public class PlaylistRepository {
         this.jdbc = jdbc;
     }
 
-    private static final String SELECT = "SELECT id, user_id, name, description, is_public, created_at, updated_at FROM user_playlists";
+    private static final String SELECT = "SELECT id, user_id, name, description, is_public, created_at, updated_at, is_collaborative FROM user_playlists";
 
     public void insert(Row r) {
-        jdbc.update("INSERT INTO user_playlists (id, user_id, name, description, is_public, created_at, updated_at) VALUES (?,?,?,?,?,?,?)",
-                r.id(), r.userId(), r.name(), r.description(), r.isPublic() ? 1 : 0, r.createdAt(), r.updatedAt());
+        jdbc.update("INSERT INTO user_playlists (id, user_id, name, description, is_public, created_at, updated_at, is_collaborative) VALUES (?,?,?,?,?,?,?,?)",
+                r.id(), r.userId(), r.name(), r.description(), r.isPublic() ? 1 : 0, r.createdAt(), r.updatedAt(), r.isCollaborative() ? 1 : 0);
     }
 
     public void update(Row r) {
-        jdbc.update("UPDATE user_playlists SET name = ?, description = ?, is_public = ?, updated_at = ? WHERE id = ?",
-                r.name(), r.description(), r.isPublic() ? 1 : 0, r.updatedAt(), r.id());
+        jdbc.update("UPDATE user_playlists SET name = ?, description = ?, is_public = ?, updated_at = ?, is_collaborative = ? WHERE id = ?",
+                r.name(), r.description(), r.isPublic() ? 1 : 0, r.updatedAt(), r.isCollaborative() ? 1 : 0, r.id());
     }
 
     public void touch(String id, String updatedAt) {
@@ -70,6 +70,6 @@ public class PlaylistRepository {
     private static Row map(java.sql.ResultSet rs) throws java.sql.SQLException {
         return new Row(rs.getString("id"), rs.getString("user_id"), rs.getString("name"),
                 rs.getString("description"), rs.getInt("is_public") == 1,
-                rs.getString("created_at"), rs.getString("updated_at"));
+                rs.getString("created_at"), rs.getString("updated_at"), rs.getInt("is_collaborative") == 1);
     }
 }

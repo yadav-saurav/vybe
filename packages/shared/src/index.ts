@@ -111,6 +111,8 @@ export interface Playlist {
   updatedAt: string; // ISO
   isPublic: boolean;
   ownerId?: ID; // user playlists only
+  /** User playlists only: anyone with the link may add songs (owner still controls removal/order). */
+  isCollaborative?: boolean;
 }
 
 export interface Station {

@@ -46,7 +46,7 @@ public class ProfileService {
         boolean isMe = viewer != null && viewer.id().equals(u.id());
         List<Playlist> lists = playlistRows.findByUser(u.id()).stream()
                 .filter(r -> isMe || r.isPublic())
-                .map(r -> playlists.toPlaylist(r, playlistRows.trackIds(r.id())))
+                .map(r -> playlists.toPlaylist(r, playlistRows.trackIds(r.id()), viewer == null ? null : viewer.id()))
                 .toList();
         return new Profile(new PublicUser(u.id(), u.displayName(), u.avatarColor(), u.createdAt()),
                 users.followers(u.id()), users.following(u.id()),

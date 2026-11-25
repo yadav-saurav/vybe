@@ -55,7 +55,8 @@ CREATE TABLE IF NOT EXISTS user_playlists (
     description  TEXT NOT NULL DEFAULT '',
     is_public    INTEGER NOT NULL DEFAULT 0,
     created_at   TEXT NOT NULL,
-    updated_at   TEXT NOT NULL
+    updated_at   TEXT NOT NULL,
+    is_collaborative INTEGER NOT NULL DEFAULT 0
 );
 CREATE INDEX IF NOT EXISTS idx_user_playlists_user ON user_playlists(user_id);
 

@@ -24,7 +24,9 @@ export function AddToPlaylistSheet() {
   const [busyId, setBusyId] = useState<string | null>(null);
 
   const { data, error, loading, reload } = useAsync(open && user ? 'library:playlists' : null, (sig) => api.libraryPlaylists(sig));
-  const mine = (data?.playlists ?? []).filter((p) => p.kind === 'user');
+  const me = useAuth((a) => a.user?.id);
+  // Own playlists, plus other people's playlists they opened up to everyone.
+  const mine = (data?.playlists ?? []).filter((p) => p.kind === 'user' && (p.ownerId === me || p.isCollaborative));
   const count = songs.length;
 
   const choose = async (id: string, name: string) => {

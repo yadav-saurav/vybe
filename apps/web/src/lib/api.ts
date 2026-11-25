@@ -80,7 +80,7 @@ export const api = {
 
   // user playlists
   createPlaylist: (name: string, description = '', trackIds: string[] = []) => request<{ playlist: T.Playlist }>('POST', '/me/playlists', { name, description, trackIds }),
-  updatePlaylist: (id: string, patch: Partial<Pick<T.Playlist, 'name' | 'description' | 'isPublic' | 'trackIds'>>) =>
+  updatePlaylist: (id: string, patch: Partial<Pick<T.Playlist, 'name' | 'description' | 'isPublic' | 'isCollaborative' | 'trackIds'>>) =>
     request<{ playlist: T.Playlist }>('PATCH', `/me/playlists/${enc(id)}`, patch),
   addToPlaylist: (id: string, trackIds: string[]) => request<{ playlist: T.Playlist }>('POST', `/me/playlists/${enc(id)}/tracks`, { trackIds }),
   removeFromPlaylist: (id: string, index: number) => request<{ playlist: T.Playlist }>('DELETE', `/me/playlists/${enc(id)}/tracks/${index}`),

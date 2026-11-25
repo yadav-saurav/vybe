@@ -65,7 +65,7 @@ export function menuFor(item: ContentItem, opts: { extra?: MenuEntry[]; navigate
   // Imported tracks are always in the library (removing them is "Delete from Vybe") and have no public page.
   const imported = item.type === 'song' && isImported(item.data);
   const inLib = !!t && lib.has(t, item.data.id);
-  const ownPlaylist = item.type === 'playlist' && (item.data as Playlist).kind === 'user';
+  const ownPlaylist = item.type === 'playlist' && (item.data as Playlist).kind === 'user' && (item.data as Playlist).ownerId === useAuth.getState().user?.id;
 
   // Fixed order, identical everywhere: Play → Library → Go to → Share → destructive (red, always last).
   const play: MenuEntry[] = [];

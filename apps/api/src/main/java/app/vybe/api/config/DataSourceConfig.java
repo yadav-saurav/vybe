@@ -51,6 +51,7 @@ public class DataSourceConfig {
      */
     private static final String[] MIGRATIONS = {
             "ALTER TABLE imported_tracks ADD COLUMN gain_db REAL",
+            "ALTER TABLE user_playlists ADD COLUMN is_collaborative INTEGER NOT NULL DEFAULT 0",
     };
 
     private static void migrate(DataSource ds) {

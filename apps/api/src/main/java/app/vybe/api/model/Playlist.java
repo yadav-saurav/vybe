@@ -18,7 +18,8 @@ public record Playlist(
         long durationMs,
         String updatedAt,
         boolean isPublic,
-        String ownerId) {
+        String ownerId,
+        Boolean isCollaborative) {
 
     public Playlist {
         trackIds = trackIds == null ? List.of() : List.copyOf(trackIds);
@@ -26,6 +27,6 @@ public record Playlist(
 
     public Playlist withTracks(List<String> newTrackIds, long newDurationMs, String newUpdatedAt, Artwork newArtwork) {
         return new Playlist(id, kind, name, curatorName, description, shortDescription, newArtwork,
-                newTrackIds, newDurationMs, newUpdatedAt, isPublic, ownerId);
+                newTrackIds, newDurationMs, newUpdatedAt, isPublic, ownerId, isCollaborative);
     }
 }
