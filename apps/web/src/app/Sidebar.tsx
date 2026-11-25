@@ -22,8 +22,6 @@ const library = [
   { to: '/library/albums', label: 'Albums', icon: 'album' },
   { to: '/library/songs', label: 'Songs', icon: 'note' },
   { to: '/library/imported', label: 'Imported', icon: 'upload' },
-  { to: '/library/made-for-you', label: 'Made for You', icon: 'sparkle' },
-  { to: '/replay', label: 'Replay', icon: 'wave' },
 ];
 
 export function Sidebar() {
@@ -92,6 +90,7 @@ export function Sidebar() {
               { label: `Signed in as ${user.displayName}`, disabled: true, onSelect: () => {} },
               'separator',
               { label: 'Profile', icon: 'user', onSelect: () => navigate(`/profile/${user.id}`) },
+              { label: 'Replay', icon: 'wave', onSelect: () => navigate('/replay') },
               { label: 'Settings', icon: 'edit', onSelect: () => navigate('/settings') },
               'separator',
               { label: 'Appearance: System', icon: useUI.getState().theme === 'system' ? 'check' : undefined, onSelect: () => useUI.getState().setTheme('system') },

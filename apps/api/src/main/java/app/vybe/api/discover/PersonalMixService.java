@@ -28,7 +28,7 @@ import java.util.Set;
 public class PersonalMixService {
 
     public static final String PREFIX = "pl_mix_";
-    public static final List<String> KINDS = List.of("favorites", "discovery", "chill", "newmusic", "weekly");
+    public static final List<String> KINDS = List.of("weekly", "favorites");
     /** Daily Mix 1..6: one per top genre; ids are pl_mix_dailyN_<userId>. */
     public static final int MAX_DAILY = 6;
     private static final int MIX_SIZE = 30;
@@ -118,9 +118,6 @@ public class PersonalMixService {
     private Playlist build(String kind, User user, Profile profile) {
         List<String> tracks = switch (kind) {
             case "favorites" -> favorites(profile);
-            case "discovery" -> discovery(profile);
-            case "chill" -> chill(user, profile);
-            case "newmusic" -> newMusic();
             case "weekly" -> discoverWeekly(user, profile);
             default -> throw new IllegalArgumentException("unknown mix " + kind);
         };
@@ -135,14 +132,9 @@ public class PersonalMixService {
         return switch (kind) {
             case "favorites" -> new String[]{"Favorites Mix", "Your most played songs and loves, in one place.",
                     "Your favourites, mixed."};
-            case "discovery" -> new String[]{"Discovery Mix", "Songs you haven't played yet, from the genres you love.",
-                    "New finds in your genres."};
-            case "chill" -> new String[]{"Chill Mix", "Calm, dreamy and focused music for slow moments.",
-                    "Slow down and unwind."};
             case "weekly" -> new String[]{"Discover Weekly", "Your weekly mixtape of fresh music you haven't heard yet, picked from what you love. Updated every Monday.",
                     "Fresh finds, every Monday."};
-            default -> new String[]{"New Music Mix", "The newest releases in the catalog, picked for you.",
-                    "Fresh releases every week."};
+            default -> throw new IllegalArgumentException("unknown mix " + kind);
         };
     }
 
@@ -157,18 +149,6 @@ public class PersonalMixService {
             catalog.songsByPopularity().stream().limit(MIX_SIZE).forEach(s -> out.add(s.id()));
         }
         return out.stream().limit(MIX_SIZE).toList();
-    }
-
-    private List<String> discovery(Profile p) {
-        List<String> topGenres = p.genrePlays().isEmpty()
-                ? catalog.genres().stream().map(Genre::id).limit(3).toList()
-                : p.genrePlays().entrySet().stream()
-                .sorted(Map.Entry.<String, Integer>comparingByValue().reversed().thenComparing(Map.Entry.comparingByKey()))
-                .limit(3).map(Map.Entry::getKey).toList();
-        List<Song> candidates = catalog.songsByPopularity().stream()
-                .filter(s -> topGenres.contains(s.genreId()) && !p.plays().containsKey(s.id()))
-                .toList();
-        return ids(Similarity.diversify(candidates, MIX_SIZE, 3));
     }
 
     // ------------------------------------------------------------------ Discover Weekly + Daily Mixes
@@ -253,30 +233,6 @@ public class PersonalMixService {
                 songs.stream().mapToLong(Song::durationMs).sum(), user.createdAt(), false, user.id());
     }
 
-    private List<String> chill(User user, Profile p) {
-        List<Song> candidates = catalog.songs().stream()
-                .filter(s -> ("chill".equals(s.mood()) || "dreamy".equals(s.mood())
-                        || "focus".equals(s.mood()) || "melancholy".equals(s.mood())) && s.energy() <= 0.5)
-                .sorted(Comparator.<Song>comparingDouble(s -> chillScore(user, p, s)).reversed()
-                        .thenComparing(Song::id))
-                .toList();
-        return ids(Similarity.diversify(candidates, MIX_SIZE, 3));
-    }
-
-    private double chillScore(User user, Profile p, Song s) {
-        double played = p.plays().containsKey(s.id()) ? 0.5 : 0;
-        return played + s.popularity() / 100.0 + 0.3 * Similarity.jitter(user.id(), s.id());
-    }
-
-    private List<String> newMusic() {
-        List<Song> newest = catalog.songs().stream()
-                .sorted(Comparator.comparing(Song::releaseDate, Comparator.nullsLast(Comparator.reverseOrder()))
-                        .thenComparing(Comparator.comparingInt(Song::popularity).reversed())
-                        .thenComparing(Song::id))
-                .toList();
-        return ids(Similarity.diversify(newest, MIX_SIZE, 3));
-    }
-
     /**
      * Mix artwork comes from a song in the mix (station and genre tiles carry baked-in titles that
      * clash with the mix-name overlay). Each mix picks a different index so cards stay distinct.
@@ -285,8 +241,6 @@ public class PersonalMixService {
         if (!songs.isEmpty()) {
             int idx = switch (kind) {
                 case "favorites" -> 0;
-                case "discovery" -> 1;
-                case "chill" -> 2;
                 case "weekly" -> 4;
                 default -> 3;
             };

@@ -37,6 +37,7 @@ export const router = createBrowserRouter([
       { path: '/playlist/:id', element: <Playlist /> },
       { path: '/artist/:id', element: <Artist /> },
       { path: '/station/:id', element: <Station /> },
+      { path: '/library/made-for-you', element: <Navigate to="/home" replace /> },
       { path: '/library/:section', element: <Library /> },
       { path: '/library', element: <Navigate to="/library/recently-added" replace /> },
       { path: '*', element: <NotFound /> },

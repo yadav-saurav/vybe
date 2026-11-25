@@ -30,29 +30,29 @@ class PagesAndCatalogApiTest extends ApiTestBase {
         String token = signInDemo();
         MvcResult r = mvc.perform(get("/api/pages/home").cookie(cookie(token))).andExpect(status().isOk())
                 .andExpect(jsonPath("$.shelves[*].id", hasItems("top-picks-for-you", "recently-played",
-                        "made-for-you", "daily-mixes", "your-top-artists")))
+                        "made-for-you", "your-top-artists")))
                 .andReturn();
         Map<?, ?> page = json.readValue(r.getResponse().getContentAsString(), Map.class);
         List<?> shelves = (List<?>) page.get("shelves");
         Map<?, ?> madeForYou = shelves.stream().map(s -> (Map<?, ?>) s)
                 .filter(s -> "made-for-you".equals(s.get("id"))).findFirst().orElseThrow();
         List<?> mixes = (List<?>) madeForYou.get("items");
-        assertThat(mixes).hasSize(5);
-        Map<?, ?> weekly = (Map<?, ?>) ((Map<?, ?>) mixes.get(4)).get("data");
+        // Made For You is the only place mixes appear: Discover Weekly, Favorites Mix, then Daily Mixes.
+        Map<?, ?> weekly = (Map<?, ?>) ((Map<?, ?>) mixes.get(0)).get("data");
         assertThat(weekly.get("name")).isEqualTo("Discover Weekly");
-        Map<?, ?> daily = shelves.stream().map(s -> (Map<?, ?>) s)
-                .filter(s -> "daily-mixes".equals(s.get("id"))).findFirst().orElseThrow();
-        Map<?, ?> daily1 = (Map<?, ?>) ((Map<?, ?>) ((List<?>) daily.get("items")).get(0)).get("data");
+        Map<?, ?> fav = (Map<?, ?>) ((Map<?, ?>) mixes.get(1)).get("data");
+        assertThat(fav.get("name")).isEqualTo("Favorites Mix");
+        Map<?, ?> daily1 = (Map<?, ?>) ((Map<?, ?>) mixes.get(2)).get("data");
         assertThat(daily1.get("name")).isEqualTo("Daily Mix 1");
+        Map<?, ?> topPicks = shelves.stream().map(s -> (Map<?, ?>) s)
+                .filter(s -> "top-picks-for-you".equals(s.get("id"))).findFirst().orElseThrow();
+        // Top Picks never repeats the mixes shown in Made For You.
+        assertThat((List<?>) topPicks.get("items")).allSatisfy(i -> assertThat(String.valueOf(((Map<?, ?>) ((Map<?, ?>) i).get("data")).get("id"))).doesNotStartWith("pl_mix_"));
         // Both mixes open as playlists for their owner.
         for (Object id : List.of(weekly.get("id"), daily1.get("id"))) {
             mvc.perform(get("/api/playlists/" + id).cookie(cookie(token))).andExpect(status().isOk())
                     .andExpect(jsonPath("$.tracks.length()").value(org.hamcrest.Matchers.greaterThan(0)));
         }
-        Map<?, ?> first = (Map<?, ?>) ((Map<?, ?>) mixes.get(0)).get("data");
-        assertThat(first.get("kind")).isEqualTo("personal-mix");
-        assertThat((String) first.get("id")).startsWith("pl_mix_favorites_").matches("pl_mix_favorites_[a-z0-9_]+");
-        assertThat(first.get("name")).isEqualTo("Favorites Mix");
     }
 
     @Test

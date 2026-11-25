@@ -71,18 +71,20 @@ public class PageService implements InitializingBean {
         List<Shelf> shelves = new ArrayList<>();
         PersonalMixService.Profile profile = mixes.profile(user.id());
 
-        List<Playlist> mixList = mixes.mixes(user, profile);
-        List<Album> topGenreAlbums = recommendedAlbums(profile, 2);
+        // Each row has one job: Top Picks = recommendations, Made For You = personal mixes (only here).
         List<ContentItem> topPicks = new ArrayList<>();
-        mixList.forEach(p -> topPicks.add(ContentItem.playlist(p)));
-        topGenreAlbums.forEach(a -> topPicks.add(ContentItem.album(a)));
+        recommendedAlbums(profile, 4).forEach(a -> topPicks.add(ContentItem.album(a)));
+        if (topPicks.size() < 3) {
+            // Heavy listeners may have heard every nearby album: recommend editorial playlists instead.
+            catalog.editorialPlaylists().stream().limit(4 - topPicks.size()).forEach(pl -> topPicks.add(ContentItem.playlist(pl)));
+        }
         add(shelves, Shelf.of("top-picks-for-you", "Top Picks for You", "large-tiles", topPicks));
 
         add(shelves, Shelf.of("recently-played", "Recently Played", "grid-lockups", recentlyPlayed(user, profile)));
-        add(shelves, Shelf.of("made-for-you", "Made For You", "large-tiles",
-                mixList.stream().map(ContentItem::playlist).toList()));
-        add(shelves, Shelf.of("daily-mixes", "Your Daily Mixes", "large-tiles",
-                mixes.dailyMixes(user, profile).stream().map(ContentItem::playlist).toList()));
+        List<ContentItem> madeForYou = new ArrayList<>();
+        mixes.mixes(user, profile).forEach(p -> madeForYou.add(ContentItem.playlist(p)));
+        mixes.dailyMixes(user, profile).forEach(p -> madeForYou.add(ContentItem.playlist(p)));
+        add(shelves, Shelf.of("made-for-you", "Made For You", "large-tiles", madeForYou));
         add(shelves, Shelf.of("jump-back-in", "Jump Back In", "grid-lockups", jumpBackIn(profile)));
 
         String topArtistId = topKey(profile.artistPlays());
