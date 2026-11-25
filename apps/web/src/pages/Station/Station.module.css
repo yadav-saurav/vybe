@@ -1,0 +1,24 @@
+.hero { display: flex; align-items: flex-end; gap: 36px; padding: 34px 0 36px; }
+.art { width: 270px; flex-shrink: 0; border-radius: var(--r-sm); box-shadow: var(--shadow-hero-artwork); }
+.info { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 0; padding-bottom: 4px; }
+.kicker { font-size: var(--fs-caption); line-height: 13px; font-weight: 600; letter-spacing: 0.02em; text-transform: uppercase; color: var(--text-2); }
+.title { font-family: var(--font-display); font-size: var(--fs-large-title); line-height: var(--lh-large-title); font-weight: 700; letter-spacing: 0.01em; overflow-wrap: anywhere; }
+.tagline { font-size: 17px; line-height: 22px; color: var(--text-2); max-width: 520px; }
+.actions { margin-top: 10px; display: flex; gap: 12px; }
+
+.upNext { padding-top: 12px; padding-bottom: 40px; }
+.sectionTitle { font-size: var(--fs-title-3); line-height: var(--lh-title-3); font-weight: 700; letter-spacing: -0.01em; margin-bottom: 10px; }
+.empty { padding: 32px 0; color: var(--text-2); }
+
+.skelArt { width: 270px; aspect-ratio: 1; border-radius: var(--r-sm); flex-shrink: 0; }
+.skelKicker { width: 80px; height: 11px; }
+.skelTitle { width: 340px; height: 34px; }
+.skelLine { width: 260px; height: 16px; }
+
+@media (max-width: 760px) {
+  .hero { flex-direction: column; align-items: center; text-align: center; gap: 22px; padding: 12px 0 24px; }
+  .art, .skelArt { width: min(64vw, 260px); }
+  .info { align-items: center; }
+  .actions { justify-content: center; }
+  .title { font-size: var(--fs-large-title); }
+}

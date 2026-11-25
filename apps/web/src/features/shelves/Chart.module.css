@@ -1,0 +1,36 @@
+.col { display: flex; flex-direction: column; min-width: 0; }
+
+/* The row bleeds 8px past the column on each side so its hover fill and artwork align with the shelf heading. */
+.row {
+  position: relative; display: flex; align-items: center; gap: 4px; min-height: 56px;
+  margin: 0 -8px; padding: 0 8px; border-radius: var(--r-md); color: var(--text-1);
+}
+.row::before { content: ""; position: absolute; top: 0; left: 8px; right: 8px; height: 1px; background: var(--separator); transition: opacity var(--dur) var(--ease); }
+.row + .row::before { display: block; }
+.row:hover, .row:focus-within { background: var(--bg-hover); }
+.row:hover::before, .row:focus-within::before, .row:hover + .row::before, .row:focus-within + .row::before { opacity: 0; }
+.current { background: var(--bg-hover); }
+.current::before { opacity: 0; }
+
+.hit {
+  flex: 1; min-width: 0; min-height: 56px; display: flex; align-items: center; gap: 12px;
+  text-align: left; border-radius: var(--r-md);
+}
+.hit:focus-visible { box-shadow: var(--focus-ring); }
+
+.artWrap { position: relative; width: 48px; height: 48px; flex-shrink: 0; }
+.artPlay {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  color: #fff; background: rgba(0, 0, 0, 0.42); border-radius: var(--r-xs);
+  opacity: 0; transition: opacity var(--dur) var(--ease);
+}
+.row:hover .artPlay, .current .artPlay { opacity: 1; }
+.artPlay :global(svg) { margin-left: 1px; }
+
+.meta { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.title { display: flex; align-items: center; font-size: var(--fs-callout); line-height: var(--lh-callout); color: var(--text-1); }
+.current .title { color: var(--key); }
+.artist { font-size: var(--fs-footnote); line-height: var(--lh-footnote); color: var(--text-2); }
+
+.more { flex-shrink: 0; padding: 6px; color: var(--key); border-radius: var(--r-sm); transition: background var(--dur) var(--ease); }
+.more:hover { background: var(--bg-selected); }

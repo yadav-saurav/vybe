@@ -1,0 +1,29 @@
+.body { padding-top: 4px; }
+
+.skel {
+  display: block; border-radius: var(--r-sm);
+  background: linear-gradient(90deg, var(--bg-placeholder) 0%, var(--bg-hover) 50%, var(--bg-placeholder) 100%);
+  background-size: 200% 100%; animation: shimmer 1.4s linear infinite;
+}
+@keyframes shimmer { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+
+.head { width: 170px; height: 20px; margin: 13px 0 10px; }
+.heroCol { display: flex; flex-direction: column; gap: 10px; }
+.heroEyebrow { width: 90px; height: 11px; }
+.heroTitle { width: 240px; height: 18px; }
+.heroArt { width: 100%; aspect-ratio: 16 / 10; border-radius: var(--r-lg); }
+
+.lockup { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.square { width: 100%; aspect-ratio: 1; }
+.line { width: 80%; height: 11px; }
+.line2 { width: 55%; height: 9px; }
+
+.chartCol { display: flex; flex-direction: column; }
+.chartRow { display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 0 8px 0 10px; }
+.chartArt { width: 48px; height: 48px; flex-shrink: 0; border-radius: var(--r-xs); }
+.chartMeta { flex: 1; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+
+.error { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 64px 0; text-align: center; }
+.errorTitle { font-size: var(--fs-title-3); line-height: var(--lh-title-3); font-weight: 600; color: var(--text-1); }
+.errorText { font-size: var(--fs-callout); color: var(--text-2); }
+.empty { padding: 64px 0; text-align: center; color: var(--text-2); }

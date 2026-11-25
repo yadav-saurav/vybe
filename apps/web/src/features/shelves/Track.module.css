@@ -1,0 +1,35 @@
+.section { padding-top: 13px; padding-bottom: 20px; }
+.header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; min-height: 22px; }
+.heading { display: flex; flex-direction: column; min-width: 0; }
+.title { font-size: var(--fs-title-3); line-height: var(--lh-title-3); font-weight: 700; letter-spacing: -0.01em; color: var(--text-1); }
+.titleLink { display: inline-flex; align-items: center; gap: 4px; }
+.titleLink :global(svg) { color: var(--text-2); transition: transform var(--dur) var(--ease); }
+.titleLink:hover :global(svg) { transform: translateX(2px); }
+.subtitle { font-size: var(--fs-footnote); line-height: var(--lh-footnote); color: var(--text-2); }
+
+.viewport { position: relative; margin: 0 calc(var(--content-pad) * -1); }
+.scroller {
+  display: grid; grid-auto-flow: column; grid-template-rows: repeat(var(--rows), auto);
+  grid-auto-columns: calc((100% - var(--content-pad) * 2 - var(--shelf-gap) * (var(--cols) - 1)) / var(--cols));
+  gap: 24px var(--shelf-gap); overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory;
+  padding: 0 var(--content-pad); scroll-padding: 0 var(--content-pad); scrollbar-width: none;
+}
+.scroller::-webkit-scrollbar { display: none; }
+.scroller > * { scroll-snap-align: start; min-width: 0; }
+.hero { gap: 28px var(--shelf-gap); }
+.chart { gap: 0 var(--shelf-gap); }
+.large { gap: 24px var(--shelf-gap); }
+
+.nav { position: absolute; top: 0; bottom: 30px; width: var(--content-pad); display: flex; align-items: center; justify-content: center; color: var(--text-2); opacity: 0; transition: opacity var(--dur), color var(--dur); }
+.viewport:hover .nav { opacity: 1; }
+.nav:hover { color: var(--text-1); }
+.prev { left: 0; }
+.next { right: 0; }
+
+@media (max-width: 760px) {
+  .scroller { grid-auto-columns: calc((100% - var(--content-pad) * 2 - var(--shelf-gap)) / 2.3); gap: 18px 12px; }
+  .nav { display: none; }
+  .scroller.hero { grid-auto-columns: calc((100% - var(--content-pad) * 2) * 0.85); }
+  .scroller.chart { grid-auto-columns: calc((100% - var(--content-pad) * 2) * 0.92); gap: 0 12px; }
+  .scroller.large { grid-auto-columns: calc((100% - var(--content-pad) * 2 - var(--shelf-gap)) / 1.25); }
+}

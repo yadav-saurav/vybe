@@ -1,0 +1,9 @@
+.wrap { position: relative; min-width: 0; }
+.live {
+  position: absolute; top: 10px; left: 10px; z-index: 2;
+  display: inline-flex; align-items: center; gap: 5px; height: 18px; padding: 0 7px;
+  border-radius: var(--r-pill); background: var(--key); color: var(--text-on-key);
+  font-size: 10px; line-height: 1; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+  pointer-events: none;
+}
+.live::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
