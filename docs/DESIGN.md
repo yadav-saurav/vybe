@@ -2,7 +2,7 @@
 
 Vybe follows the reference's layout and interaction patterns (Apple Music web, measured in Nov 2026). Everything else is our own: the brand, logo, icons, catalog, artwork, lyrics and audio. **Never copy Apple assets, logos, real artist, album or song names, real lyrics or real artwork.**
 
-Reference screenshots for layout only (not to be committed): `/tmp/claude-0/-home-user/fc73bf81-fd2f-535c-9c41-9160e38e5a78/scratchpad/ref/*.png`
+Reference screenshots were captured for layout study only and are not committed (they contain third-party artwork).
 (`album-d`, `playlist-d`, `artist-d`, `new-desktop`, `search-d`, `radio-d`; `*-dk` = dark; `*-m` = 390px mobile)
 
 ## Tokens
