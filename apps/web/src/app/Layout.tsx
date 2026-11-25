@@ -1,6 +1,7 @@
 import { Suspense, useEffect, useRef } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
-import { Sidebar, VybeWordmark } from './Sidebar';
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Sidebar, VybeWordmark, accountMenu } from './Sidebar';
+import { openMenuAt } from '../features/actions';
 import { Icon } from '../components/Icon';
 import { ContextMenuHost } from '../components/ContextMenu';
 import { Toasts } from '../components/Toasts';
@@ -31,15 +32,16 @@ export function Layout() {
   const main = useRef<HTMLElement>(null);
   useScrollRestoration(main);
   const user = useAuth((a) => a.user);
+  const navigate = useNavigate();
   const tint = useUI((u) => u.pageTint);
   return (
     <div className={clsx(s.app, tint && 'tinted')} style={tintVars(tint ?? undefined)}>
       <Sidebar />
       <div className={s.column}>
         <header className={s.mobileHeader}>
-          <button aria-label="Open navigation" className={s.menuBtn} onClick={() => useUI.getState().setMobileNavOpen(true)}><Icon name="menu" size={22} /></button>
+          <span />
           <VybeWordmark height={22} />
-          {user ? <span className={s.mobileAvatar} style={{ background: user.avatarColor }}>{user.displayName[0]?.toUpperCase()}</span>
+          {user ? <button className={s.mobileAvatar} style={{ background: user.avatarColor }} aria-label="Account" onClick={(e) => openMenuAt(e, accountMenu(user, navigate))}>{user.displayName[0]?.toUpperCase()}</button>
             : <button className={s.mobileSignIn} onClick={() => useUI.getState().openSignIn()}>Sign In</button>}
         </header>
         <main ref={main} id="main" className={s.main} tabIndex={-1}>
@@ -48,6 +50,7 @@ export function Layout() {
           </Suspense>
         </main>
       </div>
+      <TabBar />
       <PlayerChrome />
       <NowPlaying />
       <PlayerEngine />
@@ -56,5 +59,27 @@ export function Layout() {
       <ContextMenuHost />
       <Toasts />
     </div>
+  );
+}
+
+const TABS = [
+  { to: '/home', label: 'Home', icon: 'home' },
+  { to: '/new', label: 'New', icon: 'new' },
+  { to: '/radio', label: 'Radio', icon: 'radio' },
+  { to: '/search', label: 'Search', icon: 'search' },
+  { to: '/library', label: 'Library', icon: 'album', match: '/library' },
+];
+
+/** Phone navigation (≤760px): one tap to every top-level section, no hidden drawer. */
+function TabBar() {
+  const { pathname } = useLocation();
+  return (
+    <nav className={s.tabbar} aria-label="Sections">
+      {TABS.map((t) => (
+        <NavLink key={t.to} to={t.to} className={({ isActive }) => clsx(s.tab, (isActive || (t.match && pathname.startsWith(t.match))) && s.tabOn)}>
+          <Icon name={t.icon} size={22} /><span>{t.label}</span>
+        </NavLink>
+      ))}
+    </nav>
   );
 }

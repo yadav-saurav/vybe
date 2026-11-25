@@ -1,1 +1,14 @@
 .greeting { margin-top: 4px; font-size: var(--fs-title-3); line-height: var(--lh-title-3); color: var(--text-2); }
+
+.replay { padding: 13px 0 20px; }
+.replayTitle { font-size: var(--fs-title-3); font-weight: 700; margin-bottom: 10px; }
+.replayCard { display: flex; align-items: center; gap: 22px; padding: 22px 26px; border-radius: var(--r-xl); color: #fff;
+  background: linear-gradient(110deg, color-mix(in srgb, var(--replay) 80%, #000 20%), color-mix(in srgb, var(--replay) 45%, #000 55%));
+  transition: transform var(--dur) var(--ease), filter var(--dur); }
+.replayCard:hover { filter: brightness(1.06); }
+.replayCard:active { transform: scale(0.99); }
+.replayBig { font-family: var(--font-display); font-size: 48px; line-height: 1; font-weight: 800; letter-spacing: -0.03em; }
+.replayText { display: flex; flex-direction: column; gap: 3px; min-width: 0; flex: 1; font-size: var(--fs-callout); opacity: 0.95; }
+.replayText b { font-size: var(--fs-headline); }
+.replayCta { flex-shrink: 0; height: 34px; padding: 0 16px; display: inline-flex; align-items: center; border-radius: var(--r-pill); background: rgba(255,255,255,0.92); color: #000; font-weight: 600; font-size: var(--fs-callout); }
+@media (max-width: 760px) { .replayCard { flex-wrap: wrap; gap: 12px; padding: 18px; } .replayBig { font-size: 38px; } }

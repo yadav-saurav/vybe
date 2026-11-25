@@ -3,7 +3,7 @@ import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import clsx from 'clsx';
 import { Icon } from '../components/Icon';
 import { useAuth } from '../stores/auth';
-import { useUI } from '../stores/ui';
+import { useUI, type MenuEntry } from '../stores/ui';
 import { useLibrary } from '../stores/library';
 import { useAsync } from '../lib/useAsync';
 import { api } from '../lib/api';
@@ -86,19 +86,7 @@ export function Sidebar() {
         </div>
         <div className={s.footer}>
           {user ? (
-            <button className={s.account} onClick={(e) => openMenuAt(e, [
-              { label: `Signed in as ${user.displayName}`, disabled: true, onSelect: () => {} },
-              'separator',
-              { label: 'Profile', icon: 'user', onSelect: () => navigate(`/profile/${user.id}`) },
-              { label: 'Replay', icon: 'wave', onSelect: () => navigate('/replay') },
-              { label: 'Settings', icon: 'edit', onSelect: () => navigate('/settings') },
-              'separator',
-              { label: 'Appearance: System', icon: useUI.getState().theme === 'system' ? 'check' : undefined, onSelect: () => useUI.getState().setTheme('system') },
-              { label: 'Appearance: Light', icon: useUI.getState().theme === 'light' ? 'check' : undefined, onSelect: () => useUI.getState().setTheme('light') },
-              { label: 'Appearance: Dark', icon: useUI.getState().theme === 'dark' ? 'check' : undefined, onSelect: () => useUI.getState().setTheme('dark') },
-              'separator',
-              { label: 'Sign Out', onSelect: async () => { await useAuth.getState().signOut(); useLibrary.getState().reset(); navigate('/home'); } },
-            ])}>
+            <button className={s.account} onClick={(e) => openMenuAt(e, accountMenu(user, navigate))}>
               <span className={s.avatar} style={{ background: user.avatarColor }}>{user.displayName.slice(0, 1).toUpperCase()}</span>
               <span className="clamp-1">{user.displayName}</span>
             </button>
@@ -119,6 +107,19 @@ function NavItem({ to, label, icon }: { to: string; label: string; icon: string 
       </NavLink>
     </li>
   );
+}
+
+/** Account menu shared by the desktop sidebar and the phone header (theme lives only in Settings). */
+export function accountMenu(user: { id: string; displayName: string }, navigate: (to: string) => void): MenuEntry[] {
+  return [
+    { label: `Signed in as ${user.displayName}`, disabled: true, onSelect: () => {} },
+    'separator',
+    { label: 'Profile', icon: 'user', onSelect: () => navigate(`/profile/${user.id}`) },
+    { label: 'Replay', icon: 'wave', onSelect: () => navigate('/replay') },
+    { label: 'Settings', icon: 'edit', onSelect: () => navigate('/settings') },
+    'separator',
+    { label: 'Sign Out', onSelect: async () => { await useAuth.getState().signOut(); useLibrary.getState().reset(); navigate('/home'); } },
+  ];
 }
 
 export function VybeWordmark({ height = 26 }: { height?: number }) {
