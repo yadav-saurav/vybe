@@ -1,0 +1,26 @@
+.wrap { position: relative; min-height: 100vh; }
+.footer { margin-top: 26px; padding-bottom: 28px; font-size: var(--fs-footnote); line-height: 17px; color: color-mix(in srgb, var(--page-text-1) 74%, transparent); }
+.footer p + p { margin-top: 2px; }
+.state { min-height: 60vh; display: grid; align-content: center; justify-items: start; gap: 8px; }
+.state p { font-size: var(--fs-callout); }
+.retry { margin-top: 10px; height: 36px; padding: 0 20px; border-radius: var(--r-pill); background: var(--pill-bg); color: var(--pill-fg); font-weight: 600; }
+.retry:hover { opacity: 0.9; }
+
+.skelHeader { display: grid; grid-template-columns: 270px minmax(0, 1fr); column-gap: 34px; padding: 44px 0 8px; }
+.skel { background: var(--bg-placeholder); border-radius: var(--r-sm); animation: pulse 1.4s var(--ease) infinite alternate; }
+.skelArt { width: 270px; height: 270px; }
+.skelText { display: flex; flex-direction: column; gap: 12px; padding-top: 4px; }
+.skelLine { height: 22px; border-radius: 6px; }
+.w60 { width: 60%; } .w40 { width: 40%; } .w25 { width: 25%; height: 12px; }
+.skelBlock { width: 100%; max-width: 440px; height: 52px; margin-top: 8px; }
+.skelPill { width: 120px; height: 36px; border-radius: var(--r-pill); margin-top: 6px; }
+.skelRows { display: flex; flex-direction: column; gap: 14px; margin-top: 40px; }
+.skelRow { height: 40px; }
+@keyframes pulse { from { opacity: 0.55; } to { opacity: 1; } }
+@media (max-width: 760px) {
+  .skelHeader { grid-template-columns: 1fr; justify-items: center; padding-top: 20px; }
+  .skelArt { width: min(270px, 72vw); height: min(270px, 72vw); }
+  .skelText { align-items: center; width: 100%; }
+  .skelBlock { max-width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) { .skel { animation: none; } }

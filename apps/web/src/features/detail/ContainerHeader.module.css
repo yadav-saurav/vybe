@@ -1,0 +1,30 @@
+.header { position: relative; display: grid; grid-template-columns: 270px minmax(0, 1fr); column-gap: 34px; align-items: start; padding: 44px 0 8px; }
+.artWrap { width: 270px; border-radius: var(--r-sm); box-shadow: var(--shadow-hero-artwork); }
+.art { width: 270px; }
+.info { min-width: 0; padding-top: 2px; }
+.title { display: flex; align-items: center; flex-wrap: wrap; font-family: var(--font-display); font-size: var(--fs-title-1); line-height: var(--lh-title-1); font-weight: 700; color: var(--page-text-1); }
+.subtitle { margin-top: 0; font-size: var(--fs-title-1); line-height: var(--lh-title-1); font-weight: 400; color: var(--page-accent); }
+.subtitle a { color: inherit; }
+.subtitle a:hover { text-decoration: underline; }
+.meta { margin-top: 6px; font-size: var(--fs-footnote); line-height: 15px; font-weight: 600; color: var(--page-text-2); }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 22px; }
+.primary, .secondary { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 36px; min-width: 100px; padding: 0 22px; border-radius: var(--r-pill); font-size: var(--fs-headline); font-weight: 600; line-height: 20px; transition: background var(--dur) var(--ease), transform var(--dur-fast) var(--ease), filter var(--dur) var(--ease); }
+.primary { background: var(--page-text-1); color: var(--tint-bg, var(--bg)); }
+.primary:hover { filter: brightness(0.94); }
+.secondary { background: color-mix(in srgb, var(--page-text-1) 14%, transparent); color: var(--page-text-1); }
+.secondary:hover { background: color-mix(in srgb, var(--page-text-1) 22%, transparent); }
+.primary:active, .secondary:active { transform: scale(0.97); }
+.menu { position: absolute; top: 14px; right: 0; }
+@media (max-width: 1000px) { .header { column-gap: 26px; } }
+@media (max-width: 760px) {
+  .header { grid-template-columns: 1fr; justify-items: center; text-align: center; padding: 20px 0 0; row-gap: 18px; }
+  .artWrap { width: min(270px, 72vw); }
+  .art { width: 100%; }
+  .info { display: flex; flex-direction: column; align-items: center; width: 100%; }
+  .title, .subtitle { justify-content: center; font-size: 22px; line-height: 26px; }
+  .subtitle { font-size: 20px; line-height: 24px; }
+  .meta { margin-top: 4px; }
+  .actions { justify-content: center; margin-top: 18px; }
+  .primary, .secondary { min-width: 0; padding: 0 16px; }
+  .actions { gap: 8px; }
+}

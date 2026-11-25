@@ -1,0 +1,5 @@
+.reorder { position: relative; }
+.reorder :global([data-row-index]) { cursor: grab; }
+.reorder:has(.dragging) { cursor: grabbing; user-select: none; }
+.dragging { z-index: 2; background: var(--bg-elevated) !important; box-shadow: var(--shadow-menu); border-radius: var(--r-md); cursor: grabbing; }
+.indicator { position: absolute; left: 10px; right: 10px; top: 0; height: 2px; border-radius: 2px; background: var(--key); opacity: 0; pointer-events: none; transition: opacity var(--dur-fast) var(--ease); z-index: 3; }

@@ -1,0 +1,6 @@
+.notes { position: relative; max-width: 440px; margin-top: 18px; }
+.text { font-size: var(--fs-callout); line-height: var(--lh-callout); color: color-mix(in srgb, var(--page-text-1) 82%, transparent); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.more { position: absolute; right: 0; bottom: 0; padding: 0 0 0 28px; font-size: var(--fs-caption); font-weight: 600; letter-spacing: 0.04em; line-height: 16px; color: var(--page-text-1);
+  background: linear-gradient(to right, transparent, var(--tint-bg, var(--bg)) 40%); }
+.more:hover { text-decoration: underline; }
+@media (max-width: 760px) { .notes { margin-left: auto; margin-right: auto; } .text { text-align: left; } }

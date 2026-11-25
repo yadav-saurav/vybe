@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { Fragment, memo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import clsx from 'clsx';
 import { formatDuration, type Song } from '@vybe/shared';
@@ -19,8 +19,10 @@ import s from './TrackList.module.css';
  */
 export type TrackListVariant = 'album' | 'playlist' | 'compact';
 
-export function TrackList({ songs, context, variant = 'playlist', extraMenu, highlightId, showHeader = variant === 'playlist' }: {
+export function TrackList({ songs, context, variant = 'playlist', extraMenu, highlightId, showHeader = variant === 'playlist', sectionTitle }: {
   songs: Song[]; context: PlayContext; variant?: TrackListVariant; extraMenu?: (song: Song, index: number) => MenuEntry[]; highlightId?: string; showHeader?: boolean;
+  /** Optional divider label rendered above a row (e.g. "Disc 2"). Return undefined for no divider. */
+  sectionTitle?: (song: Song, index: number) => string | undefined;
 }) {
   return (
     <div className={clsx(s.list, s[variant])} role="table" aria-label="Songs">
@@ -33,9 +35,15 @@ export function TrackList({ songs, context, variant = 'playlist', extraMenu, hig
           <div className={s.cMore} />
         </div>
       )}
-      {songs.map((song, i) => (
-        <TrackRow key={`${song.id}-${i}`} song={song} index={i} songs={songs} context={context} variant={variant} extraMenu={extraMenu} highlighted={song.id === highlightId} />
-      ))}
+      {songs.map((song, i) => {
+        const section = sectionTitle?.(song, i);
+        return (
+          <Fragment key={`${song.id}-${i}`}>
+            {section && <div className={s.section} role="presentation">{section}</div>}
+            <TrackRow song={song} index={i} songs={songs} context={context} variant={variant} extraMenu={extraMenu} highlighted={song.id === highlightId} />
+          </Fragment>
+        );
+      })}
     </div>
   );
 }
@@ -51,7 +59,7 @@ const TrackRow = memo(function TrackRow({ song, index, songs, context, variant, 
   const play = () => { if (isCurrent) usePlayer.getState().togglePlay(); else playFromList(songs, index, context); };
 
   return (
-    <div role="row" tabIndex={0} aria-selected={highlighted}
+    <div role="row" tabIndex={0} aria-selected={highlighted} data-row-index={index}
       className={clsx(s.row, isCurrent && s.current, highlighted && s.highlighted)}
       onDoubleClick={play} onKeyDown={(e) => { if (e.key === 'Enter') play(); }} onContextMenu={menu}>
       <div className={s.cSong} role="cell">

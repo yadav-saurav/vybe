@@ -1,0 +1,5 @@
+.tracks { margin-top: 14px; }
+.empty { display: grid; justify-items: start; gap: 8px; padding: 28px 10px; color: var(--page-text-2); }
+.findLink { display: inline-flex; align-items: center; height: 36px; padding: 0 20px; border-radius: var(--r-pill); background: var(--page-text-1); color: var(--tint-bg, var(--bg)); font-weight: 600; font-size: var(--fs-headline); }
+.findLink:hover { filter: brightness(0.94); }
+@media (max-width: 760px) { .empty { justify-items: center; text-align: center; } }
