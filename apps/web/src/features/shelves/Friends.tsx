@@ -1,3 +1,4 @@
+import { avatarBg } from '../../lib/color';
 import { Link } from 'react-router-dom';
 import type { Shelf as ShelfData } from '@vybe/shared';
 import { Lockup } from '../../components/Lockup';
@@ -22,7 +23,7 @@ export function FriendsShelf({ shelf }: { shelf: ShelfData }) {
       {cards.map((c) => (
         <div key={c.userId} className={s.card}>
           <Link to={`/profile/${c.userId}`} className={s.who}>
-            <span className={s.avatar} style={{ background: c.avatarColor }}>{c.displayName.slice(0, 1).toUpperCase()}</span>
+            <span className={s.avatar} style={{ background: avatarBg(c.avatarColor) }}>{c.displayName.slice(0, 1).toUpperCase()}</span>
             <span className={s.text}><b className="clamp-1">{c.displayName}</b><span className="clamp-1">{ago(c.playedAt)}</span></span>
           </Link>
           <Lockup item={c.item} />

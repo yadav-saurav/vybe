@@ -1,3 +1,4 @@
+import { avatarBg } from '../lib/color';
 import { useEffect, useRef, useState } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import clsx from 'clsx';
@@ -47,10 +48,18 @@ export function Sidebar() {
     addEventListener('keydown', onKey); return () => removeEventListener('keydown', onKey);
   }, []);
 
+  // On phones the sidebar is an off-screen drawer: while closed it must be out of the tab order too.
+  const [narrow, setNarrow] = useState(() => matchMedia('(max-width: 760px)').matches);
+  useEffect(() => {
+    const mq = matchMedia('(max-width: 760px)');
+    const on = () => setNarrow(mq.matches);
+    mq.addEventListener('change', on); return () => mq.removeEventListener('change', on);
+  }, []);
+
   return (
     <>
       <div className={clsx(s.scrim, mobileOpen && s.scrimOn)} onClick={() => setMobileOpen(false)} />
-      <nav className={clsx(s.sidebar, mobileOpen && s.open)} aria-label="Main">
+      <nav className={clsx(s.sidebar, mobileOpen && s.open)} aria-label="Main" inert={narrow && !mobileOpen}>
         <div className={s.logoRow}>
           <NavLink to="/home" className={s.logo} aria-label="Vybe home"><VybeWordmark /></NavLink>
         </div>
@@ -87,7 +96,7 @@ export function Sidebar() {
         <div className={s.footer}>
           {user ? (
             <button className={s.account} onClick={(e) => openMenuAt(e, accountMenu(user, navigate))}>
-              <span className={s.avatar} style={{ background: user.avatarColor }}>{user.displayName.slice(0, 1).toUpperCase()}</span>
+              <span className={s.avatar} style={{ background: avatarBg(user.avatarColor) }}>{user.displayName.slice(0, 1).toUpperCase()}</span>
               <span className="clamp-1">{user.displayName}</span>
             </button>
           ) : (

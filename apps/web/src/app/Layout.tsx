@@ -10,7 +10,7 @@ import { useAuth } from '../stores/auth';
 import { PlayerChrome, NowPlaying, PlayerEngine } from '../features/player';
 import { Overlays } from '../features/overlays';
 import { DropImport } from './DropImport';
-import { tintVars } from '../lib/color';
+import { tintVars, avatarBg } from '../lib/color';
 import clsx from 'clsx';
 import s from './Layout.module.css';
 
@@ -41,7 +41,7 @@ export function Layout() {
         <header className={s.mobileHeader}>
           <span />
           <VybeWordmark height={22} />
-          {user ? <button className={s.mobileAvatar} style={{ background: user.avatarColor }} aria-label="Account" onClick={(e) => openMenuAt(e, accountMenu(user, navigate))}>{user.displayName[0]?.toUpperCase()}</button>
+          {user ? <button className={s.mobileAvatar} style={{ background: avatarBg(user.avatarColor) }} aria-label="Account" onClick={(e) => openMenuAt(e, accountMenu(user, navigate))}>{user.displayName[0]?.toUpperCase()}</button>
             : <button className={s.mobileSignIn} onClick={() => useUI.getState().openSignIn()}>Sign In</button>}
         </header>
         <main ref={main} id="main" className={s.main} tabIndex={-1}>

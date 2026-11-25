@@ -25,3 +25,6 @@ export const tintVars = (a?: Artwork): CSSProperties => {
 };
 
 export const artUrl = (a: Artwork | undefined, size: number) => (a ? `${a.url}${a.url.includes('?') ? '&' : '?'}w=${size}` : undefined);
+
+/** Avatar background: the listener's colour, deepened just enough that the white initial reads (AA, 4.5:1). */
+export const avatarBg = (color: string) => ensureContrast(color, '#ffffff', '#000000');

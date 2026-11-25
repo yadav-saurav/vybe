@@ -1,3 +1,4 @@
+import { avatarBg } from '../../lib/color';
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { api, type PublicProfile } from '../../lib/api';
@@ -36,7 +37,7 @@ export default function ProfilePage() {
   return (
     <div className="page">
       <header className={s.head}>
-        <span className={s.avatar} style={{ background: p.user.avatarColor }}>{p.user.displayName.slice(0, 1).toUpperCase()}</span>
+        <span className={s.avatar} style={{ background: avatarBg(p.user.avatarColor) }}>{p.user.displayName.slice(0, 1).toUpperCase()}</span>
         <div className={s.meta}>
           <p className={s.eyebrow}>Profile</p>
           <h1 className={s.name}>{p.user.displayName}</h1>

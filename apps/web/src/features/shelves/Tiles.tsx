@@ -43,12 +43,14 @@ export function LargeTilesShelf({ shelf }: { shelf: Shelf }) {
 function LargeTile({ item }: { item: ContentItem }) {
   const title = titleOf(item);
   const description = descriptionOf(item);
+  const coverHasName = item.type === 'playlist' || item.type === 'station';
   return (
     <div className={s.large}>
       <div className={s.art}>
         <Artwork artwork={item.data.artwork} size={500} rounded="lg" />
         <Link to={hrefFor(item)} className={s.cover} aria-label={title} tabIndex={-1} />
-        <div className={s.overlay}><span className={s.overlayName}>{title}</span></div>
+        {/* Playlist and station covers already carry their name; printing it again would double it. */}
+        {!coverHasName && <div className={s.overlay}><span className={s.overlayName}>{title}</span></div>}
         <button type="button" className={s.play} aria-label={`Play ${title}`} onClick={() => playItem(item)}>
           <Icon name="play" size={16} />
         </button>

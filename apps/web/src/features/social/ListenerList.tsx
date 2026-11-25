@@ -1,3 +1,4 @@
+import { avatarBg } from '../../lib/color';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api, type ListenerCard } from '../../lib/api';
@@ -21,7 +22,7 @@ export function ListenerRow({ listener, onNavigate }: { listener: ListenerCard; 
   return (
     <li className={s.row}>
       <Link to={`/profile/${listener.id}`} className={s.who} onClick={onNavigate}>
-        <span className={s.avatar} style={{ background: listener.avatarColor }} aria-hidden>{listener.displayName.slice(0, 1).toUpperCase()}</span>
+        <span className={s.avatar} style={{ background: avatarBg(listener.avatarColor) }} aria-hidden>{listener.displayName.slice(0, 1).toUpperCase()}</span>
         <span className="clamp-1">{listener.displayName}{listener.isMe && <span className={s.you}> (you)</span>}</span>
       </Link>
       {!listener.isMe && (

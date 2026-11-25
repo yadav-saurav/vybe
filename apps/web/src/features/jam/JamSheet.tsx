@@ -1,3 +1,4 @@
+import { avatarBg } from '../../lib/color';
 import { useState } from 'react';
 import clsx from 'clsx';
 import { Icon } from '../../components/Icon';
@@ -107,7 +108,7 @@ function Live() {
 function Person({ l, me }: { l: JamListener; me: boolean }) {
   return (
     <li className={s.person}>
-      <span className={s.avatar} style={{ background: l.avatarColor }} aria-hidden>{l.displayName.slice(0, 1).toUpperCase()}
+      <span className={s.avatar} style={{ background: avatarBg(l.avatarColor) }} aria-hidden>{l.displayName.slice(0, 1).toUpperCase()}
         <span className={clsx(s.dot, l.online && s.dotOn)} />
       </span>
       <span className={clsx(s.name, 'clamp-1')}>{l.displayName}{me && ' (you)'}</span>

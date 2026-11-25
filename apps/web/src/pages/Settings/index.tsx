@@ -1,3 +1,4 @@
+import { avatarBg } from '../../lib/color';
 import { useEffect, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import clsx from 'clsx';
@@ -15,6 +16,7 @@ import { useAsync } from '../../lib/useAsync';
 import { useAccount, DEMO_NOTE } from '../../stores/account';
 import s from './Settings.module.css';
 
+const COLOR_NAMES: Record<string, string> = { '#e11d48': 'Red', '#f97316': 'Orange', '#eab308': 'Yellow', '#22c55e': 'Green', '#14b8a6': 'Teal', '#0ea5e9': 'Sky', '#6366f1': 'Indigo', '#a855f7': 'Purple', '#ec4899': 'Pink', '#64748b': 'Slate' };
 const COLORS = ['#e11d48', '#f97316', '#eab308', '#22c55e', '#14b8a6', '#0ea5e9', '#6366f1', '#a855f7', '#ec4899', '#64748b'];
 
 export default function SettingsPage() {
@@ -54,13 +56,13 @@ export default function SettingsPage() {
       {user ? (
         <Section title="Account">
           <div className={s.account}>
-            <span className={s.avatar} style={{ background: color }}>{(name || user.displayName).slice(0, 1).toUpperCase()}</span>
+            <span className={s.avatar} style={{ background: avatarBg(color) }}>{(name || user.displayName).slice(0, 1).toUpperCase()}</span>
             <div className={s.accountFields}>
               <label className={s.label} htmlFor="dn">Display name</label>
               <input id="dn" className={s.input} value={name} maxLength={60} onChange={(e) => setName(e.target.value)} aria-describedby={err ? 'dn-err' : undefined} />
               <span className={s.label}>Avatar colour</span>
               <div className={s.swatches} role="radiogroup" aria-label="Avatar colour">
-                {COLORS.map((c) => <button key={c} role="radio" aria-checked={c === color} aria-label={c} className={clsx(s.swatch, c === color && s.swatchOn)} style={{ background: c }} onClick={() => setColor(c)} />)}
+                {COLORS.map((c) => <button key={c} role="radio" aria-checked={c === color} aria-label={COLOR_NAMES[c] ?? c} className={clsx(s.swatch, c === color && s.swatchOn)} style={{ background: c }} onClick={() => setColor(c)} />)}
               </div>
               {err && <p id="dn-err" className={s.err}>{err}</p>}
               <div className={s.row}>

@@ -19,7 +19,8 @@
 .overlay {
   position: absolute; left: 0; right: 0; bottom: 0; height: 52%; z-index: 2; pointer-events: none;
   display: flex; align-items: flex-end; padding: 16px 70px 16px 18px;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0));
+  /* Dense at the bottom so any lettering in the artwork can't ghost through the name. */
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.84) 24%, rgba(0, 0, 0, 0.5) 50%, rgba(0, 0, 0, 0));
 }
 .overlayName {
   color: #fff; font-size: 22px; line-height: 26px; font-weight: 700; letter-spacing: -0.01em;
