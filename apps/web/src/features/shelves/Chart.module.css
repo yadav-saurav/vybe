@@ -18,7 +18,7 @@
 }
 .hit:focus-visible { box-shadow: var(--focus-ring); }
 
-.artWrap { position: relative; width: 48px; height: 48px; flex-shrink: 0; }
+.artWrap { position: relative; width: 40px; height: 40px; flex-shrink: 0; }
 .artPlay {
   position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
   color: #fff; background: rgba(0, 0, 0, 0.42); border-radius: var(--r-xs);
