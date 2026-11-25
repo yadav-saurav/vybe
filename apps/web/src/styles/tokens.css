@@ -13,7 +13,7 @@
   /* Surfaces (light) */
   --bg: #ffffff;
   --bg-elevated: #ffffff;
-  --bg-sidebar: #f7f7f9;
+  --bg-sidebar: rgba(0, 0, 0, 0.03);
   --bg-sidebar-border: rgba(0, 0, 0, 0.08);
   --bg-hover: rgba(0, 0, 0, 0.05);
   --bg-selected: rgba(0, 0, 0, 0.08);
@@ -180,4 +180,11 @@
   --separator: color-mix(in srgb, var(--tint-1) 14%, transparent);
   --bg-hover: color-mix(in srgb, var(--tint-1) 8%, transparent);
   --key: var(--tint-3);
+  --bg: var(--tint-bg);
+  --bg-sidebar: color-mix(in srgb, var(--tint-1) 4%, transparent);
+  --bg-sidebar-border: color-mix(in srgb, var(--tint-1) 10%, transparent);
+  --bg-selected: color-mix(in srgb, var(--tint-1) 10%, transparent);
+  --bg-input: color-mix(in srgb, var(--tint-1) 8%, transparent);
+  --bg-player: color-mix(in srgb, var(--tint-bg) 70%, transparent);
+  --bg-player-border: color-mix(in srgb, var(--tint-1) 12%, transparent);
 }

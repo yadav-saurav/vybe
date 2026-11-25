@@ -1,9 +1,10 @@
-import type { ReactNode, Ref } from 'react';
+import { useEffect, type ReactNode, type Ref } from 'react';
 import clsx from 'clsx';
 import type { Artwork as Art } from '@vybe/shared';
 import { formatLongDuration } from '@vybe/shared';
 import { ApiError } from '../../lib/api';
 import { tintVars } from '../../lib/color';
+import { useUI } from '../../stores/ui';
 import { formatLongDate, pluralSongs } from './format';
 import s from './DetailPage.module.css';
 
@@ -12,6 +13,7 @@ import s from './DetailPage.module.css';
  * scroll region; the inner .page keeps the content gutter and max width.
  */
 export function DetailPage({ artwork, children, pageRef }: { artwork?: Art; children: ReactNode; pageRef?: Ref<HTMLDivElement> }) {
+  usePageTint(artwork);
   return (
     <div ref={pageRef} className={clsx(artwork && 'tinted', s.wrap)} style={tintVars(artwork)}>
       <div className="page">{children}</div>
@@ -70,4 +72,11 @@ export function DetailError({ error, onRetry }: { error: Error; onRetry?: () => 
       {onRetry && <button className={s.retry} onClick={onRetry}>Try again</button>}
     </div>
   );
+}
+
+/** Tint the app shell (sidebar, mobile header, player chrome) with this page's artwork palette while mounted. */
+export function usePageTint(artwork?: Art) {
+  const setPageTint = useUI((u) => u.setPageTint);
+  useEffect(() => { setPageTint(artwork ?? null); }, [artwork, setPageTint]);
+  useEffect(() => () => setPageTint(null), [setPageTint]);
 }

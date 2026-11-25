@@ -8,6 +8,8 @@ import { useUI } from '../stores/ui';
 import { useAuth } from '../stores/auth';
 import { PlayerChrome, NowPlaying, PlayerEngine } from '../features/player';
 import { Overlays } from '../features/overlays';
+import { tintVars } from '../lib/color';
+import clsx from 'clsx';
 import s from './Layout.module.css';
 
 /** Remembers scroll per history entry (back/forward restores position, new navigation scrolls to top). */
@@ -28,8 +30,9 @@ export function Layout() {
   const main = useRef<HTMLElement>(null);
   useScrollRestoration(main);
   const user = useAuth((a) => a.user);
+  const tint = useUI((u) => u.pageTint);
   return (
-    <div className={s.app}>
+    <div className={clsx(s.app, tint && 'tinted')} style={tintVars(tint ?? undefined)}>
       <Sidebar />
       <div className={s.column}>
         <header className={s.mobileHeader}>

@@ -1,4 +1,4 @@
-.app { display: flex; height: 100%; background: var(--bg); }
+.app { display: flex; height: 100%; background: var(--bg); transition: background-color var(--dur-slow) var(--ease); }
 .column { flex: 1; min-width: 0; display: flex; flex-direction: column; position: relative; }
 .main { flex: 1; overflow-y: auto; overflow-x: hidden; scroll-behavior: auto; outline: none; }
 .loading { height: 60vh; }

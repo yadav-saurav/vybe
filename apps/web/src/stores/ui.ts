@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { ContentItem, Song } from '@vybe/shared';
+import type { Artwork, ContentItem, Song } from '@vybe/shared';
 
 export interface MenuAction {
   label: string;
@@ -46,6 +46,10 @@ interface UIState {
   theme: 'system' | 'light' | 'dark';
   setTheme: (t: UIState['theme']) => void;
 
+  /** Artwork palette that tints the whole app shell (sidebar, header, player) on detail pages. */
+  pageTint: Artwork | null;
+  setPageTint: (a: Artwork | null) => void;
+
   share: (item: ContentItem) => void;
 }
 
@@ -90,6 +94,9 @@ export const useUI = create<UIState>((set, get) => ({
 
   theme: savedTheme,
   setTheme: (theme) => { try { localStorage.setItem('vybe:theme', theme); } catch { /* private mode */ } applyTheme(theme); set({ theme }); },
+
+  pageTint: null,
+  setPageTint: (pageTint) => { if (get().pageTint?.url !== pageTint?.url) set({ pageTint }); },
 
   share: (item) => {
     const path = item.type === 'song' ? `/album/${item.data.album.id}?i=${item.data.id}` : `/${item.type}/${item.data.id}`;
