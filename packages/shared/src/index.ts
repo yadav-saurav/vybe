@@ -175,7 +175,8 @@ export interface LibraryState {
   songIds: ID[]; // in date-added desc
   albumIds: ID[];
   playlistIds: ID[]; // editorial playlists the user added + own playlists
-  artistIds: ID[]; // derived from saved songs/albums + followed
+  artistIds: ID[]; // every artist in the library: followed + derived from saved songs/albums
+  followedArtistIds?: ID[]; // explicit follows only (drives the Follow button)
   lovedIds: ID[]; // loved songs/albums/playlists (favorites)
   addedAt: Record<ID, string>;
 }

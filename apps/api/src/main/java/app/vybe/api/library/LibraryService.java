@@ -48,10 +48,6 @@ public class LibraryService {
         requireExists(type, id);
         String now = Timestamps.now();
         library.addItem(userId, type, id, now);
-        if ("album".equals(type)) {
-            // Adding an album also follows its artist.
-            library.addItem(userId, "artist", catalog.album(id).artist().id(), now);
-        }
         return state(userId);
     }
 
@@ -70,9 +66,6 @@ public class LibraryService {
         String now = Timestamps.now();
         library.addLove(userId, type, id, now);
         library.addItem(userId, type, id, now);
-        if ("album".equals(type)) {
-            library.addItem(userId, "artist", catalog.album(id).artist().id(), now);
-        }
         return state(userId);
     }
 
@@ -146,11 +139,16 @@ public class LibraryService {
             addedAt.put(e.getKey(), e.getValue());
         }
 
+        List<String> followedArtistIds = new ArrayList<>();
+        for (var r : artistRefs) {
+            followedArtistIds.add(r.id());
+        }
+
         List<String> lovedIds = new ArrayList<>();
         for (var r : loveRefs) {
             lovedIds.add(r.id());
         }
-        return new LibraryState(songIds, albumIds, playlistIds, artistIds, lovedIds, addedAt);
+        return new LibraryState(songIds, albumIds, playlistIds, artistIds, followedArtistIds, lovedIds, addedAt);
     }
 
     /** Directly added songs plus tracks of library albums, de-duplicated, newest first. */

@@ -46,7 +46,7 @@ function ArtistView({ page }: { page: ArtistPage }) {
   const context: PlayContext = { type: 'artist', id: artist.id, title: artist.name };
   const isActive = usePlayer((st) => st.context?.type === 'artist' && st.context.id === artist.id);
   const isPlaying = usePlayer((st) => st.isPlaying) && isActive;
-  const following = useLibrary((l) => l.artistIds.includes(artist.id));
+  const following = useLibrary((l) => (l.followedArtistIds ?? []).includes(artist.id));
 
   const playArtist = () => {
     const p = usePlayer.getState();

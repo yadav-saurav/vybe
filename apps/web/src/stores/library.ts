@@ -5,9 +5,9 @@ import { invalidate } from '../lib/useAsync';
 import { useUI } from './ui';
 import { useAuth } from './auth';
 
-const empty: LibraryState = { songIds: [], albumIds: [], playlistIds: [], artistIds: [], lovedIds: [], addedAt: {} };
-type LibKey = 'songIds' | 'albumIds' | 'playlistIds' | 'artistIds';
-const key = (t: LibType): LibKey => (t === 'song' ? 'songIds' : t === 'album' ? 'albumIds' : t === 'playlist' ? 'playlistIds' : 'artistIds');
+const empty: LibraryState = { songIds: [], albumIds: [], playlistIds: [], artistIds: [], followedArtistIds: [], lovedIds: [], addedAt: {} };
+type LibKey = 'songIds' | 'albumIds' | 'playlistIds' | 'followedArtistIds';
+const key = (t: LibType): LibKey => (t === 'song' ? 'songIds' : t === 'album' ? 'albumIds' : t === 'playlist' ? 'playlistIds' : 'followedArtistIds');
 
 interface Library extends LibraryState {
   loaded: boolean;
@@ -31,18 +31,19 @@ export const useLibrary = create<Library>((set, get) => ({
   loaded: false,
   load: async () => { try { set({ ...(await api.library()), loaded: true }); } catch { set({ ...empty, loaded: true }); } },
   reset: () => set({ ...empty, loaded: false }),
-  has: (type, id) => get()[key(type)].includes(id),
+  has: (type, id) => (get()[key(type)] ?? []).includes(id),
   isLoved: (id) => get().lovedIds.includes(id),
   toggle: async (type, id) => {
     if (!requireAuth()) return;
     const prev = get();
     const k = key(type);
-    const adding = !prev[k].includes(id);
-    set({ [k]: adding ? [id, ...prev[k]] : prev[k].filter((x) => x !== id) } as Partial<Library>);
+    const list = prev[k] ?? [];
+    const adding = !list.includes(id);
+    set({ [k]: adding ? [id, ...list] : list.filter((x) => x !== id) } as Partial<Library>);
     try {
       set(await (adding ? api.addToLibrary(type, id) : api.removeFromLibrary(type, id)));
       invalidate('library:');
-      useUI.getState().toast(adding ? 'Added to Library' : 'Removed from Library');
+      useUI.getState().toast(type === 'artist' ? (adding ? 'Following' : 'Unfollowed') : adding ? 'Added to Library' : 'Removed from Library');
     } catch { set({ [k]: prev[k] } as Partial<Library>); useUI.getState().toast('Something went wrong'); }
   },
   toggleLove: async (type, id) => {
