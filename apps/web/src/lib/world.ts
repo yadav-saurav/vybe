@@ -43,3 +43,7 @@ export const rememberWorldCountry = (c: string) => { try { localStorage.setItem(
 
 /** A worldwide artist's page in Vybe (their popular songs as previews). */
 export const worldArtistHref = (song: Song) => `${WORLD_PATH}/artist/${song.artist.id}?c=${worldCountryOf(song)}`;
+
+/** Apple songs show licensed lyrics links (never copied text); Vybe's demo songs have their own synced lyrics. */
+export const lyricsAvailable = (song: Song | null | undefined) => !!song && (song.hasLyrics || isWorld(song));
+export const geniusSearchUrl = (song: Song) => `https://genius.com/search?q=${encodeURIComponent(`${song.title} ${song.artist.name}`)}`;

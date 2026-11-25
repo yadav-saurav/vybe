@@ -27,8 +27,10 @@ public class FriendsService {
     private final UserRepository users;
     private final HistoryRepository history;
     private final CatalogStore catalog;
+    private final app.vybe.api.world.WorldSongStore worldSongs;
 
-    public FriendsService(UserRepository users, HistoryRepository history, CatalogStore catalog) {
+    public FriendsService(UserRepository users, HistoryRepository history, CatalogStore catalog, app.vybe.api.world.WorldSongStore worldSongs) {
+        this.worldSongs = worldSongs;
         this.users = users;
         this.history = history;
         this.catalog = catalog;
@@ -47,7 +49,7 @@ public class FriendsService {
         List<FriendCard> cards = new ArrayList<>();
         for (UserRepository.UserRow friend : users.sharingFollowees(userId, MAX_FRIENDS)) {
             for (HistoryRepository.PlayRow play : history.recent(friend.id(), 20)) {
-                Song s = catalog.song(play.songId());
+                Song s = app.vybe.api.world.WorldService.isWorldId(play.songId()) ? worldSongs.get(play.songId()) : catalog.song(play.songId());
                 if (s == null || play.playedAt().compareTo(since) < 0) {
                     continue; // imported or unknown song, or too old: look at the next most recent play
                 }

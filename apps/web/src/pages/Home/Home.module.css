@@ -12,3 +12,8 @@
 .replayText b { font-size: var(--fs-headline); }
 .replayCta { flex-shrink: 0; height: 34px; padding: 0 16px; display: inline-flex; align-items: center; border-radius: var(--r-pill); background: rgba(255,255,255,0.92); color: #000; font-weight: 600; font-size: var(--fs-callout); }
 @media (max-width: 760px) { .replayCard { flex-wrap: wrap; gap: 12px; padding: 18px; } .replayBig { font-size: 38px; } }
+
+.vybeTitle { font-size: 13px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-2); margin-bottom: 4px; }
+
+.signIn { color: var(--key); font-weight: 700; }
+.signIn:hover { text-decoration: underline; }

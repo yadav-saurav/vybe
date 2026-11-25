@@ -23,7 +23,7 @@ const paths: Record<string, ReactElement> = {
   'volume-1': <path d="M4 9.5h3l4.5-4v13l-4.5-4H4a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1ZM15.2 9a4.2 4.2 0 0 1 0 6" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />,
   'volume-2': <path d="M4 9.5h3l4.5-4v13l-4.5-4H4a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1ZM15.2 9a4.2 4.2 0 0 1 0 6M18 6.2a8 8 0 0 1 0 11.6" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />,
   queue: <path d="M8.5 6H20M8.5 12H20M8.5 18H20M4.5 6h.01M4.5 12h.01M4.5 18h.01" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />,
-  lyrics: <path d="M5 5.5h14a1.5 1.5 0 0 1 1.5 1.5v8.5a1.5 1.5 0 0 1-1.5 1.5h-7l-4.5 3.5V17H5a1.5 1.5 0 0 1-1.5-1.5V7A1.5 1.5 0 0 1 5 5.5ZM8 9.5h8M8 13h5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />,
+  lyrics: <><rect x="8.6" y="2.8" width="6.8" height="11.4" rx="3.4" fill="none" stroke="currentColor" strokeWidth="1.8" /><path d="M5.5 11.2a6.5 6.5 0 0 0 13 0M12 17.7v3.5M8.6 21.2h6.8" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /><path d="M10.6 6.6h2.8M10.6 9.4h2.8" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" /></>,
   more: <><circle cx="5.5" cy="12" r="1.7" fill="currentColor" /><circle cx="12" cy="12" r="1.7" fill="currentColor" /><circle cx="18.5" cy="12" r="1.7" fill="currentColor" /></>,
   plus: <path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />,
   check: <path d="m5 12.5 4.5 4.5L19 7.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />,

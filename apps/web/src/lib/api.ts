@@ -84,6 +84,10 @@ export const api = {
   worldCountries: () => get<{ countries: { code: string; name: string }[] }>('/world/countries'),
   worldChart: (country: string, s?: AbortSignal) => get<WorldList>(`/world/charts?country=${enc(country)}`, s),
   worldHome: (s?: AbortSignal) => get<WorldHome>('/world/home', s),
+  worldSection: (name: string, s?: AbortSignal) => get<WorldHome>(`/world/section/${name}`, s),
+  worldShelf: (id: string, s?: AbortSignal) => get<WorldShelf>(`/world/shelves/${enc(id)}`, s),
+  worldAlbum: (id: string, s?: AbortSignal) => get<{ album: WorldAlbum; songs: T.Song[] }>(`/world/albums/${enc(id)}`, s),
+  worldSearchAll: (term: string, country: string, s?: AbortSignal) => get<{ songs: T.Song[]; artists: WorldArtist[]; albums: WorldAlbum[] }>(`/world/search-all?term=${enc(term)}&country=${enc(country)}`, s),
   worldArtist: (id: string, country: string, s?: AbortSignal) => get<{ artist: WorldArtist; songs: T.Song[] }>(`/world/artists/${enc(id)}?country=${enc(country)}`, s),
   worldSearch: (term: string, country: string, s?: AbortSignal) => get<WorldList>(`/world/search?term=${enc(term)}&country=${enc(country)}`, s),
 
@@ -176,5 +180,7 @@ export interface JamView {
 
 export interface WorldList { title: string; country: string; songs: T.Song[] }
 export interface WorldArtist { id: string; name: string; genre: string; artwork: T.Artwork | null; country: string }
-export interface WorldShelf { id: string; title: string; subtitle: string; kind: 'hero' | 'cards' | 'artists'; songs: T.Song[]; artists: WorldArtist[] }
+export interface WorldStation { id: string; name: string; description: string; artwork: T.Artwork; songs: T.Song[] }
+export interface WorldAlbum { id: string; title: string; artistName: string; artistId: string; artwork: T.Artwork; releaseDate: string; country: string }
+export interface WorldShelf { id: string; title: string; subtitle: string; kind: 'hero' | 'cards' | 'artists' | 'stations' | 'albums' | 'charts'; songs: T.Song[]; artists: WorldArtist[]; stations?: WorldStation[]; albums?: WorldAlbum[]; link?: string }
 export interface WorldHome { shelves: WorldShelf[]; complete: boolean }

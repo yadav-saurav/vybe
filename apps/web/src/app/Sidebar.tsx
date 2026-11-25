@@ -14,16 +14,13 @@ import s from './Sidebar.module.css';
 
 const primary = [
   { to: '/home', label: 'Home', icon: 'home' },
-  { to: '/new', label: 'New', icon: 'new' },
-  { to: '/radio', label: 'Radio', icon: 'radio' },
-  { to: '/world', label: 'Worldwide', icon: 'globe' },
+  { to: '/jam', label: 'Jam', icon: 'jam' },
 ];
 const library = [
   { to: '/library/recently-added', label: 'Recently Added', icon: 'clock' },
   { to: '/library/artists', label: 'Artists', icon: 'artist' },
   { to: '/library/albums', label: 'Albums', icon: 'album' },
   { to: '/library/songs', label: 'Songs', icon: 'note' },
-  { to: '/library/imported', label: 'Imported', icon: 'upload' },
 ];
 
 export function Sidebar() {

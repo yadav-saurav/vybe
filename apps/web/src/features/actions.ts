@@ -76,7 +76,6 @@ export function menuFor(item: ContentItem, opts: { extra?: MenuEntry[]; navigate
     play.push({ label: 'Play Next', icon: 'play-next', onSelect: () => queueItem(item, 'next') });
     play.push({ label: 'Play Last', icon: 'play-later', onSelect: () => queueItem(item, 'later') });
   }
-  if (item.type === 'song' || item.type === 'artist') play.push({ label: 'Create Station', icon: 'radio', onSelect: () => startStationFrom(item) });
 
   const library: MenuEntry[] = [];
   if (t && !inLib && !ownPlaylist && !imported) library.push({ label: 'Add to Library', icon: 'plus', onSelect: () => lib.toggle(t, item.data.id) });
@@ -116,21 +115,34 @@ export function menuFor(item: ContentItem, opts: { extra?: MenuEntry[]; navigate
   return groups.flatMap((g, i) => (i ? ['separator' as const, ...g] : g));
 }
 
-/** Worldwide previews: queue them, find more, or open the full song on Apple Music. No library/playlists (not Vybe's to keep). */
+/** Apple songs: queue, save, favourite, add to a playlist, artist/album pages, the full song on Apple Music. */
 function worldMenu(song: Song, opts: { navigate?: (to: string) => void; sleepTimer?: boolean }): MenuEntry[] {
   const item: ContentItem = { type: 'song', data: song };
   const nav = opts.navigate;
+  const lib = useLibrary.getState();
+  const ui = useUI.getState();
+  const signedIn = () => { if (useAuth.getState().user) return true; ui.openSignIn(); return false; };
+  const inLib = lib.has('song', song.id);
+  const loved = lib.isLoved(song.id);
   const out: MenuEntry[] = [
     { label: 'Play Next', icon: 'play-next', onSelect: () => queueItem(item, 'next') },
     { label: 'Play Last', icon: 'play-later', onSelect: () => queueItem(item, 'later') },
     'separator',
+    ...(!inLib ? [{ label: 'Add to Library', icon: 'plus', onSelect: () => { if (signedIn()) lib.toggle('song', song.id); } } as MenuEntry] : []),
+    { label: loved ? 'Undo Favorite' : 'Favorite', icon: loved ? 'heart-fill' : 'heart', onSelect: () => { if (signedIn()) lib.toggleLove('song', song.id); } },
+    { label: 'Add to a Playlist…', icon: 'playlist', onSelect: () => { if (signedIn()) ui.openAddToPlaylist([song]); } },
+    'separator',
   ];
-  if (nav) out.push({ label: `More by ${song.artist.name}`, icon: 'artist', onSelect: () => nav(worldArtistHref(song)) });
+  if (nav) {
+    out.push({ label: 'Go to Album', icon: 'album', onSelect: () => nav(`/world/album/${song.album.id}`) });
+    out.push({ label: 'Go to Artist', icon: 'artist', onSelect: () => nav(worldArtistHref(song)) });
+  }
   out.push({ label: 'Listen on Apple Music', icon: 'arrow-up-right', onSelect: () => { window.open(appleMusicUrl(song), '_blank', 'noopener'); } });
   if (opts.sleepTimer) {
     out.push({ label: useJam.getState().jam ? 'Jam…' : 'Start a Jam…', icon: 'jam', onSelect: () => useJam.getState().setSheetOpen(true) });
-    out.push({ label: 'Sleep Timer…', icon: 'clock', onSelect: () => useUI.getState().setSleepOpen(true) });
+    out.push({ label: 'Sleep Timer…', icon: 'clock', onSelect: () => ui.setSleepOpen(true) });
   }
+  if (inLib) out.push('separator', { label: 'Remove from Library', icon: 'trash', destructive: true, onSelect: () => lib.toggle('song', song.id) });
   return out;
 }
 

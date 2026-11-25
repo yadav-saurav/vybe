@@ -104,3 +104,6 @@ CREATE TABLE IF NOT EXISTS user_follows (
     PRIMARY KEY (follower_id, followee_id)
 );
 CREATE INDEX IF NOT EXISTS idx_user_follows_followee ON user_follows(followee_id);
+
+-- Snapshots of Apple (worldwide) songs that listeners saved or played.
+CREATE TABLE IF NOT EXISTS world_songs (id TEXT PRIMARY KEY, json TEXT NOT NULL, saved_at TEXT NOT NULL);

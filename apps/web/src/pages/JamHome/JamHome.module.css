@@ -1,0 +1,43 @@
+.page { position: relative; }
+.page > *:not(:first-child) { position: relative; z-index: 1; }
+.eyebrow { display: inline-flex; align-items: center; gap: 6px; color: var(--key); font-size: var(--fs-footnote); font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; }
+.title { font-size: 44px; line-height: 48px; font-weight: 900; letter-spacing: -0.03em; margin-top: 4px; }
+.sub { color: var(--text-2); font-size: var(--fs-callout); }
+.cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; align-items: start; }
+/* Frosted glass panels over the ambient glow. */
+.glass { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; padding: 22px; border-radius: 22px;
+  background: color-mix(in srgb, var(--bg-elevated) 58%, transparent); backdrop-filter: blur(28px) saturate(1.6); -webkit-backdrop-filter: blur(28px) saturate(1.6);
+  border: 1px solid color-mix(in srgb, var(--text-1) 10%, transparent); box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25); }
+.badge { width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; background: var(--key); color: var(--text-on-key); }
+.h2 { font-size: 22px; line-height: 27px; font-weight: 800; letter-spacing: -0.02em; max-width: 100%; }
+.h3 { font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-2); margin-top: 8px; }
+.primary, .secondary { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 0 22px; border-radius: var(--r-pill); font-weight: 800; }
+.primary { background: var(--key); color: var(--text-on-key); box-shadow: 0 8px 22px color-mix(in srgb, var(--key) 40%, transparent); }
+.primary:disabled { opacity: 0.5; box-shadow: none; }
+.secondary { background: color-mix(in srgb, var(--text-1) 10%, transparent); }
+.link { color: var(--key); font-weight: 700; font-size: var(--fs-callout); }
+.join { display: flex; gap: 10px; width: 100%; }
+.code { flex: 1; min-width: 0; height: 48px; padding: 0 14px; border-radius: 14px; border: 0; background: color-mix(in srgb, var(--text-1) 8%, transparent); color: var(--text-1);
+  font-size: 22px; font-weight: 800; letter-spacing: 0.25em; text-transform: uppercase; }
+.code:focus { outline: 2px solid var(--key); }
+.nowCard { align-items: stretch; }
+.nowArt { width: 100%; aspect-ratio: 1; border-radius: 14px; overflow: hidden; box-shadow: 0 18px 50px rgba(0,0,0,0.35); }
+.nowArt > * { width: 100%; height: 100%; }
+.row { display: flex; gap: 10px; flex-wrap: wrap; }
+.live { align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--key); }
+.live::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: currentColor; animation: pulse 1.6s ease-in-out infinite; }
+.off { color: var(--text-2); }
+@keyframes pulse { 50% { opacity: 0.35; } }
+@media (prefers-reduced-motion: reduce) { .live::before { animation: none; } }
+.codeBig { font-size: 40px; line-height: 44px; font-weight: 900; letter-spacing: 0.18em; user-select: all; }
+.people, .queue { width: 100%; display: flex; flex-direction: column; gap: 6px; }
+.people li, .queue li { display: flex; align-items: center; gap: 10px; min-height: 40px; }
+.avatar { position: relative; flex: none; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-weight: 800; }
+.dot { position: absolute; right: -1px; bottom: -1px; width: 11px; height: 11px; border-radius: 50%; background: #8e8e93; border: 2px solid var(--bg-elevated); }
+.dotOn { background: #30d158; }
+.host { margin-left: auto; padding: 2px 8px; border-radius: var(--r-pill); background: color-mix(in srgb, var(--text-1) 10%, transparent); font-size: 12px; font-weight: 800; }
+.qArt { flex: none; width: 40px; height: 40px; border-radius: 6px; overflow: hidden; }
+.qArt > * { width: 100%; height: 100%; }
+.qText { min-width: 0; display: flex; flex-direction: column; font-weight: 600; }
+.muted { color: var(--text-2); font-weight: 400; font-size: var(--fs-footnote); }
+@media (max-width: 900px) { .cols { grid-template-columns: 1fr; } .title { font-size: 34px; line-height: 38px; } }

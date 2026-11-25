@@ -54,7 +54,7 @@ public class HistoryService {
                 }
                 song = imported.get(row.songId());
             } else {
-                song = catalog.song(row.songId());
+                song = songs.resolve(userId, row.songId()); // catalog or Apple snapshot
             }
             if (song != null) {
                 out.add(new HistoryEntry(row.songId(), row.playedAt(), ContentType.fromValue(row.contextType()),

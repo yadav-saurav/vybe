@@ -55,3 +55,12 @@
 @media (prefers-reduced-motion: reduce) {
   .line { filter: none; transform: none; }
 }
+
+.links { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; height: 100%; min-height: 260px; padding: 28px 20px; text-align: center; }
+.linksFull { color: #fff; }
+.linksIcon { width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; background: color-mix(in srgb, currentColor 14%, transparent); }
+.linksTitle { font-size: 20px; line-height: 25px; font-weight: 800; letter-spacing: -0.01em; max-width: 34ch; }
+.linksText { font-size: 14px; opacity: 0.75; max-width: 36ch; }
+.linksPrimary, .linksSecondary { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 20px; border-radius: 999px; font-weight: 800; }
+.linksPrimary { background: var(--key); color: var(--text-on-key); margin-top: 6px; }
+.linksSecondary { background: color-mix(in srgb, currentColor 12%, transparent); }

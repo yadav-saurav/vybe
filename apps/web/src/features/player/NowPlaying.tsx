@@ -15,7 +15,7 @@ import { LyricsView } from './LyricsView';
 import { QueuePanel } from './QueuePanel';
 import { albumHref, artistHref } from '../../lib/imports';
 import { JamChip } from '../jam/JamSheet';
-import { appleMusicUrl, isWorld } from '../../lib/world';
+import { appleMusicUrl, isWorld, lyricsAvailable } from '../../lib/world';
 import s from './NowPlaying.module.css';
 
 const P = () => usePlayer.getState();
@@ -57,7 +57,7 @@ function Sheet({ shown }: { shown: boolean }) {
   const closeBtn = useRef<HTMLButtonElement>(null);
 
   // Lyrics only when the song has them.
-  const effectivePane = pane === 'lyrics' && !song.hasLyrics ? null : pane;
+  const effectivePane = pane === 'lyrics' && !lyricsAvailable(song) ? null : pane;
   // Keep pane content mounted while it fades out.
   const [paneShown, setPaneShown] = useState(effectivePane);
   useEffect(() => {
@@ -115,7 +115,7 @@ function Sheet({ shown }: { shown: boolean }) {
             <Scrubber variant="np" />
             <Transport />
             <VolumeRow className={s.volume} />
-            <Toggles hasLyrics={song.hasLyrics} pane={effectivePane} />
+            <Toggles hasLyrics={lyricsAvailable(song)} pane={effectivePane} />
             <div className={s.chips}><JamChip className={s.jamChip} /><SleepChip /></div>
           </div>
         </div>
@@ -127,7 +127,7 @@ function Sheet({ shown }: { shown: boolean }) {
             <Scrubber variant="np" />
             <Transport />
             <VolumeRow className={s.volume} />
-            <Toggles hasLyrics={song.hasLyrics} pane={effectivePane} />
+            <Toggles hasLyrics={lyricsAvailable(song)} pane={effectivePane} />
             <div className={s.chips}><JamChip className={s.jamChip} /><SleepChip /></div>
           </div>
           <div className={s.pane} inert={!effectivePane} aria-hidden={!effectivePane}>{paneNode}</div>
@@ -152,14 +152,15 @@ function Meta({ song, compact }: { song: Song; compact?: boolean }) {
           {!compact && <span className={s.album}> — <Link to={albumHref(song)} onClick={close}>{song.album.title}</Link></span>}
         </div>
       </div>
-      {isWorld(song) ? (
+      {isWorld(song) && (
         <a className={s.previewPill} href={appleMusicUrl(song)} target="_blank" rel="noopener noreferrer" title="Listen to the full song on Apple Music">
           Preview<Icon name="arrow-up-right" size={12} />
         </a>
-      ) : <button className={clsx(s.round, loved && s.loved)} aria-label={loved ? 'Undo Favorite' : 'Favorite'} aria-pressed={loved} title={loved ? 'Undo Favorite' : 'Favorite'}
+      )}
+      <button className={clsx(s.round, loved && s.loved)} aria-label={loved ? 'Undo Favorite' : 'Favorite'} aria-pressed={loved} title={loved ? 'Undo Favorite' : 'Favorite'}
         onClick={() => useLibrary.getState().toggleLove('song', song.id)}>
         <Icon name={loved ? 'heart-fill' : 'heart'} size={18} />
-      </button>}
+      </button>
       <button className={s.round} aria-label="More" title="More" onClick={(e) => openMenuAt(e, menuFor({ type: 'song', data: song }, { navigate: go, sleepTimer: true }))}>
         <Icon name="more" size={18} />
       </button>

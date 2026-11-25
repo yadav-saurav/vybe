@@ -1,8 +1,7 @@
 import { useEffect, useId, useMemo, useRef, useState, type RefObject } from 'react';
 import { useNavigate } from 'react-router-dom';
 import clsx from 'clsx';
-import type { ContentItem, SearchSuggestion } from '@vybe/shared';
-import { api } from '../../lib/api';
+import type { ContentItem } from '@vybe/shared';
 import { Artwork } from '../../components/Artwork';
 import { Icon } from '../../components/Icon';
 import { titleOf } from '../../components/Lockup';
@@ -18,11 +17,6 @@ type Opt =
 
 const RECENT_LIMIT = 6;
 
-const toOpt = (sg: SearchSuggestion): Opt[] => {
-  if (sg.kind === 'term' && sg.term) return [{ key: `t:${sg.term}`, kind: 'term', term: sg.term }];
-  if (sg.kind === 'content' && sg.item) return [{ key: `c:${sg.item.type}:${sg.item.data.id}`, kind: 'content', item: sg.item }];
-  return [];
-};
 
 /**
  * Floating suggestions panel under a search input. It attaches to the input element it is given
@@ -42,19 +36,9 @@ export function SearchSuggestions({ inputRef, term, onPickTerm }: {
   const q = term.trim();
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(-1);
-  const [fetched, setFetched] = useState<Opt[]>([]);
 
-  // Remote suggestions for the current term (150ms debounce; a newer term aborts the older request).
-  useEffect(() => {
-    if (!q) return;
-    const ctrl = new AbortController();
-    const timer = window.setTimeout(() => {
-      api.suggestions(q, ctrl.signal)
-        .then(({ suggestions }) => { if (!ctrl.signal.aborted) setFetched(suggestions.flatMap(toOpt)); })
-        .catch(() => { /* aborted or offline: keep the last list */ });
-    }, 150);
-    return () => { clearTimeout(timer); ctrl.abort(); };
-  }, [q]);
+  // Typing searches Apple directly (results update as you type), so only recent searches are suggested here.
+  const fetched: Opt[] = [];
 
   const recents = useMemo<Opt[]>(
     () => (open && !q ? loadRecent().slice(0, RECENT_LIMIT).map((entry) => ({ key: recentKey(entry), kind: 'recent', entry })) : []),

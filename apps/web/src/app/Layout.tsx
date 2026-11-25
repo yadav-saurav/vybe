@@ -9,9 +9,9 @@ import { useUI } from '../stores/ui';
 import { useAuth } from '../stores/auth';
 import { PlayerChrome, NowPlaying, PlayerEngine } from '../features/player';
 import { Overlays } from '../features/overlays';
-import { DropImport } from './DropImport';
 import { tintVars, avatarBg } from '../lib/color';
 import clsx from 'clsx';
+import { NowPlayingLight } from '../features/player/NowPlayingLight';
 import s from './Layout.module.css';
 
 /** Remembers scroll per history entry (back/forward restores position, new navigation scrolls to top). */
@@ -36,6 +36,7 @@ export function Layout() {
   const tint = useUI((u) => u.pageTint);
   return (
     <div className={clsx(s.app, tint && 'tinted')} style={tintVars(tint ?? undefined)}>
+      <NowPlayingLight />
       <Sidebar />
       <div className={s.column}>
         <header className={s.mobileHeader}>
@@ -55,7 +56,6 @@ export function Layout() {
       <NowPlaying />
       <PlayerEngine />
       <Overlays />
-      <DropImport />
       <ContextMenuHost />
       <Toasts />
     </div>
@@ -64,9 +64,8 @@ export function Layout() {
 
 const TABS = [
   { to: '/home', label: 'Home', icon: 'home' },
-  { to: '/new', label: 'New', icon: 'new' },
-  { to: '/radio', label: 'Radio', icon: 'radio' },
   { to: '/search', label: 'Search', icon: 'search' },
+  { to: '/jam', label: 'Jam', icon: 'jam' },
   { to: '/library', label: 'Library', icon: 'album', match: '/library' },
 ];
 

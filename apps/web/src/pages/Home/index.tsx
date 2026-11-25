@@ -1,9 +1,11 @@
 import { Link } from 'react-router-dom';
 import { api } from '../../lib/api';
 import { useAsync } from '../../lib/useAsync';
+import { useUI } from '../../stores/ui';
+import { LyricsDemo } from '../../features/world/LyricsDemo';
 import { useAuth } from '../../stores/auth';
-import { PageBody } from '../../features/shelves/PageBody';
 import { useDocumentTitle } from '../../features/shelves/useDocumentTitle';
+import { WorldSection } from '../../features/world/WorldSection';
 import s from './Home.module.css';
 
 const greetingFor = (name: string) => {
@@ -15,19 +17,18 @@ const greetingFor = (name: string) => {
 export default function HomePage() {
   const user = useAuth((a) => a.user);
   const ready = useAuth((a) => a.ready);
-  // Wait for the session check; the key includes the user so signing in or out refetches the personalised page.
-  const key = ready ? `page:home:${user?.id ?? 'anon'}` : null;
-  const { data, error, loading, reload } = useAsync(key, (signal) => api.page('home', signal));
   useDocumentTitle('Home');
 
   return (
     <div className="page">
       <header className="page-header">
-        <h1 className="t-large-title">Home</h1>
-        {user && <p className={s.greeting}>{greetingFor(user.displayName)}</p>}
+        <h1 className="t-large-title">{user ? greetingFor(user.displayName) : 'Home'}</h1>
+        {!user && ready && <p className={s.greeting}>Trending songs, popular artists and top charts from India and around the world. <button className={s.signIn} onClick={() => useUI.getState().openSignIn()}>Sign in</button> for the full experience.</p>}
       </header>
-      <PageBody pageKey="home" data={data} error={error} loading={loading || !ready} onRetry={reload} emptyMessage="Nothing for you yet. Play a few songs to get started." />
-      {user && data && <ReplayCard userId={user.id} />}
+      {/* Remount on sign-in/out: signed-in listeners get the full home. */}
+      {ready && <WorldSection key={user?.id ?? 'anon'} source="home" more={false} />}
+      <LyricsDemo />
+      {user && <ReplayCard userId={user.id} />}
     </div>
   );
 }

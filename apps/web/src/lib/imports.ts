@@ -1,5 +1,5 @@
 import type { Song } from '@vybe/shared';
-import { isWorld, worldArtistHref, worldCountryOf, worldSearchHref } from './world';
+import { isWorld, worldArtistHref } from './world';
 
 /** Imported tracks live only in the owner's library: they have no album, artist or shareable page. */
 export const isImported = (song: Pick<Song, 'id' | 'source'>) => song.source === 'import' || song.id.startsWith('im_');
@@ -7,7 +7,7 @@ export const isImported = (song: Pick<Song, 'id' | 'source'>) => song.source ===
 export const IMPORTED_PATH = '/library/imported';
 
 /** Where a song's album link goes (imports open the Imported list, focused on the track). */
-export const albumHref = (song: Song) => isWorld(song) ? worldSearchHref(`${song.album.title} ${song.artist.name}`, worldCountryOf(song)) : (isImported(song) ? `${IMPORTED_PATH}?i=${encodeURIComponent(song.id)}` : `/album/${song.album.id}?i=${song.id}`);
+export const albumHref = (song: Song) => isWorld(song) ? `/world/album/${song.album.id}` : (isImported(song) ? `${IMPORTED_PATH}?i=${encodeURIComponent(song.id)}` : `/album/${song.album.id}?i=${song.id}`);
 
 /** Where a song's artist link goes. */
 export const artistHref = (song: Song) => isWorld(song) ? worldArtistHref(song) : (isImported(song) ? `${IMPORTED_PATH}?q=${encodeURIComponent(song.artist.name)}` : `/artist/${song.artist.id}`);

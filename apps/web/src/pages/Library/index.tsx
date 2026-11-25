@@ -1,10 +1,9 @@
-import { useMemo, useState, type MouseEvent as ReactMouseEvent, type ReactNode } from 'react';
-import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom';
+import { useMemo, useState, type ReactNode } from 'react';
+import { Link, Navigate, useParams } from 'react-router-dom';
 import clsx from 'clsx';
-import { formatLongDuration, type Album, type ContentItem, type Playlist, type Song } from '@vybe/shared';
+import { formatLongDuration, type ContentItem, type Playlist, type Song } from '@vybe/shared';
 import { api } from '../../lib/api';
 import { useLibraryAsync } from '../../features/library/useLibraryAsync';
-import { openMenuAt } from '../../features/actions';
 import { Artwork } from '../../components/Artwork';
 import { Icon } from '../../components/Icon';
 import { Lockup } from '../../components/Lockup';
@@ -13,7 +12,8 @@ import { PillButton } from '../../components/Buttons';
 import { useAuth } from '../../stores/auth';
 import { useUI } from '../../stores/ui';
 import { usePlayer, type PlayContext } from '../../stores/player';
-import { ImportedView } from './Imported';
+import { isWorld } from '../../lib/world';
+import { albumHref, artistHref } from '../../lib/imports';
 import s from './Library.module.css';
 
 const SECTIONS: Record<string, string> = {
@@ -21,8 +21,6 @@ const SECTIONS: Record<string, string> = {
   artists: 'Artists',
   albums: 'Albums',
   songs: 'Songs',
-  imported: 'Imported',
-  'made-for-you': 'Made for You',
   playlists: 'Playlists',
 };
 
@@ -36,7 +34,7 @@ export default function LibraryPage() {
     return (
       <div className="page">
         <header className="page-header"><h1 className="t-large-title">{SECTIONS[section]}</h1></header>
-        <SignedOut section={section} />
+        <SignedOut />
       </div>
     );
   }
@@ -53,22 +51,20 @@ function SectionView({ section }: { section: string }) {
     case 'artists': return <ArtistsView />;
     case 'albums': return <AlbumsView />;
     case 'songs': return <SongsView />;
-    case 'imported': return <ImportedView />;
-    case 'made-for-you': return <MadeForYouView />;
     case 'playlists': return <PlaylistsView />;
     default: return <RecentlyAddedView />;
   }
 }
 
-function SignedOut({ section }: { section: string }) {
-  const importing = section === 'imported';
+function SignedOut() {
+  const importing = false;
   return (
     <div className={s.gate}>
       <span className={s.gateIcon}><Icon name={importing ? 'upload' : 'vybe-mark'} size={30} /></span>
       <h2 className={s.gateTitle}>{importing ? 'Import your own music' : 'Your library, everywhere'}</h2>
       <p className={s.gateText}>{importing
         ? 'Sign in to import songs you own from your computer. Files stay private to your account and play alongside the rest of Vybe.'
-        : 'Sign in to see the songs, albums, artists and playlists you add, and the mixes made for you.'}</p>
+        : 'Sign in to save songs and see your albums, artists and playlists.'}</p>
       <PillButton variant="key" onClick={() => useUI.getState().openSignIn()}>Sign In</PillButton>
     </div>
   );
@@ -107,137 +103,70 @@ function RecentlyAddedView() {
   return <div className={s.grid}>{items.map((item) => <Lockup key={`${item.type}-${item.data.id}`} item={item} />)}</div>;
 }
 
-/* ---------------- Artists (two panes; list navigates on mobile) ---------------- */
+/* ---------------- Albums and Artists, worked out from the songs you saved ---------------- */
 
-interface AlbumGroup { album: Song['album']; releaseDate: string; songs: Song[] }
+interface AlbumGroup { id: string; title: string; artist: string; artwork: Song['artwork']; href: string; songs: Song[]; at: number }
+interface ArtistGroup { id: string; name: string; artwork: Song['artwork']; href: string; count: number; at: number }
 
-function groupByAlbum(songs: Song[]): AlbumGroup[] {
-  const map = new Map<string, AlbumGroup>();
-  for (const song of songs) {
-    let g = map.get(song.album.id);
-    if (!g) { g = { album: song.album, releaseDate: song.releaseDate, songs: [] }; map.set(song.album.id, g); }
-    g.songs.push(song);
-  }
-  return [...map.values()]
-    .map((g) => ({ ...g, songs: [...g.songs].sort((a, b) => a.discNumber - b.discNumber || a.trackNumber - b.trackNumber) }))
-    .sort((a, b) => b.releaseDate.localeCompare(a.releaseDate));
+function useSavedSongs() {
+  return useLibraryAsync('library:songs', (sig) => api.librarySongs(sig));
 }
 
-function ArtistsView() {
-  const [params, setParams] = useSearchParams();
-  const artistsQ = useLibraryAsync('library:artists', (sig) => api.libraryArtists(sig));
-  const songsQ = useLibraryAsync('library:songs', (sig) => api.librarySongs(sig));
-  const artists = artistsQ.data?.artists ?? [];
-  const pickedId = params.get('artist');
-  const selected = artists.find((a) => a.id === pickedId) ?? artists[0];
-  const selectedId = selected?.id;
-
-  const groups = useMemo(() => {
-    if (!selected) return [];
-    const mine = (songsQ.data?.songs ?? []).filter((x) => x.artist.id === selected.id || x.featuring.some((f) => f.id === selected.id));
-    return groupByAlbum(mine);
-  }, [songsQ.data, selected]);
-
-  if (artistsQ.error) return <LoadError />;
-  if (artistsQ.loading && !artistsQ.data) return <GridSkeleton />;
-  if (!artists.length) return <Empty title="No artists yet" text="Artists whose songs or albums you add will appear here." />;
-
-  const songCount = groups.reduce((n, g) => n + g.songs.length, 0);
+function AlbumsView() {
+  const { data, error, loading } = useSavedSongs();
+  const albums = useMemo(() => {
+    const map = new Map<string, AlbumGroup>();
+    (data?.songs ?? []).forEach((song, i) => {
+      let g = map.get(song.album.id);
+      if (!g) {
+        g = { id: song.album.id, title: song.album.title || song.title, artist: song.artist.name, artwork: song.artwork,
+          href: isWorld(song) ? `/world/album/${song.album.id}` : albumHref(song), songs: [], at: i };
+        map.set(song.album.id, g);
+      }
+      g.songs.push(song);
+    });
+    return [...map.values()].sort((x, y) => x.at - y.at);
+  }, [data]);
+  if (error) return <LoadError />;
+  if (loading && !data) return <GridSkeleton />;
+  if (!albums.length) return <Empty title="No albums yet" text="Albums of the songs you add to your library appear here." />;
   return (
-    <div className={s.split} data-detail={pickedId ? 'true' : 'false'}>
-      <div className={s.listPane}>
-        <ul className={s.artistList} aria-label="Artists">
-          {artists.map((a) => (
-            <li key={a.id}>
-              <button type="button" className={clsx(s.artistRow, a.id === selectedId && s.artistOn)}
-                aria-current={a.id === selectedId ? 'true' : undefined}
-                onClick={() => setParams({ artist: a.id })}>
-                <span className={s.avatar}><Artwork artwork={a.artwork} rounded="circle" size={120} /></span>
-                <span className={clsx(s.artistName, 'clamp-1')}>{a.name}</span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      </div>
-      {selected && (
-        <div className={s.detailPane}>
-          <button type="button" className={s.back} onClick={() => setParams({})}>
-            <Icon name="chevron-left" size={14} />Artists
-          </button>
-          <header className={s.artistHead}>
-            <div className={s.bigAvatar}><Artwork artwork={selected.artwork} rounded="circle" size={300} /></div>
-            <div>
-              <h2 className="t-title-1">{selected.name}</h2>
-              <p className={s.artistMeta}>{songCount} {songCount === 1 ? 'song' : 'songs'} in your library</p>
-            </div>
-          </header>
-          {groups.length === 0 && <p className={s.none}>No songs by {selected.name} in your library yet.</p>}
-          {groups.map((g) => (
-            <section key={g.album.id} className={s.albumGroup} aria-label={g.album.title}>
-              <header className={s.groupHead}>
-                <Link to={`/album/${g.album.id}`} className={s.groupTitle}>{g.album.title}</Link>
-                <span className={s.groupMeta}>{g.releaseDate.slice(0, 4)} · {g.songs.length} {g.songs.length === 1 ? 'song' : 'songs'}</span>
-              </header>
-              <TrackList songs={g.songs} variant="album" showHeader={false}
-                context={{ type: 'library', id: `artist:${selected.id}:${g.album.id}`, title: g.album.title }} />
-            </section>
-          ))}
-        </div>
-      )}
+    <div className={s.grid}>
+      {albums.map((a) => (
+        <Link key={a.id} to={a.href} className={s.tile}>
+          <span className={s.tileArt}><Artwork artwork={a.artwork} size={300} rounded="sm" /></span>
+          <span className={clsx(s.tileTitle, 'clamp-1')}>{a.title}</span>
+          <span className={clsx(s.tileSub, 'clamp-1')}>{a.artist} · {a.songs.length} {a.songs.length === 1 ? 'song' : 'songs'}</span>
+        </Link>
+      ))}
     </div>
   );
 }
 
-/* ---------------- Albums (sortable) ---------------- */
-
-type AlbumSort = 'added' | 'title' | 'artist' | 'release';
-const ALBUM_SORTS: { id: AlbumSort; label: string }[] = [
-  { id: 'added', label: 'Recently Added' },
-  { id: 'title', label: 'Title' },
-  { id: 'artist', label: 'Artist' },
-  { id: 'release', label: 'Release Date' },
-];
-
-function AlbumsView() {
-  const { data, error, loading } = useLibraryAsync('library:albums', (sig) => api.libraryAlbums(sig));
-  const [sort, setSort] = useState<AlbumSort>('added');
-  const albums = data?.albums;
-
-  const sorted = useMemo<Album[]>(() => {
-    const list = [...(albums ?? [])];
-    switch (sort) {
-      case 'title': return list.sort((a, b) => a.title.localeCompare(b.title, undefined, { numeric: true, sensitivity: 'base' }));
-      case 'artist': return list.sort((a, b) => a.artist.name.localeCompare(b.artist.name, undefined, { sensitivity: 'base' }) || a.title.localeCompare(b.title));
-      case 'release': return list.sort((a, b) => b.releaseDate.localeCompare(a.releaseDate));
-      default: return list;
-    }
-  }, [albums, sort]);
-
+function ArtistsView() {
+  const { data, error, loading } = useSavedSongs();
+  const artists = useMemo(() => {
+    const map = new Map<string, ArtistGroup>();
+    (data?.songs ?? []).forEach((song, i) => {
+      const g = map.get(song.artist.id);
+      if (g) { g.count++; return; }
+      map.set(song.artist.id, { id: song.artist.id, name: song.artist.name, artwork: song.artwork, href: artistHref(song), count: 1, at: i });
+    });
+    return [...map.values()].sort((x, y) => x.at - y.at);
+  }, [data]);
   if (error) return <LoadError />;
-  if (loading && !albums) return <GridSkeleton />;
-  if (!sorted.length) return <Empty title="No albums yet" text="Albums you add will appear here." />;
-
-  const sortLabel = ALBUM_SORTS.find((x) => x.id === sort)?.label ?? '';
-  const openSort = (e: ReactMouseEvent) => openMenuAt(e, ALBUM_SORTS.map((x) => ({
-    label: x.label,
-    icon: x.id === sort ? 'check' : undefined,
-    onSelect: () => setSort(x.id),
-  })));
-
+  if (loading && !data) return <GridSkeleton />;
+  if (!artists.length) return <Empty title="No artists yet" text="Artists of the songs you add to your library appear here." />;
   return (
-    <>
-      <div className={s.toolbar}>
-        <div className={s.toolbarLeft}>
-          <button type="button" className={s.dropdown} aria-haspopup="menu" onClick={openSort}>
-            Sort: {sortLabel}<Icon name="chevron-down" size={12} />
-          </button>
-          <span className={s.count}>{sorted.length} {sorted.length === 1 ? 'album' : 'albums'}</span>
-        </div>
-      </div>
-      <div className={s.grid}>
-        {sorted.map((album) => <Lockup key={album.id} item={{ type: 'album', data: album }} />)}
-      </div>
-    </>
+    <div className={s.grid}>
+      {artists.map((a) => (
+        <Link key={a.id} to={a.href} className={clsx(s.tile, s.tileArtist)}>
+          <span className={s.tileArt}><Artwork artwork={a.artwork} size={300} rounded="circle" /></span>
+          <span className={clsx(s.tileTitle, 'clamp-1')}>{a.name}</span>
+          <span className={s.tileSub}>{a.count} {a.count === 1 ? 'song' : 'songs'}</span>
+        </Link>
+      ))}
+    </div>
   );
 }
 
@@ -309,30 +238,6 @@ function SongsView() {
         : <p className={s.none}>No songs match “{filter}”.</p>}
     </>
   );
-}
-
-/* ---------------- Made for You (personal mixes from the Home page) ---------------- */
-
-function MadeForYouView() {
-  const { data, error, loading } = useLibraryAsync('library:made-for-you', (sig) => api.page('home', sig));
-  const mixes = useMemo(() => {
-    const seen = new Set<string>();
-    const out: Extract<ContentItem, { type: 'playlist' }>[] = [];
-    for (const shelf of data?.shelves ?? []) {
-      for (const item of shelf.items) {
-        if (item.type === 'playlist' && item.data.kind === 'personal-mix' && !seen.has(item.data.id)) {
-          seen.add(item.data.id);
-          out.push(item);
-        }
-      }
-    }
-    return out;
-  }, [data]);
-
-  if (error) return <LoadError />;
-  if (loading && !data) return <GridSkeleton />;
-  if (!mixes.length) return <Empty title="No mixes yet" text="Your personal mixes appear here once Vybe has learned what you like." />;
-  return <div className={s.grid}>{mixes.map((item) => <Lockup key={item.data.id} item={item} />)}</div>;
 }
 
 /* ---------------- Playlists ---------------- */

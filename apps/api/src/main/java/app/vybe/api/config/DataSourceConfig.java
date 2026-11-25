@@ -53,6 +53,8 @@ public class DataSourceConfig {
             "ALTER TABLE imported_tracks ADD COLUMN gain_db REAL",
             "ALTER TABLE user_playlists ADD COLUMN is_collaborative INTEGER NOT NULL DEFAULT 0",
             "ALTER TABLE users ADD COLUMN share_activity INTEGER NOT NULL DEFAULT 0",
+            // Snapshots of Apple songs people saved or played, so libraries survive restarts and Apple outages.
+            "CREATE TABLE IF NOT EXISTS world_songs (id TEXT PRIMARY KEY, json TEXT NOT NULL, saved_at TEXT NOT NULL)",
     };
 
     private static void migrate(DataSource ds) {

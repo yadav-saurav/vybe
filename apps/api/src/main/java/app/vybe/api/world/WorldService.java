@@ -69,7 +69,31 @@ public class WorldService {
     }
 
     /** One row of the Worldwide home. kind: hero | cards | artists. */
-    public record WorldShelf(String id, String title, String subtitle, String kind, List<Song> songs, List<WorldArtist> artists) {
+    /** kind: cards | artists | albums | charts. {@code link} is where "Show all" goes. */
+    public record WorldShelf(String id, String title, String subtitle, String kind, List<Song> songs, List<WorldArtist> artists,
+                             List<WorldStation> stations, List<WorldAlbum> albums, String link) {
+        public WorldShelf(String id, String title, String subtitle, String kind, List<Song> songs, List<WorldArtist> artists) {
+            this(id, title, subtitle, kind, songs, artists, List.of(), List.of(), "/shelf/" + id);
+        }
+
+        WorldShelf withLink(String l) {
+            return new WorldShelf(id, title, subtitle, kind, songs, artists, stations, albums, l);
+        }
+
+        WorldShelf titled(String t, String sub) {
+            return new WorldShelf(id, t, sub, kind, songs, artists, stations, albums, link);
+        }
+    }
+
+    /** An album or single (Apple collection). Id {@code wl_<cc>_<collectionId>}. */
+    public record WorldAlbum(String id, String title, String artistName, String artistId, Artwork artwork, String releaseDate, String country) {
+    }
+
+    public record AlbumPage(WorldAlbum album, List<Song> songs) {
+    }
+
+    /** A worldwide radio station: an endless shuffled mix of one scene. */
+    public record WorldStation(String id, String name, String description, Artwork artwork, List<Song> songs) {
     }
 
     public record WorldHome(List<WorldShelf> shelves, boolean complete) {
@@ -206,30 +230,59 @@ public class WorldService {
 
     private List<ShelfDef> shelfDefs() {
         return List.of(
-                new ShelfDef("trending-in", () -> {
-                    SongList c = chart("in");
-                    return new WorldShelf("trending-in", "Trending in India", "The most-played songs in India right now", "hero", c.songs().stream().limit(5).toList(), List.of());
-                }),
+                new ShelfDef("trending", () -> cards("trending", "Trending songs", "The most-played songs in India right now", chart("in").songs())
+                        .withLink("/chart/in")),
                 new ShelfDef("stars-in", () -> {
                     indianStars = stars(INDIAN_STARS, "in");
                     return new WorldShelf("stars-in", "Indian Superstars", "Bollywood and South legends", "artists", List.of(), indianStars.artists());
                 }),
-                new ShelfDef("top-in", () -> cards("top-in", "Top 50: India", "Updated daily", chart("in").songs())),
+                new ShelfDef("stars-global", () -> {
+                    globalStars = stars(GLOBAL_STARS, "us");
+                    return new WorldShelf("stars-global", "Global Superstars", "The biggest names on the planet", "artists", List.of(), globalStars.artists());
+                }),
+                new ShelfDef("albums", () -> new WorldShelf("albums", "Popular albums and singles", "Most played in India", "albums",
+                        List.of(), List.of(), List.of(), albumChart("in"), "/shelf/albums")),
                 new ShelfDef("bollywood", () -> cards("bollywood", "Latest Bollywood", "Fresh from the films", freshFirst(search("bollywood", "in").songs()))),
                 new ShelfDef("tamil", () -> cards("tamil", "Tamil Hits", "New from Kollywood", freshFirst(search("tamil", "in").songs()))),
                 new ShelfDef("telugu", () -> cards("telugu", "Telugu Hits", "New from Tollywood", freshFirst(search("telugu", "in").songs()))),
                 new ShelfDef("malayalam", () -> cards("malayalam", "Malayalam Melodies", "New from Mollywood", freshFirst(search("malayalam", "in").songs()))),
                 new ShelfDef("kannada", () -> cards("kannada", "Kannada Hits", "New from Sandalwood", freshFirst(search("kannada", "in").songs()))),
                 new ShelfDef("punjabi", () -> cards("punjabi", "Punjabi Power", "Bhangra, pop and hip-hop", freshFirst(search("punjabi", "in").songs()))),
+                new ShelfDef("top-us", () -> cards("top-us", "Global Top Songs", "Most played in the United States", chart("us").songs()).withLink("/chart/us")),
+                new ShelfDef("kpop", () -> cards("kpop", "K-Pop Now", "Top songs in South Korea", chart("kr").songs()).withLink("/chart/kr")),
                 new ShelfDef("best-arijit", () -> essentials("best-arijit", indianStars, "484568188")),
                 new ShelfDef("best-rahman", () -> essentials("best-rahman", indianStars, "3249567")),
-                new ShelfDef("stars-global", () -> {
-                    globalStars = stars(GLOBAL_STARS, "us");
-                    return new WorldShelf("stars-global", "Global Superstars", "The biggest names on the planet", "artists", List.of(), globalStars.artists());
-                }),
-                new ShelfDef("top-us", () -> cards("top-us", "Global Top Songs", "Most played in the United States", chart("us").songs())),
-                new ShelfDef("kpop", () -> cards("kpop", "K-Pop Now", "Top songs in South Korea", chart("kr").songs())),
                 new ShelfDef("best-taylor", () -> essentials("best-taylor", globalStars, "159260351")));
+    }
+
+    /** Signed out: a taste. Signed in: the full home. */
+    private static final List<String> HOME_SIGNED_OUT = List.of("trending", "popular-artists", "charts");
+    private static final List<String> HOME_SIGNED_IN = List.of("trending", "popular-artists", "albums", "charts", "bollywood", "tamil",
+            "telugu", "malayalam", "kannada", "punjabi", "top-us", "kpop", "best-arijit", "best-rahman", "best-taylor");
+
+    private WorldShelf built(String id) {
+        Built b = homeShelves.get(id);
+        return b == null ? null : b.shelf();
+    }
+
+    /** Display shelves, including the ones composed from others (artists) or static (charts). */
+    public WorldShelf shelf(String id, boolean signedIn) {
+        return switch (id) {
+            case "popular-artists" -> {
+                List<WorldArtist> all = new ArrayList<>();
+                WorldShelf in = built("stars-in"), gl = built("stars-global");
+                if (in != null) {
+                    all.addAll(in.artists());
+                }
+                if (gl != null) {
+                    all.addAll(gl.artists());
+                }
+                yield all.isEmpty() ? null : new WorldShelf("popular-artists", "Popular artists", "From India and around the world", "artists", List.of(), all);
+            }
+            case "charts" -> new WorldShelf("charts", signedIn ? "Featured Charts" : "Top playlists", "Updated daily from Apple Music", "charts",
+                    List.of(), List.of(), List.of(), List.of(), "/shelf/charts");
+            default -> built(id);
+        };
     }
 
     private static WorldShelf cards(String id, String title, String subtitle, List<Song> songs) {
@@ -264,28 +317,30 @@ public class WorldService {
     }
 
     /**
-     * The Worldwide home: every shelf that's ready. Missing or stale shelves are (re)built in the
+     * Home: every shelf that's ready, in order. Missing or stale shelves are (re)built in the
      * background, one Apple call at a time, so the page fills in within a minute of a cold start.
      */
-    public WorldHome home() {
-        List<WorldShelf> ready = new ArrayList<>();
-        boolean complete = true;
+    public WorldHome home(boolean signedIn) {
         long now = System.currentTimeMillis();
-        for (ShelfDef d : shelfDefs()) {
+        boolean complete = shelfDefs().stream().allMatch(d -> {
             Built b = homeShelves.get(d.id());
-            if (b == null) {
-                complete = false;
-                continue;
-            }
-            if (now - b.at() > HOME_TTL_MS) {
-                complete = false; // still shown while it refreshes
-            }
-            ready.add(b.shelf());
-        }
+            return b != null && now - b.at() <= HOME_TTL_MS;
+        });
         if (!complete) {
             warmInBackground();
         }
+        List<WorldShelf> ready = new ArrayList<>();
+        for (String id : signedIn ? HOME_SIGNED_IN : HOME_SIGNED_OUT) {
+            WorldShelf sh = shelf(id, signedIn);
+            if (sh != null) {
+                ready.add(sh);
+            }
+        }
         return new WorldHome(ready, complete);
+    }
+
+    public WorldHome home() {
+        return home(true);
     }
 
     public void warmInBackground() {
@@ -313,7 +368,7 @@ public class WorldService {
             }
             try {
                 WorldShelf shelf = d.load().get();
-                if (!shelf.songs().isEmpty() || !shelf.artists().isEmpty()) {
+                if (!shelf.songs().isEmpty() || !shelf.artists().isEmpty() || !shelf.albums().isEmpty()) {
                     homeShelves.put(d.id(), new Built(System.currentTimeMillis(), shelf));
                 }
             } catch (RuntimeException e) {
@@ -389,6 +444,115 @@ public class WorldService {
         WorldArtist a = new WorldArtist("wa_" + raw, nameGenre[0], nameGenre.length > 1 ? nameGenre[1] : "",
                 first == null ? null : first.artwork(), cc);
         return new ArtistPage(a, list.songs());
+    }
+
+    // ---------------------------------------------------------------- famous songs on every page
+
+    /** Vybe genre id -> worldwide search (term, storefront). */
+    private static final Map<String, String[]> GENRE_SEARCH = Map.ofEntries(
+            Map.entry("pop", new String[]{"pop hits", "us", "Pop"}), Map.entry("hiphop", new String[]{"hip hop", "us", "Hip-Hop"}),
+            Map.entry("rnb", new String[]{"r&b", "us", "R&B"}), Map.entry("electronic", new String[]{"edm", "us", "Electronic"}),
+            Map.entry("rock", new String[]{"rock classics", "gb", "Rock"}), Map.entry("indie", new String[]{"indie", "us", "Indie"}),
+            Map.entry("jazz", new String[]{"jazz", "us", "Jazz"}), Map.entry("classical", new String[]{"classical", "de", "Classical"}),
+            Map.entry("country", new String[]{"country", "us", "Country"}), Map.entry("latin", new String[]{"latin pop", "mx", "Latin"}),
+            Map.entry("ambient", new String[]{"ambient", "us", "Ambient"}), Map.entry("lofi", new String[]{"lofi", "us", "Lo-Fi"}));
+
+    private List<Song> shelfSongs(String id) {
+        Built b = homeShelves.get(id);
+        return b == null ? List.of() : b.shelf().songs();
+    }
+
+    /** A genre page: famous songs from around the world in that genre (one cached search). */
+    public WorldHome sectionGenre(String genreId) {
+        String[] g = GENRE_SEARCH.get(genreId == null ? "" : genreId.toLowerCase(Locale.ROOT));
+        if (g == null) {
+            return new WorldHome(List.of(), true);
+        }
+        SongList list;
+        try {
+            list = search(g[0], g[1]);
+        } catch (ApiException e) {
+            return new WorldHome(List.of(), false); // Apple busy: the page tries again shortly
+        }
+        List<WorldShelf> out = new ArrayList<>();
+        out.add(cards("genre-" + genreId, "Worldwide " + g[2], "Famous " + g[2] + " songs from around the world", list.songs()));
+        List<Song> latest = freshFirst(list.songs()).stream().filter(x -> x.releaseDate() != null
+                && x.releaseDate().compareTo(java.time.LocalDate.now().minusYears(3).toString()) >= 0).toList();
+        if (latest.size() >= 4) {
+            out.add(cards("genre-new-" + genreId, "New " + g[2], "Recent releases", latest));
+        }
+        return new WorldHome(out, true);
+    }
+
+    /** Apple Music's most-played albums in a country (the feed carries name, artist and cover). */
+    private List<WorldAlbum> albumChart(String cc) {
+        JsonNode feed = read("https://rss.applemarketingtools.com/api/v2/" + cc + "/music/most-played/25/albums.json");
+        List<WorldAlbum> out = new ArrayList<>();
+        for (JsonNode r : feed.path("feed").path("results")) {
+            String id = r.path("id").asText();
+            if (!id.matches("\\d{1,15}")) {
+                continue;
+            }
+            out.add(new WorldAlbum("wl_" + cc + "_" + id, r.path("name").asText(), r.path("artistName").asText(),
+                    "wa_" + r.path("artistId").asText("0"), art(r.path("artworkUrl100").asText(""), Long.parseLong(id)),
+                    r.path("releaseDate").asText(""), cc));
+        }
+        return out;
+    }
+
+    private static Artwork art(String url100, long seed) {
+        return new Artwork(url100.replace("100x100bb", "600x600bb"), 600, 600, PALETTE[(int) (Math.abs(seed) % PALETTE.length)], "#ffffff", "#e6e6eb", "#ffffff");
+    }
+
+    private WorldAlbum album(JsonNode r, String cc) {
+        long id = r.path("collectionId").asLong();
+        String date = r.path("releaseDate").asText("");
+        return new WorldAlbum("wl_" + cc + "_" + id, r.path("collectionName").asText(""), r.path("artistName").asText(""),
+                "wa_" + r.path("artistId").asLong(), art(r.path("artworkUrl100").asText(""), id), date.length() >= 10 ? date.substring(0, 10) : date, cc);
+    }
+
+    /** An album page: its songs with previews. */
+    public AlbumPage albumPage(String albumId) {
+        Matcher m = albumId == null ? null : Pattern.compile("^wl_([a-z]{2})_(\\d{1,15})$").matcher(albumId);
+        if (m == null || !m.matches()) {
+            throw ApiException.notFound("Album not found.");
+        }
+        String cc = m.group(1), raw = m.group(2);
+        SongList list = cached("al:" + cc + ":" + raw, HOME_TTL_MS, () -> {
+            JsonNode results = read("https://itunes.apple.com/lookup?entity=song&limit=200&country=" + cc + "&id=" + raw).path("results");
+            List<Song> songs = songs(results, cc);
+            for (JsonNode r : results) {
+                if ("collection".equals(r.path("wrapperType").asText())) {
+                    WorldAlbum a = album(r, cc);
+                    return new SongList(a.title() + "\u0000" + a.artistName() + "\u0000" + a.artistId() + "\u0000" + a.releaseDate()
+                            + "\u0000" + a.artwork().url(), cc, songs);
+                }
+            }
+            throw ApiException.notFound("Album not found.");
+        });
+        String[] f = list.title().split("\u0000", -1);
+        WorldAlbum a = new WorldAlbum(albumId, f[0], f[1], f[2], new Artwork(f[4], 600, 600,
+                PALETTE[(int) (Math.abs(Long.parseLong(raw)) % PALETTE.length)], "#ffffff", "#e6e6eb", "#ffffff"), f[3], cc);
+        return new AlbumPage(a, list.songs());
+    }
+
+    public record SearchAll(List<Song> songs, List<WorldArtist> artists, List<WorldAlbum> albums) {
+    }
+
+    /** Search: songs, plus the artists and albums those songs come from (one Apple call). */
+    public SearchAll searchAll(String term, String country) {
+        SongList list = search(term, country);
+        Map<String, WorldArtist> artists = new LinkedHashMap<>();
+        Map<String, WorldAlbum> albums = new LinkedHashMap<>();
+        for (Song x : list.songs()) {
+            artists.putIfAbsent(x.artist().id(), new WorldArtist(x.artist().id(), x.artist().name(), "", x.artwork(), list.country()));
+            albums.putIfAbsent(x.album().id(), new WorldAlbum(x.album().id(), x.album().title(), x.artist().name(), x.artist().id(),
+                    x.artwork(), x.releaseDate(), list.country()));
+        }
+        // Lead artist names only ("A & B" and "A, B" are separate people on Apple).
+        List<WorldArtist> solo = artists.values().stream().filter(a -> !a.name().contains(",") && !a.name().contains(" & ")).limit(12).toList();
+        return new SearchAll(list.songs(), solo.isEmpty() ? artists.values().stream().limit(12).toList() : solo,
+                albums.values().stream().limit(20).toList());
     }
 
     public static boolean isWorldId(String id) {

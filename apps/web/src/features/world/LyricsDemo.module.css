@@ -1,0 +1,15 @@
+.demo { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 12px; padding: 18px; margin: 8px 0 28px; border-radius: 18px;
+  background: color-mix(in srgb, var(--bg-elevated) 55%, transparent); backdrop-filter: blur(24px) saturate(1.5); border: 1px solid color-mix(in srgb, var(--text-1) 8%, transparent); }
+.head { display: flex; gap: 12px; align-items: flex-start; }
+.icon { flex: none; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: var(--key); color: var(--text-on-key); }
+.title { font-size: 20px; font-weight: 800; letter-spacing: -0.02em; }
+.sub { color: var(--text-2); font-size: 14px; }
+.songs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.song { display: flex; align-items: center; gap: 12px; padding: 8px; border-radius: 12px; text-align: left; background: color-mix(in srgb, var(--text-1) 5%, transparent); }
+.song:hover { background: var(--bg-hover); }
+.art { flex: none; width: 52px; height: 52px; border-radius: 6px; overflow: hidden; }
+.art > * { width: 100%; height: 100%; }
+.text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; font-size: 15px; }
+.text span { color: var(--text-2); font-size: 13px; }
+.play { flex: none; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--key); color: var(--text-on-key); }
+@media (max-width: 760px) { .songs { grid-template-columns: 1fr; } }

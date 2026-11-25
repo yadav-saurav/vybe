@@ -82,3 +82,18 @@
 .worldTitle { font-size: 20px; line-height: 24px; font-weight: 800; }
 .worldSub { font-size: var(--fs-callout); opacity: 0.9; }
 .previewTag { display: inline-block; margin-left: 6px; padding: 2px 8px; border-radius: var(--r-pill); background: var(--bg-hover); color: var(--text-2); font-size: var(--fs-caption); font-weight: 700; vertical-align: 3px; }
+
+.topGrid { display: grid; grid-template-columns: minmax(260px, 0.9fr) minmax(0, 1.6fr); gap: 24px; margin-bottom: 28px; }
+.topCard { position: relative; width: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; padding: 20px; border-radius: 14px; text-align: left;
+  background: color-mix(in srgb, var(--bg-elevated) 60%, transparent); backdrop-filter: blur(20px); border: 1px solid color-mix(in srgb, var(--text-1) 8%, transparent); transition: background var(--dur); }
+.topCard:hover, .topCardOn { background: var(--bg-hover); }
+.topArt { width: 96px; height: 96px; border-radius: 8px; overflow: hidden; box-shadow: 0 10px 26px rgba(0,0,0,0.3); }
+.topArt > * { width: 100%; height: 100%; }
+.topTitle { font-size: 28px; line-height: 32px; font-weight: 900; letter-spacing: -0.02em; }
+.topSub { color: var(--text-2); font-size: 14px; font-weight: 600; }
+.topPlay { position: absolute; right: 18px; bottom: 18px; width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; background: var(--key); color: var(--text-on-key); opacity: 0; transform: translateY(8px); transition: all 0.25s var(--ease); box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
+.topCard:hover .topPlay, .topCard:focus-visible .topPlay { opacity: 1; transform: none; }
+.cardRow { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; }
+.cardGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 8px; }
+@media (max-width: 1000px) { .topGrid { grid-template-columns: 1fr; } .cardRow { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 760px) { .cardRow, .cardGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

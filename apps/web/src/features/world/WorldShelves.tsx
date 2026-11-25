@@ -2,7 +2,8 @@ import { useRef, useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import clsx from 'clsx';
 import type { Artwork as Art, Song } from '@vybe/shared';
-import type { WorldArtist, WorldShelf } from '../../lib/api';
+import type { WorldAlbum, WorldArtist, WorldShelf, WorldStation } from '../../lib/api';
+import { CHARTS } from './charts';
 import { Artwork } from '../../components/Artwork';
 import { Icon } from '../../components/Icon';
 import { usePlayer } from '../../stores/player';
@@ -19,7 +20,7 @@ const playList = (songs: Song[], i: number, title: string) => {
 };
 
 /** A horizontally scrolling row with arrow buttons (desktop) and swipe (touch). */
-function Row({ title, subtitle, children, label }: { title: string; subtitle?: string; children: React.ReactNode; label: string }) {
+function Row({ title, subtitle, children, label, link }: { title: string; subtitle?: string; children: React.ReactNode; label: string; link?: string }) {
   const track = useRef<HTMLDivElement>(null);
   const [edge, setEdge] = useState({ start: true, end: false });
   const update = () => {
@@ -35,12 +36,13 @@ function Row({ title, subtitle, children, label }: { title: string; subtitle?: s
           <h2 className={s.title}>{title}</h2>
           {subtitle && <p className={s.subtitle}>{subtitle}</p>}
         </div>
-        <div className={s.arrows}>
-          <button aria-label={`Scroll ${title} back`} disabled={edge.start} onClick={() => page(-1)}><Icon name="chevron-left" size={18} /></button>
-          <button aria-label={`Scroll ${title} forward`} disabled={edge.end} onClick={() => page(1)}><Icon name="chevron-right" size={18} /></button>
-        </div>
+        {link && <Link to={link} className={s.showAll}>Show all</Link>}
       </div>
-      <div ref={track} className={s.track} onScroll={update}>{children}</div>
+      <div className={s.trackWrap}>
+        <div ref={track} className={s.track} onScroll={update}>{children}</div>
+        {!edge.start && <button className={clsx(s.edge, s.edgeStart)} aria-label={`Scroll ${title} back`} onClick={() => page(-1)}><Icon name="chevron-left" size={20} /></button>}
+        {!edge.end && <button className={clsx(s.edge, s.edgeEnd)} aria-label={`Scroll ${title} forward`} onClick={() => page(1)}><Icon name="chevron-right" size={20} /></button>}
+      </div>
     </section>
   );
 }
@@ -83,6 +85,66 @@ export function ArtistCard({ artist, onLight }: { artist: WorldArtist; onLight?:
   );
 }
 
+export function AlbumCard({ album, onLight }: { album: WorldAlbum; onLight?: OnLight }) {
+  return (
+    <Link to={`/world/album/${album.id}`} className={s.card} onMouseEnter={() => onLight?.(album.artwork)} onFocus={() => onLight?.(album.artwork)}>
+      <div className={s.art}>
+        <ArtGlow artwork={album.artwork} />
+        <div className={s.artInner}><Artwork artwork={album.artwork} size={300} rounded="sm" /></div>
+      </div>
+      <span className={clsx(s.cardTitle, 'clamp-1')}>{album.title}</span>
+      <span className={clsx(s.cardSub, 'clamp-2')}>{album.artistName}</span>
+    </Link>
+  );
+}
+
+/** A chart as a playlist card: gradient, bold type, Vybe's mark. */
+export function ChartCard({ chart }: { chart: (typeof CHARTS)[number] }) {
+  return (
+    <Link to={`/chart/${chart.cc}`} className={s.card}>
+      <div className={s.art}>
+        <div className={clsx(s.artInner, s.chartArt)} style={{ background: `linear-gradient(150deg, ${chart.from}, ${chart.to})` }}>
+          <span className={s.chartMark}><Icon name="vybe-mark" size={16} /></span>
+          <span className={s.chartTitle}>{chart.title}<span>{chart.place}</span></span>
+          <span className={s.chartFoot}>Updated daily</span>
+        </div>
+      </div>
+      <span className={clsx(s.cardTitle, 'clamp-1')}>{chart.title}: {chart.place}</span>
+      <span className={clsx(s.cardSub, 'clamp-2')}>The most-played songs right now</span>
+    </Link>
+  );
+}
+
+/** A worldwide station: tap for an endless shuffled mix of one scene. */
+export function StationCard({ station, onLight }: { station: WorldStation; onLight?: OnLight }) {
+  const isOn = usePlayer((p) => p.context?.id === station.id);
+  const playing = usePlayer((p) => p.isPlaying);
+  const play = () => {
+    const p = usePlayer.getState();
+    if (isOn) { p.togglePlay(); return; }
+    p.playSongs(station.songs, 0, { type: 'queue', id: station.id, title: station.name }, { shuffle: true });
+  };
+  return (
+    <div className={clsx(s.card, s.station, isOn && s.cardOn)} onMouseEnter={() => onLight?.(station.artwork)} onFocus={() => onLight?.(station.artwork)}>
+      <div className={s.art}>
+        <ArtGlow artwork={station.artwork} />
+        <div className={clsx(s.artInner, s.stationArt)}>
+          <Artwork artwork={station.artwork} size={300} rounded="sm" />
+          <span className={s.stationBadge}><Icon name="radio" size={12} />Radio</span>
+          <span className={s.stationName}>{station.name}</span>
+        </div>
+        <button className={clsx(s.play, isOn && s.playOn)} onClick={play} aria-label={isOn && playing ? `Pause ${station.name}` : `Play ${station.name}`}>
+          {isOn ? <PlayPauseIcon size={20} /> : <Icon name="play" size={20} />}
+        </button>
+      </div>
+      <button className={s.cardText} onClick={play} tabIndex={-1}>
+        <span className={clsx(s.cardTitle, 'clamp-1')}>{station.name}</span>
+        <span className={clsx(s.cardSub, 'clamp-2')}>{station.description}</span>
+      </button>
+    </div>
+  );
+}
+
 /** Featured: the #1 song big, the next four beside it. */
 function Hero({ shelf, onLight }: { shelf: WorldShelf; onLight?: OnLight }) {
   const [first, ...rest] = shelf.songs;
@@ -122,15 +184,36 @@ function Hero({ shelf, onLight }: { shelf: WorldShelf; onLight?: OnLight }) {
 
 export function WorldShelfView({ shelf, onLight }: { shelf: WorldShelf; onLight?: OnLight }) {
   if (shelf.kind === 'hero') return <Hero shelf={shelf} onLight={onLight} />;
-  if (shelf.kind === 'artists') {
+  if (shelf.kind === 'albums') {
+    return (
+      <Row title={shelf.title} subtitle={shelf.subtitle} label={shelf.title} link={shelf.link}>
+        {(shelf.albums ?? []).map((a) => <AlbumCard key={a.id} album={a} onLight={onLight} />)}
+      </Row>
+    );
+  }
+  if (shelf.kind === 'charts') {
+    return (
+      <Row title={shelf.title} subtitle={shelf.subtitle} label={shelf.title} link={shelf.link}>
+        {CHARTS.slice(0, 8).map((c) => <ChartCard key={c.cc} chart={c} />)}
+      </Row>
+    );
+  }
+  if (shelf.kind === 'stations') {
     return (
       <Row title={shelf.title} subtitle={shelf.subtitle} label={shelf.title}>
+        {(shelf.stations ?? []).map((st) => <StationCard key={st.id} station={st} onLight={onLight} />)}
+      </Row>
+    );
+  }
+  if (shelf.kind === 'artists') {
+    return (
+      <Row title={shelf.title} subtitle={shelf.subtitle} label={shelf.title} link={shelf.link}>
         {shelf.artists.map((a) => <ArtistCard key={a.id} artist={a} onLight={onLight} />)}
       </Row>
     );
   }
   return (
-    <Row title={shelf.title} subtitle={shelf.subtitle} label={shelf.title}>
+    <Row title={shelf.title} subtitle={shelf.subtitle} label={shelf.title} link={shelf.link}>
       {shelf.songs.map((song, i) => <SongCard key={song.id} song={song} songs={shelf.songs} index={i} listTitle={shelf.title} onLight={onLight} />)}
     </Row>
   );

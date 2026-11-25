@@ -86,12 +86,18 @@ class WorldApiTest extends ApiTestBase {
                 .get("countries").get(0).get("code").asText()).isEqualTo("in");
     }
 
-    @Test
-    void homeFillsShelvesFromChartsSearchesAndSuperstarsAndArtistPagesWork() throws Exception {
+    private void appleWithHome() {
         world.setFetcher(url -> {
             calls.add(url);
+            if (url.contains("albums.json")) {
+                return "{\"feed\":{\"results\":[{\"id\":\"900\",\"name\":\"Big Album\",\"artistName\":\"Star One\",\"artistId\":\"484568188\",\"artworkUrl100\":\"https://is1-ssl.mzstatic.com/x/100x100bb.jpg\",\"releaseDate\":\"2026-01-01\"}]}}";
+            }
             if (url.contains("marketingtools")) {
                 return "{\"feed\":{\"results\":[{\"id\":\"31\"}]}}";
+            }
+            if (url.contains("limit=200")) { // album page: the collection, then its tracks
+                return "{\"results\":[{\"wrapperType\":\"collection\",\"collectionId\":900,\"collectionName\":\"Big Album\",\"artistName\":\"Star One\",\"artistId\":484568188,"
+                        + "\"artworkUrl100\":\"https://is1-ssl.mzstatic.com/x/100x100bb.jpg\",\"releaseDate\":\"2026-01-01T00:00:00Z\"}," + track(61, "Album Song", "Star One", true) + "]}";
             }
             if (url.contains("/lookup?") && url.contains("limit=")) { // superstars: artist record, then its tracks
                 return "{\"results\":[{\"wrapperType\":\"artist\",\"artistId\":484568188,\"artistName\":\"Star One\",\"primaryGenreName\":\"Bollywood\"},"
@@ -102,24 +108,73 @@ class WorldApiTest extends ApiTestBase {
             }
             return "{\"results\":[" + track(51, "Regional Hit", "Regional Artist", true) + "]}";
         });
-        world.warm();
-        JsonNode home = json.readTree(mvc.perform(get("/api/world/home")).andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
+    }
+
+    private List<String> shelfIds(JsonNode home) {
         List<String> ids = new ArrayList<>();
         home.get("shelves").forEach(sh -> ids.add(sh.get("id").asText()));
-        assertThat(ids).startsWith("trending-in", "stars-in", "top-in", "bollywood", "tamil", "telugu", "malayalam", "kannada", "punjabi", "best-arijit");
-        JsonNode hero = home.get("shelves").get(0);
-        assertThat(hero.get("kind").asText()).isEqualTo("hero");
-        assertThat(hero.get("songs").get(0).get("title").asText()).isEqualTo("Chart Topper");
-        JsonNode stars = home.get("shelves").get(1);
-        assertThat(stars.get("kind").asText()).isEqualTo("artists");
-        assertThat(stars.get("artists").get(0).get("name").asText()).isEqualTo("Star One");
-        assertThat(stars.get("artists").get(0).get("artwork").get("url").asText()).contains("600x600bb");
+        return ids;
+    }
+
+    @Test
+    void homeShowsATasteSignedOutAndEverythingSignedIn() throws Exception {
+        appleWithHome();
+        world.warm();
+        JsonNode out = json.readTree(mvc.perform(get("/api/world/home")).andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
+        assertThat(shelfIds(out)).containsExactly("trending", "popular-artists", "charts");
+        assertThat(out.get("shelves").get(2).get("title").asText()).isEqualTo("Top playlists");
+        assertThat(out.get("shelves").get(0).get("link").asText()).isEqualTo("/chart/in");
+
+        String user = newUserSession();
+        JsonNode in = json.readTree(mvc.perform(get("/api/world/home").cookie(cookie(user))).andReturn().getResponse().getContentAsString());
+        assertThat(shelfIds(in)).startsWith("trending", "popular-artists", "albums", "charts", "bollywood", "tamil", "telugu", "malayalam", "kannada", "punjabi");
+        assertThat(in.get("shelves").get(1).get("artists").get(0).get("name").asText()).isEqualTo("Star One");
+        assertThat(in.get("shelves").get(2).get("albums").get(0).get("title").asText()).isEqualTo("Big Album");
+        assertThat(in.get("shelves").get(3).get("title").asText()).isEqualTo("Featured Charts");
+
+        JsonNode all = json.readTree(mvc.perform(get("/api/world/shelves/popular-artists")).andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
+        assertThat(all.get("kind").asText()).isEqualTo("artists");
+        JsonNode album = json.readTree(mvc.perform(get("/api/world/albums/wl_in_900")).andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
+        assertThat(album.get("album").get("title").asText()).isEqualTo("Big Album");
+        assertThat(album.get("songs").get(0).get("title").asText()).isEqualTo("Album Song");
+        mvc.perform(get("/api/world/albums/nope")).andExpect(status().isNotFound());
+
+        JsonNode found = json.readTree(mvc.perform(get("/api/world/search-all?term=star&country=in")).andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
+        assertThat(found.get("songs")).isNotEmpty();
+        assertThat(found.get("albums")).isNotEmpty();
+        JsonNode genre = json.readTree(mvc.perform(get("/api/world/section/genre/rock")).andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
+        assertThat(genre.get("shelves").get(0).get("title").asText()).isEqualTo("Worldwide Rock");
+        mvc.perform(get("/api/world/section/radio")).andExpect(status().isNotFound());
 
         JsonNode page = json.readTree(mvc.perform(get("/api/world/artists/wa_484568188?country=in")).andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString());
         assertThat(page.get("artist").get("name").asText()).isEqualTo("Star One");
-        assertThat(page.get("songs")).hasSize(2);
-        mvc.perform(get("/api/world/artists/nope")).andExpect(status().isNotFound());
+    }
+
+    @Test
+    void appleSongsCanBeSavedLovedAddedToPlaylistsAndPlayed() throws Exception {
+        apple();
+        mvc.perform(get("/api/world/search?term=famous&country=in")).andExpect(status().isOk());
+        String user = newUserSession();
+        mvc.perform(put("/api/me/library/song/wd_in_11").cookie(cookie(user))).andExpect(status().isOk());
+        mvc.perform(put("/api/me/loves/song/wd_in_11").cookie(cookie(user))).andExpect(status().isOk());
+        mvc.perform(post("/api/me/history").cookie(cookie(user)).contentType("application/json")
+                .content("{\"songId\":\"wd_in_11\",\"playedMs\":30000}")).andExpect(status().is2xxSuccessful());
+
+        // Apple goes away: the saved snapshot keeps the library working.
+        world.setFetcher(url -> { throw new IllegalStateException("down"); });
+        JsonNode songs = json.readTree(mvc.perform(get("/api/me/library/songs").cookie(cookie(user))).andReturn().getResponse().getContentAsString());
+        assertThat(songs.get("songs").get(0).get("title").asText()).isEqualTo("Sky Song");
+        JsonNode recent = json.readTree(mvc.perform(get("/api/me/recently-added").cookie(cookie(user))).andReturn().getResponse().getContentAsString());
+        assertThat(recent.get("items").get(0).get("data").get("id").asText()).isEqualTo("wd_in_11");
+        JsonNode history = json.readTree(mvc.perform(get("/api/me/history").cookie(cookie(user))).andReturn().getResponse().getContentAsString());
+        assertThat(history.get("entries").get(0).get("song").get("title").asText()).isEqualTo("Sky Song");
+
+        JsonNode pl = json.readTree(mvc.perform(post("/api/me/playlists").cookie(cookie(user)).contentType("application/json")
+                .content("{\"name\":\"World Mix\",\"trackIds\":[\"wd_in_11\"]}")).andExpect(status().is2xxSuccessful()).andReturn().getResponse().getContentAsString());
+        String id = pl.get("playlist").get("id").asText();
+        JsonNode page = json.readTree(mvc.perform(get("/api/playlists/" + id).cookie(cookie(user))).andReturn().getResponse().getContentAsString());
+        assertThat(page.get("tracks").get(0).get("id").asText()).isEqualTo("wd_in_11");
     }
 
     @Test

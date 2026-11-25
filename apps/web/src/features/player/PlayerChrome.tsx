@@ -9,6 +9,7 @@ import { LyricsView } from './LyricsView';
 import { QueuePanel } from './QueuePanel';
 import { JamChip } from '../jam/JamSheet';
 import { useJam } from '../../stores/jam';
+import { lyricsAvailable } from '../../lib/world';
 import s from './PlayerChrome.module.css';
 
 const P = () => usePlayer.getState();
@@ -94,8 +95,8 @@ function DesktopPill() {
 
       <div className={s.right}>
         <JamChip compact className={s.jamChip} />
-        <button className={clsx(s.ctl, s.ctlSmall, panel === 'lyrics' && s.on)} aria-label="Lyrics" title={song && !song.hasLyrics ? 'Lyrics not available' : 'Lyrics'}
-          aria-pressed={panel === 'lyrics'} disabled={empty || !song?.hasLyrics} onClick={() => setPanel(panel === 'lyrics' ? null : 'lyrics')}>
+        <button className={clsx(s.ctl, s.ctlSmall, panel === 'lyrics' && s.on)} aria-label="Lyrics" title={song && !lyricsAvailable(song) ? 'Lyrics not available' : 'Lyrics'}
+          aria-pressed={panel === 'lyrics'} disabled={empty || !lyricsAvailable(song)} onClick={() => setPanel(panel === 'lyrics' ? null : 'lyrics')}>
           <Icon name="lyrics" size={18} />
         </button>
         <button className={clsx(s.ctl, s.ctlSmall, panel === 'queue' && s.on)} aria-label="Playing Next" title="Playing Next" aria-pressed={panel === 'queue'}
@@ -161,7 +162,7 @@ function MiniPlayer() {
 function SidePanel() {
   const panel = useUI((u) => u.sidePanel);
   const setPanel = useUI((u) => u.setSidePanel);
-  const hasLyrics = usePlayer((p) => !!p.current?.song.hasLyrics);
+  const hasLyrics = usePlayer((p) => lyricsAvailable(p.current?.song));
   // Keep the last content mounted during the slide-out.
   const [shown, setShown] = useState(panel);
   useEffect(() => {

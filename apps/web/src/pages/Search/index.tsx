@@ -1,34 +1,31 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import clsx from 'clsx';
-import type { ContentItem, SearchResults } from '@vybe/shared';
+import type { Song } from '@vybe/shared';
 import { api } from '../../lib/api';
 import { useAsync } from '../../lib/useAsync';
 import { artUrl } from '../../lib/color';
 import { Artwork } from '../../components/Artwork';
 import { Icon } from '../../components/Icon';
-import { Lockup, titleOf } from '../../components/Lockup';
-import { Shelf } from '../../components/Shelf';
-import { TrackList } from '../../components/TrackList';
-import { Highlight } from '../../features/search/Highlight';
 import { SearchSuggestions } from '../../features/search/SearchSuggestions';
-import { richSubtitle } from '../../features/search/labels';
 import { clearRecent, loadRecent, saveRecent, type RecentEntry } from '../../features/search/recent';
 import { ListenerList } from '../../features/social/ListenerList';
-import { WorldRows, WorldSkeleton } from '../../features/world/WorldRows';
-import { worldDefaultCountry, worldSearchHref } from '../../lib/world';
+import { WorldRows } from '../../features/world/WorldRows';
+import { AlbumCard, ArtistCard } from '../../features/world/WorldShelves';
+import { usePlayer } from '../../stores/player';
+import type { WorldAlbum, WorldArtist } from '../../lib/api';
+import { worldDefaultCountry } from '../../lib/world';
 import s from './Search.module.css';
 
-type Tab = 'top' | 'artists' | 'albums' | 'songs' | 'playlists' | 'stations' | 'listeners';
+type Tab = 'top' | 'songs' | 'artists' | 'albums' | 'listeners';
 const TABS: { id: Tab; label: string }[] = [
   { id: 'top', label: 'Top Results' },
+  { id: 'songs', label: 'Songs' },
   { id: 'artists', label: 'Artists' },
   { id: 'albums', label: 'Albums' },
-  { id: 'songs', label: 'Songs' },
-  { id: 'playlists', label: 'Playlists' },
-  { id: 'stations', label: 'Stations' },
   { id: 'listeners', label: 'Listeners' },
 ];
+type Found = { songs: Song[]; artists: WorldArtist[]; albums: WorldAlbum[] };
 const DEBOUNCE_MS = 250;
 
 export default function SearchPage() {
@@ -37,7 +34,7 @@ export default function SearchPage() {
   const q = raw.trim();
   const [debounced, setDebounced] = useState(q);
   const [tab, setTab] = useState<Tab>('top');
-  const [result, setResult] = useState<{ term: string; data: SearchResults } | null>(null);
+  const [result, setResult] = useState<{ term: string; data: Found } | null>(null);
   const [failedTerm, setFailedTerm] = useState<string | null>(null);
 
   useEffect(() => {
@@ -48,7 +45,8 @@ export default function SearchPage() {
   useEffect(() => {
     if (!debounced) return;
     const ctrl = new AbortController();
-    api.search(debounced, ctrl.signal).then(
+    if (debounced.length < 2) return;
+    api.worldSearchAll(debounced, worldDefaultCountry(), ctrl.signal).then(
       (data) => { if (ctrl.signal.aborted) return; setResult({ term: debounced, data }); setFailedTerm(null); },
       () => { if (!ctrl.signal.aborted) setFailedTerm(debounced); },
     );
@@ -114,15 +112,6 @@ function Landing() {
     <>
       <header className="page-header"><h1 className="t-large-title">Search</h1></header>
 
-      <Link to="/world" className={s.worldBanner}>
-        <span className={s.worldIcon} aria-hidden><Icon name="globe" size={26} /></span>
-        <span className={s.worldText}>
-          <span className={s.worldTitle}>Worldwide</span>
-          <span className={s.worldSub}>Famous artists and top charts from every country</span>
-        </span>
-        <Icon name="chevron-right" size={18} />
-      </Link>
-
       <section aria-labelledby="browse-title">
         <h2 id="browse-title" className={s.sectionTitle}>Browse Categories</h2>
         <div className={s.categories}>
@@ -170,8 +159,9 @@ function Landing() {
 }
 
 function Results({ q, data, failed, tab, setTab }: {
-  q: string; data: SearchResults | null; failed: boolean; tab: Tab; setTab: (t: Tab) => void;
+  q: string; data: Found | null; failed: boolean; tab: Tab; setTab: (t: Tab) => void;
 }) {
+  if (q.length < 2) return <p className={s.emptyText}>Keep typing…</p>;
   if (failed && !data) {
     return (
       <div className={s.empty} role="status">
@@ -181,10 +171,17 @@ function Results({ q, data, failed, tab, setTab }: {
     );
   }
   if (!data) return <Skeletons />;
-
-  const total = data.top.length + data.songs.length + data.albums.length + data.artists.length + data.playlists.length + data.stations.length;
-  if (total === 0) return <NoMusicResults q={q} />;
-
+  if (!data.songs.length) {
+    return (
+      <>
+        <div className={s.empty} role="status">
+          <p className={s.emptyTitle}>No results for “{q}”</p>
+          <p className={s.emptyText}>Check the spelling, or try a shorter or different search.</p>
+        </div>
+        <ListenerPreview q={q} onSeeAll={() => setTab('listeners')} />
+      </>
+    );
+  }
   return (
     <>
       <h1 className="visually-hidden">Search results for “{q}”</h1>
@@ -195,112 +192,53 @@ function Results({ q, data, failed, tab, setTab }: {
           </button>
         ))}
       </div>
-      {tab === 'top' ? <TopResults q={q} data={data} setTab={setTab} /> : tab === 'listeners' ? <ListenerResults q={q} /> : <TabResults q={q} data={data} tab={tab} />}
+      {tab === 'top' && <TopResults q={q} data={data} setTab={setTab} />}
+      {tab === 'songs' && <WorldRows songs={data.songs} title={`“${q}”`} />}
+      {tab === 'artists' && <div className={s.cardGrid}>{data.artists.map((a) => <ArtistCard key={a.id} artist={a} />)}</div>}
+      {tab === 'albums' && <div className={s.cardGrid}>{data.albums.map((a) => <AlbumCard key={a.id} album={a} />)}</div>}
+      {tab === 'listeners' && <ListenerResults q={q} />}
     </>
   );
 }
 
-const cardFor = (item: ContentItem, q: string, subtitle?: string) => (
-  <Lockup key={`${item.type}-${item.data.id}`} item={item} subtitle={subtitle} titleNode={<Highlight text={titleOf(item)} term={q} />} />
-);
-
-function TopResults({ q, data, setTab }: { q: string; data: SearchResults; setTab: (t: Tab) => void }) {
-  const ctx = { type: 'search' as const, id: q, title: `Results for “${q}”` };
-  const top = data.top.slice(0, 8);
+/** Top result (the best match, big), songs, artists, albums and people. */
+function TopResults({ q, data, setTab }: { q: string; data: Found; setTab: (t: Tab) => void }) {
+  const top = data.songs[0];
+  const isCurrent = usePlayer((p) => p.current?.song.id === top.id);
   return (
     <>
-      {top.length > 0 && (
-        <section className={s.block} aria-label="Top Results">
-          <h2 className={s.sectionTitle}>Top Results</h2>
-          <div className={s.grid}>{top.map((item) => cardFor(item, q, richSubtitle(item)))}</div>
+      <div className={s.topGrid}>
+        <section aria-labelledby="top-title">
+          <h2 id="top-title" className={s.sectionTitle}>Top result</h2>
+          <button className={clsx(s.topCard, isCurrent && s.topCardOn)} onClick={() => usePlayer.getState().playSongs(data.songs, 0, { type: 'queue', title: `“${q}”` })}>
+            <span className={s.topArt}><Artwork artwork={top.artwork} size={300} rounded="sm" /></span>
+            <span className={clsx(s.topTitle, 'clamp-2')}>{top.title}</span>
+            <span className={s.topSub}>Song · {top.artist.name}</span>
+            <span className={s.topPlay} aria-hidden><Icon name="play" size={20} /></span>
+          </button>
         </section>
-      )}
-      {data.songs.length > 0 && (
-        <section className={s.block}>
+        <section aria-labelledby="songs-title">
           <div className={s.rowHead}>
-            <h2 className={s.sectionTitle}>Songs</h2>
+            <h2 id="songs-title" className={s.sectionTitle}>Songs</h2>
             <button type="button" className={s.seeAll} onClick={() => setTab('songs')}>See All</button>
           </div>
-          <TrackList songs={data.songs.slice(0, 8)} context={ctx} variant="compact" />
+          <WorldRows songs={data.songs.slice(0, 4)} title={`“${q}”`} />
         </section>
-      )}
+      </div>
       {data.artists.length > 0 && (
-        <Shelf title="Artists" columns={5} headerExtra={<button type="button" className={s.seeAll} onClick={() => setTab('artists')}>See All</button>}>
-          {data.artists.map((a) => cardFor({ type: 'artist', data: a }, q))}
-        </Shelf>
+        <section className={s.block} aria-labelledby="artists-title">
+          <div className={s.rowHead}><h2 id="artists-title" className={s.sectionTitle}>Artists</h2><button type="button" className={s.seeAll} onClick={() => setTab('artists')}>See All</button></div>
+          <div className={s.cardRow}>{data.artists.slice(0, 6).map((a) => <ArtistCard key={a.id} artist={a} />)}</div>
+        </section>
       )}
       {data.albums.length > 0 && (
-        <Shelf title="Albums" columns={5} headerExtra={<button type="button" className={s.seeAll} onClick={() => setTab('albums')}>See All</button>}>
-          {data.albums.map((a) => cardFor({ type: 'album', data: a }, q))}
-        </Shelf>
-      )}
-      {data.playlists.length > 0 && (
-        <Shelf title="Playlists" columns={5} headerExtra={<button type="button" className={s.seeAll} onClick={() => setTab('playlists')}>See All</button>}>
-          {data.playlists.map((p) => cardFor({ type: 'playlist', data: p }, q))}
-        </Shelf>
-      )}
-      {data.stations.length > 0 && (
-        <Shelf title="Stations" columns={5} headerExtra={<button type="button" className={s.seeAll} onClick={() => setTab('stations')}>See All</button>}>
-          {data.stations.map((st) => cardFor({ type: 'station', data: st }, q))}
-        </Shelf>
+        <section className={s.block} aria-labelledby="albums-title">
+          <div className={s.rowHead}><h2 id="albums-title" className={s.sectionTitle}>Albums</h2><button type="button" className={s.seeAll} onClick={() => setTab('albums')}>See All</button></div>
+          <div className={s.cardRow}>{data.albums.slice(0, 6).map((a) => <AlbumCard key={a.id} album={a} />)}</div>
+        </section>
       )}
       <ListenerPreview q={q} onSeeAll={() => setTab('listeners')} />
-      <WorldPreview q={q} />
     </>
-  );
-}
-
-/** No music matched: listeners may still match (people search by name), otherwise the usual empty state. */
-function NoMusicResults({ q }: { q: string }) {
-  const { data } = useAsync(q.length >= 2 ? `listeners:${q}` : null, (sig) => api.searchListeners(q, sig));
-  const world = useAsync(q.length >= 2 ? `world:${worldDefaultCountry()}:${q}` : null, (sig) => api.worldSearch(q, worldDefaultCountry(), sig));
-  if (world.data?.songs.length || (!world.error && !world.data && q.length >= 2)) {
-    return (
-      <>
-        <h1 className="visually-hidden">Search results for “{q}”</h1>
-        <WorldPreview q={q} count={10} />
-        {data?.listeners.length ? (
-          <section className={s.block} aria-labelledby="listeners-only-title">
-            <h2 id="listeners-only-title" className={s.sectionTitle}>Listeners</h2>
-            <ListenerList listeners={data.listeners} empty="" />
-          </section>
-        ) : null}
-      </>
-    );
-  }
-  if (data?.listeners.length) {
-    return (
-      <>
-        <h1 className="visually-hidden">Search results for “{q}”</h1>
-        <section className={s.block} aria-labelledby="listeners-only-title">
-          <h2 id="listeners-only-title" className={s.sectionTitle}>Listeners</h2>
-          <ListenerList listeners={data.listeners} empty="" />
-        </section>
-        <p className={s.emptyText}>No music matches “{q}”.</p>
-      </>
-    );
-  }
-  return (
-    <div className={s.empty} role="status">
-      <p className={s.emptyTitle}>No results for “{q}”</p>
-      <p className={s.emptyText}>Check the spelling, or try a shorter or different search.</p>
-    </div>
-  );
-}
-
-/** Famous songs from around the world for this search (Apple previews), with a link to see them all. */
-function WorldPreview({ q, count = 5 }: { q: string; count?: number }) {
-  const cc = worldDefaultCountry();
-  const { data, error } = useAsync(q.length >= 2 ? `world:${cc}:${q}` : null, (sig) => api.worldSearch(q, cc, sig));
-  if (error || (data && !data.songs.length)) return null;
-  return (
-    <section className={s.block} aria-labelledby="world-title" aria-busy={!data}>
-      <div className={s.rowHead}>
-        <h2 id="world-title" className={s.sectionTitle}>Worldwide <span className={s.previewTag}>Previews</span></h2>
-        {data && data.songs.length > count && <Link className={s.seeAll} to={worldSearchHref(q, cc)}>See All</Link>}
-      </div>
-      {data ? <WorldRows songs={data.songs.slice(0, count)} title={`“${q}” worldwide`} /> : <WorldSkeleton count={3} />}
-    </section>
   );
 }
 
@@ -324,21 +262,6 @@ function ListenerPreview({ q, onSeeAll }: { q: string; onSeeAll: () => void }) {
       <ListenerList listeners={data.listeners.slice(0, 3)} empty="" />
     </section>
   );
-}
-
-function TabResults({ q, data, tab }: { q: string; data: SearchResults; tab: Exclude<Tab, 'top'> }) {
-  const ctx = { type: 'search' as const, id: q, title: `Results for “${q}”` };
-  if (tab === 'songs') {
-    if (!data.songs.length) return <p className={s.none}>No songs match “{q}”.</p>;
-    return <TrackList songs={data.songs} context={ctx} variant="playlist" />;
-  }
-  const items: ContentItem[] =
-    tab === 'artists' ? data.artists.map((a) => ({ type: 'artist' as const, data: a }))
-      : tab === 'albums' ? data.albums.map((a) => ({ type: 'album' as const, data: a }))
-        : tab === 'playlists' ? data.playlists.map((p) => ({ type: 'playlist' as const, data: p }))
-          : data.stations.map((st) => ({ type: 'station' as const, data: st }));
-  if (!items.length) return <p className={s.none}>No {TABS.find((t) => t.id === tab)?.label.toLowerCase()} match “{q}”.</p>;
-  return <div className={s.grid}>{items.map((item) => cardFor(item, q))}</div>;
 }
 
 function Skeletons() {

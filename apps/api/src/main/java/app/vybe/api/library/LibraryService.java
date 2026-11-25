@@ -260,6 +260,13 @@ public class LibraryService {
                     }
                 }
                 case "song" -> {
+                    if (app.vybe.api.world.WorldService.isWorldId(e.id())) {
+                        Song w = songs.resolve(userId, e.id()); // Apple songs are listed as songs
+                        if (w != null) {
+                            out.add(ContentItem.song(w));
+                        }
+                        break;
+                    }
                     Song s = catalog.song(e.id());
                     if (s != null) {
                         addAlbum(out, seenAlbums, s.album().id());

@@ -3,10 +3,23 @@
 .head { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
 .title { font-size: 24px; line-height: 30px; font-weight: 800; letter-spacing: -0.02em; }
 .subtitle { color: var(--text-2); font-size: var(--fs-callout); margin-top: 2px; }
-.arrows { display: flex; gap: 8px; }
-.arrows button { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; background: var(--bg-hover); }
-.arrows button:hover:not(:disabled) { background: var(--bg-selected); }
-.arrows button:disabled { opacity: 0.35; }
+.showAll { flex: none; font-size: 14px; font-weight: 700; color: var(--text-2); }
+.showAll:hover { color: var(--text-1); text-decoration: underline; }
+.trackWrap { position: relative; }
+.edge { position: absolute; top: calc(50% - 40px); z-index: 3; width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center;
+  background: color-mix(in srgb, var(--bg-elevated) 82%, transparent); backdrop-filter: blur(12px); box-shadow: 0 6px 18px rgba(0,0,0,0.3); opacity: 0; transition: opacity var(--dur) var(--ease); }
+.edgeStart { left: -12px; }
+.edgeEnd { right: -12px; }
+.trackWrap:hover .edge, .edge:focus-visible { opacity: 1; }
+@media (hover: none) { .edge { display: none; } }
+
+/* Chart cards */
+.chartArt { position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; padding: 12px; color: #fff; }
+.chartArt::after { content: ''; position: absolute; inset: 0; background: radial-gradient(120% 80% at 100% 0%, rgba(255,255,255,0.22), transparent 55%); pointer-events: none; }
+.chartMark { opacity: 0.9; }
+.chartTitle { font-size: 26px; line-height: 27px; font-weight: 900; letter-spacing: -0.03em; display: flex; flex-direction: column; }
+.chartTitle span { opacity: 0.72; }
+.chartFoot { align-self: flex-start; padding: 3px 8px; border-radius: 6px; background: rgba(255,255,255,0.92); color: #111; font-size: 11px; font-weight: 800; }
 .track { display: grid; grid-auto-flow: column; grid-auto-columns: 184px; gap: 8px; overflow-x: auto; scroll-snap-type: x proximity; scrollbar-width: none;
   margin: 0 calc(-1 * var(--content-pad)); padding: 4px var(--content-pad) 12px; scroll-padding: 0 var(--content-pad); }
 .track::-webkit-scrollbar { display: none; }
@@ -37,6 +50,12 @@
 @media (hover: none) { .cardMore { opacity: 1; } }
 .artist { text-align: center; align-items: center; }
 .artist .art { width: 100%; }
+
+/* Stations: the cover darkened, with the station name on it */
+.stationArt { overflow: hidden; }
+.stationArt::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.05) 60%); z-index: 1; }
+.stationBadge { position: absolute; left: 10px; top: 10px; z-index: 2; display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: var(--r-pill); background: rgba(0, 0, 0, 0.55); color: #fff; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; backdrop-filter: blur(8px); }
+.stationName { position: absolute; left: 12px; right: 56px; bottom: 12px; z-index: 2; color: #fff; font-size: 18px; line-height: 21px; font-weight: 900; letter-spacing: -0.02em; text-shadow: 0 1px 8px rgba(0, 0, 0, 0.5); }
 
 /* Hero */
 .hero { position: relative; z-index: 1; display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 20px; align-items: stretch; }
@@ -73,7 +92,7 @@
 @media (max-width: 760px) {
   .track { grid-auto-columns: 148px; gap: 4px; }
   .card, .artist { padding: 8px; }
-  .arrows { display: none; }
+  .chartTitle { font-size: 21px; line-height: 22px; }
   .title { font-size: 21px; line-height: 26px; }
   .heroMain { flex-direction: column; align-items: flex-start; padding: 16px; }
   .heroMain { width: 100%; }

@@ -1,0 +1,9 @@
+.world { position: relative; display: flex; flex-direction: column; gap: 28px; margin-bottom: 36px; }
+.world > *:not(:first-child) { position: relative; z-index: 1; }
+.note { color: var(--text-2); font-size: var(--fs-footnote); }
+.more { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: 14px; background: var(--bg-hover); }
+.more:hover { background: var(--bg-selected); }
+.more > span { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.more b { font-size: var(--fs-body); font-weight: 800; }
+.more > span > span { color: var(--text-2); font-size: var(--fs-footnote); }
+.more > svg:first-child { color: var(--key); flex: none; }

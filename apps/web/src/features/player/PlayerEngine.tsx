@@ -5,7 +5,7 @@ import { artUrl } from '../../lib/color';
 import { usePlayer, type PlayerState } from '../../stores/player';
 import { useUI } from '../../stores/ui';
 import { useAuth } from '../../stores/auth';
-import { isWorld } from '../../lib/world';
+import { isWorld, lyricsAvailable } from '../../lib/world';
 import { getAudioTime, getDurationMs, setTimeHook, startEngine } from './engine';
 
 const P = () => usePlayer.getState();
@@ -34,7 +34,7 @@ function usePlayHistory() {
       const total = dur || item.song.durationMs;
       if (heard < 30_000 && !(total > 0 && heard >= total * 0.5)) return;
       loggedUid = item.uid;
-      if (!useAuth.getState().user || isWorld(item.song)) return; // previews aren't Vybe plays
+      if (!useAuth.getState().user) return;
       const ctx = s.context;
       const contextType = ctx?.type && (CONTENT_TYPES as string[]).includes(ctx.type) ? (ctx.type as ContentType) : undefined;
       const contextId = contextType && ctx?.id && !ctx.id.startsWith('seed:') ? ctx.id : undefined;
@@ -236,7 +236,7 @@ function useKeyboardShortcuts() {
       if (mod || e.altKey) return;
       switch (e.key.toLowerCase()) {
         case 'm': e.preventDefault(); s.toggleMute(); return;
-        case 'l': if (s.current?.song.hasLyrics || ui.sidePanel === 'lyrics') { e.preventDefault(); ui.setSidePanel(ui.sidePanel === 'lyrics' ? null : 'lyrics'); } return;
+        case 'l': if (lyricsAvailable(s.current?.song) || ui.sidePanel === 'lyrics') { e.preventDefault(); ui.setSidePanel(ui.sidePanel === 'lyrics' ? null : 'lyrics'); } return;
         case 'q': e.preventDefault(); ui.setSidePanel(ui.sidePanel === 'queue' ? null : 'queue'); return;
       }
     };

@@ -20,3 +20,6 @@
   .tab { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 44px; font-size: 10px; font-weight: 500; color: var(--text-2); }
   .tabOn { color: var(--key); }
 }
+
+/* Content sits above the now-playing light. */
+.column { position: relative; z-index: 1; }

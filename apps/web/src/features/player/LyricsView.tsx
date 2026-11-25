@@ -4,6 +4,8 @@ import type { LyricLine } from '@vybe/shared';
 import { api, ApiError } from '../../lib/api';
 import { usePlayer } from '../../stores/player';
 import { getAudioTime, onFrame } from './engine';
+import { Icon } from '../../components/Icon';
+import { appleMusicUrl, geniusSearchUrl, isWorld } from '../../lib/world';
 import s from './LyricsView.module.css';
 
 // ---------------------------------------------------------------------------------------------
@@ -35,7 +37,27 @@ const FREE_MS = 3000; // manual scroll pauses auto-follow for 3s
 
 type Load = { id: string; status: 'loading' | 'ready' | 'none' | 'error'; lines: LyricLine[] };
 
+/** Lyrics are licensed separately from previews: link to where they're shown legally instead of copying them. */
+function LyricsLinks({ variant }: { variant: 'panel' | 'full' }) {
+  const song = usePlayer((p) => p.current?.song);
+  if (!song) return null;
+  return (
+    <div className={clsx(s.links, variant === 'full' && s.linksFull)}>
+      <span className={s.linksIcon}><Icon name="lyrics" size={26} /></span>
+      <p className={s.linksTitle}>Lyrics for “{song.title}”</p>
+      <p className={s.linksText}>Song lyrics are licensed separately from previews, so Vybe links to them instead of copying them.</p>
+      <a className={s.linksPrimary} href={appleMusicUrl(song)} target="_blank" rel="noopener noreferrer">Synced lyrics on Apple Music<Icon name="arrow-up-right" size={14} /></a>
+      <a className={s.linksSecondary} href={geniusSearchUrl(song)} target="_blank" rel="noopener noreferrer">Find lyrics on Genius<Icon name="arrow-up-right" size={14} /></a>
+    </div>
+  );
+}
+
 export function LyricsView({ variant }: { variant: 'panel' | 'full' }) {
+  const world = usePlayer((p) => isWorld(p.current?.song));
+  return world ? <LyricsLinks variant={variant} /> : <SyncedLyrics variant={variant} />;
+}
+
+function SyncedLyrics({ variant }: { variant: 'panel' | 'full' }) {
   const song = usePlayer((p) => p.current?.song);
   const songId = song?.id;
   const hasLyrics = !!song?.hasLyrics;

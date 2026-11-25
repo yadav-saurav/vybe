@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Navigate, useParams, useSearchParams } from 'react-router-dom';
 import clsx from 'clsx';
 import type { Artwork } from '@vybe/shared';
 import { api, ApiError, type WorldHome, type WorldList } from '../../lib/api';
@@ -25,10 +25,11 @@ const SCENES: { label: string; term: string; c: string }[] = [
 /** Worldwide: famous songs from every country as 30-second previews (Apple's iTunes catalogue). */
 export default function WorldPage() {
   const [params, setParams] = useSearchParams();
+  const { cc } = useParams();
   const q = (params.get('q') ?? '').trim();
-  const country = params.get('c') ?? defaultCountry();
+  const country = cc ?? params.get('c') ?? defaultCountry();
   // Home (shelves) until you search or pick a country; then a ranked list.
-  const listMode = q.length >= 2 || params.has('c');
+  const listMode = q.length >= 2 || params.has('c') || !!cc;
   const [home, setHome] = useState<WorldHome | null>(null);
   const [homeError, setHomeError] = useState(false);
   const [glow, setGlow] = useState<Artwork | null>(null);
@@ -81,6 +82,7 @@ export default function WorldPage() {
   const songs = data?.songs ?? [];
   const playAll = (shuffle?: boolean) => songs.length && usePlayer.getState().playSongs(songs, 0, { type: 'queue', title: data?.title ?? 'Worldwide' }, { shuffle });
 
+  if (!listMode) return <Navigate to="/home" replace />; // the worldwide home is Home now
   return (
     <div className={`page ${s.page}`}>
       <AmbientGlow artwork={listMode ? songs[0]?.artwork : glow ?? heroArt} />

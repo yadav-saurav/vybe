@@ -115,3 +115,10 @@
 
 .jamChip { height: 26px; padding: 0 9px; margin-right: 2px; }
 .miniJam { color: var(--key); font-weight: 600; }
+
+/* Frosted glass, lit by the playing song's colour. */
+.pill, .mini {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--np-glow, transparent) 22%, transparent), transparent 60%), var(--bg-player);
+  backdrop-filter: blur(30px) saturate(1.9); -webkit-backdrop-filter: blur(30px) saturate(1.9);
+  box-shadow: var(--shadow-player), 0 0 40px -12px color-mix(in srgb, var(--np-glow, transparent) 70%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
