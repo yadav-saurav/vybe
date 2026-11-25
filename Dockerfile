@@ -6,7 +6,7 @@ WORKDIR /src
 COPY package.json package-lock.json ./
 COPY apps/web/package.json apps/web/
 COPY packages/shared/package.json packages/shared/
-RUN npm ci --workspace @vybe/web --include-workspace-root --no-audit --no-fund
+RUN npm ci --no-audit --no-fund
 COPY packages/shared packages/shared
 COPY apps/web apps/web
 RUN npm run build -w @vybe/web
