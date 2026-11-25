@@ -67,6 +67,19 @@ export const api = {
   follow: (id: string) => request<PublicProfile>('PUT', `/me/following/${enc(id)}`),
   unfollow: (id: string) => request<PublicProfile>('DELETE', `/me/following/${enc(id)}`),
 
+  // jam (listen together)
+  myJam: () => get<{ jam?: JamView | null }>('/me/jam'),
+  jam: (code: string) => get<JamView>(`/jams/${enc(code)}`),
+  startJam: (body: { songIds: string[]; index?: number; positionMs?: number; playing?: boolean }) => request<JamView>('POST', '/jams', body),
+  joinJam: (code: string) => request<JamView>('POST', `/jams/${enc(code)}/join`),
+  leaveJam: (code: string) => request<void>('POST', `/jams/${enc(code)}/leave`),
+  jamControl: (code: string, action: JamAction, extra: { positionMs?: number; index?: number } = {}) =>
+    request<JamView>('POST', `/jams/${enc(code)}/control`, { action, ...extra }),
+  jamAdd: (code: string, songIds: string[], position: 'next' | 'last') => request<JamView>('POST', `/jams/${enc(code)}/queue`, { songIds, position }),
+  jamRemove: (code: string, entryId: string) => request<JamView>('DELETE', `/jams/${enc(code)}/queue/${enc(entryId)}`),
+  jamSettings: (code: string, patch: { guestsCanControl?: boolean }) => request<JamView>('PATCH', `/jams/${enc(code)}`, patch),
+  jamEventsUrl: (code: string) => `/api/jams/${enc(code)}/events`,
+
   // replay
   stats: (period: 'week' | 'month' | 'year' | 'all', s?: AbortSignal) => get<ReplayStats>(`/me/stats?period=${period}`, s),
 
@@ -143,3 +156,13 @@ export interface PublicProfile {
 }
 
 export interface ListenerCard { id: string; displayName: string; avatarColor: string; isFollowing: boolean; isMe: boolean }
+
+export type JamAction = 'play' | 'pause' | 'seek' | 'next' | 'previous' | 'jump' | 'ended';
+export interface JamEntry { entryId: string; song: T.Song; addedBy: string; addedById: string }
+export interface JamListener { id: string; displayName: string; avatarColor: string; isHost: boolean; online: boolean }
+/** A Jam's shared state. `positionMs` is the playhead as of `serverTime`. */
+export interface JamView {
+  code: string; hostId: string; hostName: string; guestsCanControl: boolean;
+  queue: JamEntry[]; index: number; positionMs: number; playing: boolean;
+  serverTime: number; version: number; listeners: JamListener[]; ended: boolean;
+}

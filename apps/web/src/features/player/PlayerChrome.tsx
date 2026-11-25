@@ -7,6 +7,8 @@ import { useUI } from '../../stores/ui';
 import { Marquee, Scrubber, VolumeControl } from './controls';
 import { LyricsView } from './LyricsView';
 import { QueuePanel } from './QueuePanel';
+import { JamChip } from '../jam/JamSheet';
+import { useJam } from '../../stores/jam';
 import s from './PlayerChrome.module.css';
 
 const P = () => usePlayer.getState();
@@ -43,7 +45,7 @@ function DesktopPill() {
   const isBuffering = usePlayer((p) => p.isBuffering);
   const shuffle = usePlayer((p) => p.shuffle);
   const repeat = usePlayer((p) => p.repeat);
-  const isStation = usePlayer((p) => p.context?.type === 'station');
+  const isStation = usePlayer((p) => p.context?.type === 'station' || p.context?.id === 'jam'); // no shuffle/repeat for stations or Jams
   const panel = useUI((u) => u.sidePanel);
   const setPanel = useUI((u) => u.setSidePanel);
   const song = current?.song;
@@ -91,6 +93,7 @@ function DesktopPill() {
       </div>
 
       <div className={s.right}>
+        <JamChip compact className={s.jamChip} />
         <button className={clsx(s.ctl, s.ctlSmall, panel === 'lyrics' && s.on)} aria-label="Lyrics" title={song && !song.hasLyrics ? 'Lyrics not available' : 'Lyrics'}
           aria-pressed={panel === 'lyrics'} disabled={empty || !song?.hasLyrics} onClick={() => setPanel(panel === 'lyrics' ? null : 'lyrics')}>
           <Icon name="lyrics" size={18} />
@@ -110,6 +113,7 @@ function MiniPlayer() {
   const song = usePlayer((p) => p.current?.song);
   const isPlaying = usePlayer((p) => p.isPlaying);
   const npOpen = useUI((u) => u.nowPlayingOpen);
+  const inJam = useJam((j) => !!j.jam);
   const ref = useRef<HTMLDivElement>(null);
   const drag = useRef<{ y: number; id: number; moved: boolean } | null>(null);
 
@@ -143,7 +147,7 @@ function MiniPlayer() {
         <span className={s.miniArt}>{song ? <Artwork artwork={song.artwork} size={80} rounded="xs" eager /> : <Icon name="note" size={16} />}</span>
         <span className={s.miniText}>
           {song && <Marquee className={s.miniTitle} textKey={song.id}>{song.title}</Marquee>}
-          {song && <span className={clsx(s.miniSub, 'clamp-1')}>{song.artist.name}</span>}
+          {song && <span className={clsx(s.miniSub, 'clamp-1')}>{inJam && <span className={s.miniJam}>Jam · </span>}{song.artist.name}</span>}
         </span>
       </button>
       <button data-nodrag className={s.miniBtn} aria-label={isPlaying ? 'Pause' : 'Play'} disabled={!song} onClick={() => P().togglePlay()}><PlayPauseIcon size={24} /></button>

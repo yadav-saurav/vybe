@@ -1,0 +1,15 @@
+.page { display: grid; place-items: center; min-height: 70vh; padding: 24px 16px; }
+.card { width: min(400px, 100%); display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 32px 24px; border-radius: 20px; background: var(--bg-hover); text-align: center; }
+.badge { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; background: var(--key); color: var(--text-on-key); }
+.title { font-size: 24px; line-height: 30px; font-weight: 800; }
+.sub { color: var(--text-2); font-size: var(--fs-callout); }
+.now { display: flex; align-items: center; gap: 12px; width: 100%; padding: 10px; border-radius: var(--r-md); background: var(--bg); text-align: left; }
+.nowArt { flex: none; width: 56px; }
+.nowText { min-width: 0; display: flex; flex-direction: column; font-size: var(--fs-callout); font-weight: 600; }
+.eyebrow { font-size: var(--fs-caption); color: var(--key); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+.muted { color: var(--text-2); font-weight: 400; }
+.primary, .secondary { width: 100%; min-height: 44px; margin-top: 4px; border-radius: var(--r-pill); display: inline-flex; align-items: center; justify-content: center; font-weight: 600; }
+.primary { background: var(--key); color: var(--text-on-key); }
+.primary:disabled { opacity: 0.6; }
+.secondary { background: var(--bg-selected); }
+.hint { color: var(--text-2); font-size: var(--fs-footnote); }

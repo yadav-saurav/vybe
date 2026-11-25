@@ -35,6 +35,7 @@ export function QueuePanel({ variant }: { variant: 'panel' | 'full' }) {
   const isPlaying = usePlayer((p) => p.isPlaying);
   const [showHistory, setShowHistory] = useState(false);
   const isStation = context?.type === 'station';
+  const inJam = context?.id === 'jam'; // shared queue: no shuffle, repeat or autoplay
   const href = contextHref(context);
   const closeNP = () => useUI.getState().setNowPlayingOpen(false);
   const upcomingCount = userQueue.length + contextQueue.length;
@@ -70,8 +71,8 @@ export function QueuePanel({ variant }: { variant: 'panel' | 'full' }) {
               : <span className={clsx(s.ctxTitle, 'clamp-1')}>{context?.title || (context?.type === 'queue' ? 'Your Queue' : 'Library')}</span>}
           </div>
           <div className={s.toggles}>
-            <button className={clsx(s.toggle, shuffle && s.toggleOn)} aria-pressed={shuffle} aria-label="Shuffle" title="Shuffle" disabled={isStation} onClick={() => P().toggleShuffle()}><Icon name="shuffle" size={16} /></button>
-            <button className={clsx(s.toggle, repeat !== 'off' && s.toggleOn)} aria-pressed={repeat !== 'off'} disabled={isStation}
+            <button className={clsx(s.toggle, shuffle && s.toggleOn)} aria-pressed={shuffle} aria-label="Shuffle" title="Shuffle" disabled={isStation || inJam} onClick={() => P().toggleShuffle()}><Icon name="shuffle" size={16} /></button>
+            <button className={clsx(s.toggle, repeat !== 'off' && s.toggleOn)} aria-pressed={repeat !== 'off'} disabled={isStation || inJam}
               aria-label={repeat === 'one' ? 'Repeat One' : repeat === 'all' ? 'Repeat All' : 'Repeat Off'} title="Repeat" onClick={() => P().cycleRepeat()}>
               <Icon name={repeat === 'one' ? 'repeat-one' : 'repeat'} size={16} />
             </button>
@@ -115,7 +116,7 @@ export function QueuePanel({ variant }: { variant: 'panel' | 'full' }) {
           )}
         </section>
 
-        {!isStation && (
+        {!isStation && !inJam && (
           <section className={s.section} aria-label="Autoplay">
             <div className={s.sectionHead}>
               <div>

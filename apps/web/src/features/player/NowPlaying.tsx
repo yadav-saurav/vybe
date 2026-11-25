@@ -14,6 +14,7 @@ import { PlayPauseIcon } from './PlayerChrome';
 import { LyricsView } from './LyricsView';
 import { QueuePanel } from './QueuePanel';
 import { albumHref, artistHref } from '../../lib/imports';
+import { JamChip } from '../jam/JamSheet';
 import s from './NowPlaying.module.css';
 
 const P = () => usePlayer.getState();
@@ -114,7 +115,7 @@ function Sheet({ shown }: { shown: boolean }) {
             <Transport />
             <VolumeRow className={s.volume} />
             <Toggles hasLyrics={song.hasLyrics} pane={effectivePane} />
-            <SleepChip />
+            <div className={s.chips}><JamChip className={s.jamChip} /><SleepChip /></div>
           </div>
         </div>
       ) : (
@@ -126,7 +127,7 @@ function Sheet({ shown }: { shown: boolean }) {
             <Transport />
             <VolumeRow className={s.volume} />
             <Toggles hasLyrics={song.hasLyrics} pane={effectivePane} />
-            <SleepChip />
+            <div className={s.chips}><JamChip className={s.jamChip} /><SleepChip /></div>
           </div>
           <div className={s.pane} inert={!effectivePane} aria-hidden={!effectivePane}>{paneNode}</div>
         </div>
@@ -185,7 +186,7 @@ function Transport() {
   const isPlaying = usePlayer((p) => p.isPlaying);
   const shuffle = usePlayer((p) => p.shuffle);
   const repeat = usePlayer((p) => p.repeat);
-  const isStation = usePlayer((p) => p.context?.type === 'station');
+  const isStation = usePlayer((p) => p.context?.type === 'station' || p.context?.id === 'jam'); // no shuffle/repeat for stations or Jams
   return (
     <div className={s.transport}>
       <button className={clsx(s.tSmall, shuffle && s.tOn)} aria-label="Shuffle" aria-pressed={shuffle} title="Shuffle" disabled={isStation} onClick={() => P().toggleShuffle()}><Icon name="shuffle" size={20} /></button>

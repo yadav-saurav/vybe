@@ -112,3 +112,6 @@
 .panelClose:hover { background: var(--bg-selected); color: var(--text-1); }
 .panelBody { position: relative; flex: 1; min-height: 0; }
 @media (max-width: 760px) { .panel { display: none; } }
+
+.jamChip { height: 26px; padding: 0 9px; margin-right: 2px; }
+.miniJam { color: var(--key); font-weight: 600; }

@@ -92,6 +92,9 @@ function tick() {
 }
 
 // --------------------------------------------------------------------------------------------
+/** A Jam drives this player (see stores/jam.ts): local auto-skips would skip for everyone. */
+const inJam = () => P().context?.id === 'jam';
+
 // Crossfade: start the preloaded next song early and overlap the two volumes.
 
 let crossfadeArmed = false;   // next load() should fade instead of cutting
@@ -100,6 +103,7 @@ let fadeTimer: ReturnType<typeof setInterval> | undefined;
 function maybeStartCrossfade(a: El) {
   const secs = useSettings.getState().crossfadeSec;
   if (P().sleepAtEnd) return; // let the song finish; the timer stops playback at its end
+  if (inJam()) return; // in a Jam the shared playhead decides when songs change
   if (!secs || crossfadeArmed || !Number.isFinite(a.duration) || a.duration < secs * 3) return;
   const remaining = a.duration - a.currentTime;
   if (remaining > secs || remaining < 0.3) return;
@@ -183,7 +187,7 @@ function makeEl(): El {
     clearTimeout(errorTimer);
     errorTimer = setTimeout(() => {
       const s = P();
-      if (s.current?.uid === uid && (s.userQueue.length || s.contextQueue.length || (s.autoplayEnabled && s.autoplay.length))) s.next();
+      if (!inJam() && s.current?.uid === uid && (s.userQueue.length || s.contextQueue.length || (s.autoplayEnabled && s.autoplay.length))) s.next();
     }, 2000);
   });
   return a;

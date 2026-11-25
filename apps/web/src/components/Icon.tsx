@@ -27,6 +27,7 @@ const paths: Record<string, ReactElement> = {
   more: <><circle cx="5.5" cy="12" r="1.7" fill="currentColor" /><circle cx="12" cy="12" r="1.7" fill="currentColor" /><circle cx="18.5" cy="12" r="1.7" fill="currentColor" /></>,
   plus: <path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />,
   check: <path d="m5 12.5 4.5 4.5L19 7.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />,
+  jam: <><circle cx="9" cy="8.5" r="3.3" fill="none" stroke="currentColor" strokeWidth="1.8" /><path d="M2.8 19.5c.6-3.4 3.1-5.4 6.2-5.4s5.6 2 6.2 5.4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /><path d="M15.2 5.4a3.3 3.3 0 0 1 0 6.3M17.4 14.4c2 .6 3.4 2.4 3.8 5.1" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></>,
   close: <path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />,
   heart: <path d="M12 20s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.2a4.3 4.3 0 0 1 7.5 2.6C19.5 15.4 12 20 12 20Z" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />,
   'heart-fill': <path d="M12 20s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.2a4.3 4.3 0 0 1 7.5 2.6C19.5 15.4 12 20 12 20Z" fill="currentColor" />,

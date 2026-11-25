@@ -6,6 +6,7 @@ import { useUI, type MenuEntry } from '../stores/ui';
 import { useAuth } from '../stores/auth';
 import { invalidate } from '../lib/useAsync';
 import { IMPORTED_PATH, isImported } from '../lib/imports';
+import { useJam } from '../stores/jam';
 
 /**
  * Central content actions so every surface (lockups, rows, headers, Now Playing) behaves identically.
@@ -100,7 +101,10 @@ export function menuFor(item: ContentItem, opts: { extra?: MenuEntry[]; navigate
   }
   if (item.type === 'song') goTo.push({ label: 'Credits', icon: 'info', onSelect: () => ui.openCredits(item.data) });
 
-  if (opts.sleepTimer) goTo.push({ label: 'Sleep Timer…', icon: 'clock', onSelect: () => ui.setSleepOpen(true) });
+  if (opts.sleepTimer) {
+    goTo.push({ label: useJam.getState().jam ? 'Jam…' : 'Start a Jam…', icon: 'jam', onSelect: () => useJam.getState().setSheetOpen(true) });
+    goTo.push({ label: 'Sleep Timer…', icon: 'clock', onSelect: () => ui.setSleepOpen(true) });
+  }
   const share: MenuEntry[] = imported ? [] : [{ label: 'Share', icon: 'share', onSelect: () => ui.share(item) }];
 
   const destructive: MenuEntry[] = [...(opts.extra ?? [])];

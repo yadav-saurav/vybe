@@ -4,6 +4,7 @@ import { PlaylistEditorSheet } from './PlaylistEditorSheet';
 import { ShareSheet } from './ShareSheet';
 import { CreditsSheet } from './CreditsSheet';
 import { SleepSheet } from './SleepSheet';
+import { JamSheet } from '../jam/JamSheet';
 
 /** Global modal sheets, mounted once in Layout. Each one is driven by a flag or payload in the ui store. */
 export function Overlays() {
@@ -15,6 +16,7 @@ export function Overlays() {
       <ShareSheet />
       <CreditsSheet />
       <SleepSheet />
+      <JamSheet />
     </>
   );
 }
