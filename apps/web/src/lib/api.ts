@@ -6,7 +6,20 @@ export class ApiError extends Error {
   constructor(status: number, code: string, message: string) { super(message); this.status = status; this.code = code; }
 }
 
+/** Worldwide reads retry quietly when the music service is briefly busy (HTTP 503), up to twice. */
 async function request<R>(method: string, path: string, body?: unknown, signal?: AbortSignal): Promise<R> {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      return await requestOnce<R>(method, path, body, signal);
+    } catch (e) {
+      const busy = e instanceof ApiError && e.status === 503 && method === 'GET' && path.startsWith('/world/');
+      if (!busy || attempt >= 2 || signal?.aborted) throw e;
+      await new Promise((r) => setTimeout(r, 2500 * (attempt + 1)));
+    }
+  }
+}
+
+async function requestOnce<R>(method: string, path: string, body?: unknown, signal?: AbortSignal): Promise<R> {
   const res = await fetch(`/api${path}`, {
     method,
     credentials: 'include',
@@ -23,6 +36,24 @@ async function request<R>(method: string, path: string, body?: unknown, signal?:
 }
 
 const get = <R>(p: string, s?: AbortSignal) => request<R>('GET', p, undefined, s);
+
+/**
+ * Short-lived memory cache for worldwide pages (albums, artists, Show all). Hovering a card warms it,
+ * so the page is usually ready by the time it's clicked. Failed requests are forgotten.
+ */
+const memo = new Map<string, { at: number; p: Promise<unknown> }>();
+const MEMO_MS = 10 * 60_000;
+function cachedGet<R>(path: string): Promise<R> {
+  const hit = memo.get(path);
+  if (hit && Date.now() - hit.at < MEMO_MS) return hit.p as Promise<R>;
+  const p = request<R>('GET', path).catch((e) => { memo.delete(path); throw e; });
+  memo.set(path, { at: Date.now(), p });
+  if (memo.size > 300) memo.delete(memo.keys().next().value as string);
+  return p;
+}
+/** Resolve with the cached promise, but let the caller stop waiting (component unmounted). */
+const withSignal = <R,>(p: Promise<R>, s?: AbortSignal) => (s ? Promise.race([p, new Promise<R>((_, rej) => s.addEventListener('abort', () => rej(new DOMException('Aborted', 'AbortError')), { once: true }))]) : p);
+export const prefetch = (path: string) => { cachedGet(path).catch(() => {}); };
 const enc = encodeURIComponent;
 
 export const api = {
@@ -85,10 +116,10 @@ export const api = {
   worldChart: (country: string, s?: AbortSignal) => get<WorldList>(`/world/charts?country=${enc(country)}`, s),
   worldHome: (s?: AbortSignal) => get<WorldHome>('/world/home', s),
   worldSection: (name: string, s?: AbortSignal) => get<WorldHome>(`/world/section/${name}`, s),
-  worldShelf: (id: string, s?: AbortSignal) => get<WorldShelf>(`/world/shelves/${enc(id)}`, s),
-  worldAlbum: (id: string, s?: AbortSignal) => get<{ album: WorldAlbum; songs: T.Song[] }>(`/world/albums/${enc(id)}`, s),
+  worldShelf: (id: string, s?: AbortSignal) => withSignal(cachedGet<WorldShelf>(`/world/shelves/${enc(id)}`), s),
+  worldAlbum: (id: string, s?: AbortSignal) => withSignal(cachedGet<{ album: WorldAlbum; songs: T.Song[] }>(`/world/albums/${enc(id)}`), s),
   worldSearchAll: (term: string, country: string, s?: AbortSignal) => get<{ songs: T.Song[]; artists: WorldArtist[]; albums: WorldAlbum[] }>(`/world/search-all?term=${enc(term)}&country=${enc(country)}`, s),
-  worldArtist: (id: string, country: string, s?: AbortSignal) => get<{ artist: WorldArtist; songs: T.Song[] }>(`/world/artists/${enc(id)}?country=${enc(country)}`, s),
+  worldArtist: (id: string, country: string, s?: AbortSignal) => withSignal(cachedGet<{ artist: WorldArtist; songs: T.Song[] }>(`/world/artists/${enc(id)}?country=${enc(country)}`), s),
   worldSearch: (term: string, country: string, s?: AbortSignal) => get<WorldList>(`/world/search?term=${enc(term)}&country=${enc(country)}`, s),
 
   // replay

@@ -4,6 +4,7 @@ import clsx from 'clsx';
 import type { Artwork as Art, Song } from '@vybe/shared';
 import type { WorldAlbum, WorldArtist, WorldShelf, WorldStation } from '../../lib/api';
 import { CHARTS } from './charts';
+import { prefetch } from '../../lib/api';
 import { Artwork } from '../../components/Artwork';
 import { Icon } from '../../components/Icon';
 import { usePlayer } from '../../stores/player';
@@ -53,7 +54,7 @@ export function SongCard({ song, songs, index, listTitle, onLight }: { song: Son
   const playing = usePlayer((p) => p.isPlaying);
   const menu = (e: React.MouseEvent) => openMenuAt(e, menuFor({ type: 'song', data: song }, { navigate }));
   return (
-    <div className={clsx(s.card, isCurrent && s.cardOn)} onMouseEnter={() => onLight?.(song.artwork)} onFocus={() => onLight?.(song.artwork)} onContextMenu={menu}>
+    <div data-glow-host className={clsx(s.card, isCurrent && s.cardOn)} onMouseEnter={() => onLight?.(song.artwork)} onFocus={() => onLight?.(song.artwork)} onContextMenu={menu}>
       <div className={s.art}>
         <ArtGlow artwork={song.artwork} />
         <div className={s.artInner}><Artwork artwork={song.artwork} size={300} rounded="sm" /></div>
@@ -74,7 +75,7 @@ export function SongCard({ song, songs, index, listTitle, onLight }: { song: Son
 export function ArtistCard({ artist, onLight }: { artist: WorldArtist; onLight?: OnLight }) {
   const to = `/world/artist/${artist.id}?c=${artist.country}`;
   return (
-    <Link to={to} className={s.artist} onMouseEnter={() => artist.artwork && onLight?.(artist.artwork)} onFocus={() => artist.artwork && onLight?.(artist.artwork)}>
+    <Link data-glow-host to={to} className={s.artist} onPointerEnter={() => prefetch(`/world/artists/${artist.id}?country=${artist.country}`)} onMouseEnter={() => artist.artwork && onLight?.(artist.artwork)} onFocus={() => artist.artwork && onLight?.(artist.artwork)}>
       <div className={clsx(s.art, s.artRound)}>
         {artist.artwork && <ArtGlow artwork={artist.artwork} round />}
         <div className={s.artInner}>{artist.artwork ? <Artwork artwork={artist.artwork} size={300} rounded="circle" /> : <span className={s.noArt}><Icon name="artist" size={40} /></span>}</div>
@@ -87,7 +88,7 @@ export function ArtistCard({ artist, onLight }: { artist: WorldArtist; onLight?:
 
 export function AlbumCard({ album, onLight }: { album: WorldAlbum; onLight?: OnLight }) {
   return (
-    <Link to={`/world/album/${album.id}`} className={s.card} onMouseEnter={() => onLight?.(album.artwork)} onFocus={() => onLight?.(album.artwork)}>
+    <Link data-glow-host to={`/world/album/${album.id}`} className={s.card} onPointerEnter={() => prefetch(`/world/albums/${album.id}`)} onMouseEnter={() => onLight?.(album.artwork)} onFocus={() => onLight?.(album.artwork)}>
       <div className={s.art}>
         <ArtGlow artwork={album.artwork} />
         <div className={s.artInner}><Artwork artwork={album.artwork} size={300} rounded="sm" /></div>
@@ -125,7 +126,7 @@ export function StationCard({ station, onLight }: { station: WorldStation; onLig
     p.playSongs(station.songs, 0, { type: 'queue', id: station.id, title: station.name }, { shuffle: true });
   };
   return (
-    <div className={clsx(s.card, s.station, isOn && s.cardOn)} onMouseEnter={() => onLight?.(station.artwork)} onFocus={() => onLight?.(station.artwork)}>
+    <div data-glow-host className={clsx(s.card, s.station, isOn && s.cardOn)} onMouseEnter={() => onLight?.(station.artwork)} onFocus={() => onLight?.(station.artwork)}>
       <div className={s.art}>
         <ArtGlow artwork={station.artwork} />
         <div className={clsx(s.artInner, s.stationArt)}>
@@ -154,7 +155,7 @@ function Hero({ shelf, onLight }: { shelf: WorldShelf; onLight?: OnLight }) {
   return (
     <section className={s.hero} aria-label={shelf.title}>
       <div className={s.heroMain} onMouseEnter={() => onLight?.(first.artwork)}>
-        <div className={s.heroArt}><ArtGlow artwork={first.artwork} /><div className={s.artInner}><Artwork artwork={first.artwork} size={600} rounded="md" eager /></div></div>
+        <div className={s.heroArt}><ArtGlow artwork={first.artwork} always /><div className={s.artInner}><Artwork artwork={first.artwork} size={600} rounded="md" eager /></div></div>
         <div className={s.heroText}>
           <p className={s.eyebrow}>{shelf.title} · #1</p>
           <h2 className={clsx(s.heroTitle, 'clamp-2')}>{first.title}</h2>

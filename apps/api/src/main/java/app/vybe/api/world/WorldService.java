@@ -392,7 +392,7 @@ public class WorldService {
         for (JsonNode r : results) {
             if ("artist".equals(r.path("wrapperType").asText())) {
                 currentId = "wa_" + r.path("artistId").asLong();
-                currentName = r.path("artistName").asText();
+                currentName = clean(r.path("artistName").asText());
                 currentGenre = r.path("primaryGenreName").asText("");
                 songs.put(currentId, new ArrayList<>());
                 continue;
@@ -493,7 +493,7 @@ public class WorldService {
             if (!id.matches("\\d{1,15}")) {
                 continue;
             }
-            out.add(new WorldAlbum("wl_" + cc + "_" + id, r.path("name").asText(), r.path("artistName").asText(),
+            out.add(new WorldAlbum("wl_" + cc + "_" + id, clean(r.path("name").asText()), clean(r.path("artistName").asText()),
                     "wa_" + r.path("artistId").asText("0"), art(r.path("artworkUrl100").asText(""), Long.parseLong(id)),
                     r.path("releaseDate").asText(""), cc));
         }
@@ -507,7 +507,7 @@ public class WorldService {
     private WorldAlbum album(JsonNode r, String cc) {
         long id = r.path("collectionId").asLong();
         String date = r.path("releaseDate").asText("");
-        return new WorldAlbum("wl_" + cc + "_" + id, r.path("collectionName").asText(""), r.path("artistName").asText(""),
+        return new WorldAlbum("wl_" + cc + "_" + id, clean(r.path("collectionName").asText("")), clean(r.path("artistName").asText("")),
                 "wa_" + r.path("artistId").asLong(), art(r.path("artworkUrl100").asText(""), id), date.length() >= 10 ? date.substring(0, 10) : date, cc);
     }
 
@@ -583,6 +583,11 @@ public class WorldService {
         return out;
     }
 
+    /** Names from Apple sometimes carry doubled or trailing spaces; show them tidy. */
+    private static String clean(String v) {
+        return v == null ? "" : v.replaceAll("\\s+", " ").trim();
+    }
+
     private Song toSong(JsonNode r, String cc, String preview) {
         long trackId = r.path("trackId").asLong();
         String art = r.path("artworkUrl100").asText("").replace("100x100bb", "600x600bb");
@@ -590,10 +595,10 @@ public class WorldService {
         String released = r.path("releaseDate").asText("");
         return new Song(
                 "wd_" + cc + "_" + trackId,
-                r.path("trackName").asText("Untitled"),
-                new ArtistRef("wa_" + r.path("artistId").asLong(), r.path("artistName").asText("Unknown Artist")),
+                clean(r.path("trackName").asText("Untitled")),
+                new ArtistRef("wa_" + r.path("artistId").asLong(), clean(r.path("artistName").asText("Unknown Artist"))),
                 List.of(),
-                new AlbumRef("wl_" + cc + "_" + r.path("collectionId").asLong(), r.path("collectionName").asText("")),
+                new AlbumRef("wl_" + cc + "_" + r.path("collectionId").asLong(), clean(r.path("collectionName").asText(""))),
                 "world",
                 r.path("trackNumber").asInt(1),
                 r.path("discNumber").asInt(1),
@@ -645,21 +650,48 @@ public class WorldService {
         }
     }
 
-    /** Apple allows ~20 calls a minute per server: space every call out (one gate for the whole app). */
-    private static final long MIN_GAP_MS = 3200;
+    /**
+     * Apple allows ~20 calls a minute per server. A rolling one-minute budget of 18 calls: what a
+     * listener is waiting for (opening an album, a search) goes out at once while budget remains;
+     * the background home builder only spends calls while 6 are still free for listeners.
+     */
+    private static final int BUDGET = 18;
+    private static final int RESERVED_FOR_LISTENERS = 6;
+    private static final long WINDOW_MS = 60_000;
     private final Object gate = new Object();
-    private long nextCallAt;
+    private final java.util.ArrayDeque<Long> recent = new java.util.ArrayDeque<>();
+    private long refusedUntil;
+
+    private static boolean background() {
+        return Thread.currentThread().getName().startsWith("world-");
+    }
 
     private void waitTurn() throws InterruptedException {
-        long wait;
-        synchronized (gate) {
-            long now = System.currentTimeMillis();
-            long at = Math.max(now, nextCallAt);
-            nextCallAt = at + MIN_GAP_MS;
-            wait = at - now;
-        }
-        if (wait > 0) {
-            Thread.sleep(wait);
+        boolean bg = background();
+        int limit = bg ? BUDGET - RESERVED_FOR_LISTENERS : BUDGET;
+        long deadline = System.currentTimeMillis() + (bg ? 10 * 60_000L : 12_000L);
+        while (true) {
+            long wait;
+            synchronized (gate) {
+                long now = System.currentTimeMillis();
+                while (!recent.isEmpty() && now - recent.peekFirst() >= WINDOW_MS) {
+                    recent.pollFirst();
+                }
+                boolean cooling = bg && now < refusedUntil; // after a refusal, background work steps back
+                // Background calls are spaced out so they never burst (Apple refuses bursts early).
+                boolean spaced = !bg || recent.isEmpty() || now - recent.peekLast() >= 4_000;
+                if (!cooling && spaced && recent.size() < limit) {
+                    recent.addLast(now);
+                    return;
+                }
+                wait = cooling ? refusedUntil - now
+                        : recent.size() < limit ? 4_000 - (now - recent.peekLast())
+                        : WINDOW_MS - (now - recent.peekFirst()) + 50;
+                if (now + wait > deadline) {
+                    throw new ApiException(503, "world_busy", "Lots of people are listening right now. Try again in a few seconds.");
+                }
+            }
+            Thread.sleep(Math.min(wait, 2_000));
         }
     }
 
@@ -669,10 +701,11 @@ public class WorldService {
             if (body != null) {
                 return body;
             }
-            // Refused (rate limit): back off once, then give up with a friendly message.
+            // Refused (rate limit): background work pauses for 30 s; a listener's request retries once shortly.
             synchronized (gate) {
-                nextCallAt = Math.max(nextCallAt, System.currentTimeMillis() + 12_000);
+                refusedUntil = System.currentTimeMillis() + 30_000;
             }
+            Thread.sleep(background() ? 30_000 : 4_000);
             body = httpGetOnce(url);
             if (body != null) {
                 return body;

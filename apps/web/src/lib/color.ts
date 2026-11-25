@@ -24,7 +24,18 @@ export const tintVars = (a?: Artwork): CSSProperties => {
   return { '--tint-bg': bg, '--tint-1': a.textColor1, '--tint-2': t2, '--tint-3': t3 } as CSSProperties;
 };
 
-export const artUrl = (a: Artwork | undefined, size: number) => (a ? `${a.url}${a.url.includes('?') ? '&' : '?'}w=${size}` : undefined);
+/**
+ * Artwork at the size it's shown. Apple's image service renders any size from the URL itself
+ * (".../600x600bb.jpg"), so thumbnails download small; other images take a ?w= hint.
+ */
+export const artUrl = (a: Artwork | undefined, size: number) => {
+  if (!a) return undefined;
+  if (a.url.includes('mzstatic.com') && /\/\d+x\d+bb\.jpg$/.test(a.url)) {
+    const px = Math.min(1000, Math.max(60, Math.ceil(size / 50) * 50)); // a few sizes, so the browser cache gets hits
+    return a.url.replace(/\/\d+x\d+bb\.jpg$/, `/${px}x${px}bb.jpg`);
+  }
+  return `${a.url}${a.url.includes('?') ? '&' : '?'}w=${size}`;
+};
 
 /** Avatar background: the listener's colour, deepened just enough that the white initial reads (AA, 4.5:1). */
 export const avatarBg = (color: string) => ensureContrast(color, '#ffffff', '#000000');

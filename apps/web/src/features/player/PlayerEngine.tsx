@@ -167,7 +167,10 @@ function useDocumentTitle() {
     let ours: string | null = null;
     const apply = () => {
       const s = P();
-      const want = s.isPlaying && s.current ? `${s.current.song.title} — ${s.current.song.artist.name}` : null;
+      // Browsers collapse repeated spaces in document.title; compare in that form or the observer below
+      // would keep "correcting" the title forever (a song named "A  B" froze the page).
+      const raw = s.isPlaying && s.current ? `${s.current.song.title} — ${s.current.song.artist.name}` : null;
+      const want = raw === null ? null : raw.replace(/\s+/g, ' ').trim();
       if (want === ours) return;
       ours = want;
       document.title = want ?? pageTitle;

@@ -4,9 +4,6 @@
 :root[data-theme="dark"] .light { opacity: 0.16; }
 :root[data-theme="dark"] .on { opacity: 0.38; }
 .layer { position: absolute; inset: -25%; animation: fadeIn 1.4s var(--ease) both; }
-.layer img { width: 100%; height: 100%; object-fit: cover; filter: blur(110px) saturate(2.2); }
-/* A slow drift so the light feels alive while music plays. */
-.on .layer img { animation: drift 24s ease-in-out infinite alternate; }
+.layer img { position: absolute; left: 50%; top: 50%; width: 48px; height: 48px; object-fit: cover; filter: blur(4px) saturate(2.2); transform: translate(-50%, -50%) scale(45); }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-@keyframes drift { from { transform: scale(1) translate3d(0, 0, 0); } to { transform: scale(1.15) translate3d(3%, -2%, 0); } }
-@media (prefers-reduced-motion: reduce) { .layer { animation: none; } .on .layer img { animation: none; } .light { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .layer { animation: none; } .light { transition: none; } }

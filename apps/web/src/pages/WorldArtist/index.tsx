@@ -36,7 +36,7 @@ export default function WorldArtistPage() {
       <Link to={WORLD_PATH} className={s.back}><Icon name="chevron-left" size={16} />Worldwide</Link>
       <header className={s.header}>
         <div className={s.photo}>
-          {a?.artwork ? <><ArtGlow artwork={a.artwork} round /><div className={s.photoInner}><Artwork artwork={a.artwork} size={600} rounded="circle" eager /></div></>
+          {a?.artwork ? <><ArtGlow artwork={a.artwork} round always /><div className={s.photoInner}><Artwork artwork={a.artwork} size={600} rounded="circle" eager /></div></>
             : <div className={`${s.photoInner} ${s.sk}`} />}
         </div>
         <div className={s.meta}>

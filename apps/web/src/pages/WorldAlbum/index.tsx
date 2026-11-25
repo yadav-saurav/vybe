@@ -43,7 +43,7 @@ export default function WorldAlbumPage() {
       <AmbientGlow artwork={a?.artwork} />
       <header className={s.header}>
         <div className={s.photo} style={{ borderRadius: 12 }}>
-          {a ? <><ArtGlow artwork={a.artwork} /><div className={s.photoInner} style={{ borderRadius: 12 }}><Artwork artwork={a.artwork} size={600} rounded="md" eager /></div></>
+          {a ? <><ArtGlow artwork={a.artwork} always /><div className={s.photoInner} style={{ borderRadius: 12 }}><Artwork artwork={a.artwork} size={600} rounded="md" eager /></div></>
             : <div className={`${s.photoInner} ${s.sk}`} style={{ borderRadius: 12 }} />}
         </div>
         <div className={s.meta}>

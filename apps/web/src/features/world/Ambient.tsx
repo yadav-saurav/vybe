@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { Artwork } from '@vybe/shared';
 import { artUrl } from '../../lib/color';
 import s from './Ambient.module.css';
@@ -27,7 +27,25 @@ export function AmbientGlow({ artwork }: { artwork?: Artwork | null }) {
   );
 }
 
-/** The same glow, tight around one piece of artwork (cards light up on hover). */
-export function ArtGlow({ artwork, round }: { artwork: Artwork; round?: boolean }) {
-  return <img className={round ? `${s.cardGlow} ${s.round}` : s.cardGlow} src={artUrl(artwork, 200)} alt="" aria-hidden draggable={false} loading="lazy" />;
+/**
+ * The same glow, tight around one piece of artwork (cards light up on hover). It renders only while
+ * its card is hovered or focused, so a page of cards doesn't keep hundreds of blurred images alive.
+ */
+export function ArtGlow({ artwork, round, always }: { artwork: Artwork; round?: boolean; always?: boolean }) {
+  const [on, setOn] = useState(!!always);
+  const ref = useRef<HTMLSpanElement>(null);
+  useEffect(() => {
+    if (always) return;
+    const host = ref.current?.closest('[data-glow-host]');
+    if (!host) return;
+    const enter = () => setOn(true), leave = () => setOn(false);
+    host.addEventListener('pointerenter', enter); host.addEventListener('pointerleave', leave);
+    host.addEventListener('focusin', enter); host.addEventListener('focusout', leave);
+    return () => { host.removeEventListener('pointerenter', enter); host.removeEventListener('pointerleave', leave); host.removeEventListener('focusin', enter); host.removeEventListener('focusout', leave); };
+  }, [always]);
+  return (
+    <span ref={ref} className={s.glowSlot} aria-hidden>
+      {on && <img className={round ? `${s.cardGlow} ${s.round}` : s.cardGlow} src={artUrl(artwork, 100)} alt="" draggable={false} />}
+    </span>
+  );
 }
