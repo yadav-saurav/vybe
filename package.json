@@ -7,13 +7,14 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "concurrently -n api,web -c blue,magenta \"npm run dev -w @vybe/server\" \"npm run dev -w @vybe/web\"",
-    "build": "npm run build -w @vybe/web && npm run build -w @vybe/server",
-    "start": "npm run start -w @vybe/server",
-    "test": "npm run test --workspaces --if-present",
+    "dev": "concurrently -n api,web -c blue,magenta \"npm run dev:api\" \"npm run dev -w @vybe/web\"",
+    "build": "npm run build -w @vybe/web && cd apps/api && ./mvnw -q -DskipTests package",
+    "start": "java -jar apps/api/target/vybe-api.jar",
+    "test": "npm run test -w @vybe/web && cd apps/api && ./mvnw -q test",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "generate:catalog": "python3 scripts/generate_catalog.py",
-    "seed": "npm run seed -w @vybe/server"
+    "seed": "echo 'Seeding runs automatically on API startup (VYBE_AUTOSEED=true)'",
+    "dev:api": "cd apps/api && ./mvnw -q spring-boot:run"
   },
   "devDependencies": {
     "concurrently": "^9.2.5"
