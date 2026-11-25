@@ -414,3 +414,51 @@ describe('stations, transport and settings', () => {
     expect(saved.positionMs).toBe(42_000);
   });
 });
+
+describe('sleep timer', () => {
+  it('"after this song" stops at the end of the current song and loads the next one paused', () => {
+    P().playSongs(songs(1, 2, 3), 0, ctx);
+    P().setSleep('end');
+    expect(P().sleepAtEnd).toBe(true);
+    P()._onEnded();
+    expect(cur()).toBe('so_2');
+    expect(P().isPlaying).toBe(false);
+    expect(P().sleepAtEnd).toBe(false);
+    // The following song after resuming is a normal play-through again.
+    P().play();
+    P()._onEnded();
+    expect(cur()).toBe('so_3');
+    expect(P().isPlaying).toBe(true);
+  });
+
+  it('a manual skip does not consume "after this song"', () => {
+    P().playSongs(songs(1, 2, 3), 0, ctx);
+    P().setSleep('end');
+    P().next();
+    expect(cur()).toBe('so_2');
+    expect(P().isPlaying).toBe(true);
+    expect(P().sleepAtEnd).toBe(true);
+  });
+
+  it('timed sleep fires exactly once, after the deadline', () => {
+    P().playSongs(songs(1, 2), 0, ctx);
+    P().setSleep(15);
+    const at = P().sleepEndsAt!;
+    expect(at).toBeGreaterThan(Date.now() + 14 * 60_000);
+    expect(P()._sleepDue(at - 1)).toBe(false);
+    expect(P()._sleepDue(at)).toBe(true);
+    expect(P()._sleepDue(at + 1000)).toBe(false);
+    expect(P().sleepEndsAt).toBeNull();
+  });
+
+  it('setting one mode replaces the other, and null cancels', () => {
+    P().setSleep('end');
+    P().setSleep(30);
+    expect(P().sleepAtEnd).toBe(false);
+    expect(P().sleepEndsAt).not.toBeNull();
+    P().setSleep('end');
+    expect(P().sleepEndsAt).toBeNull();
+    P().setSleep(null);
+    expect(P().sleepAtEnd).toBe(false);
+  });
+});

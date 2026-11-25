@@ -41,6 +41,9 @@ export interface PlayerState {
   shuffle: boolean;
   repeat: RepeatMode;
   autoplayEnabled: boolean;
+  /** Sleep timer: stop at this wall-clock time (ms), and/or after the current song ends. Never persisted. */
+  sleepEndsAt: number | null;
+  sleepAtEnd: boolean;
   /** Increments whenever the engine must (re)load `current` from position `seekRequest`. */
   loadToken: number;
   seekRequest: { ms: number; token: number } | null;
@@ -69,6 +72,10 @@ export interface PlayerState {
   toggleMute: () => void;
   setAutoplayEnabled: (v: boolean) => void;
   setAutoplaySongs: (songs: Song[]) => void;
+  /** minutes: stop after N minutes; 'end': stop when this song finishes; null: cancel. */
+  setSleep: (mode: number | 'end' | null) => void;
+  /** Engine heartbeat: true exactly once when the timed sleep has expired (and clears it). */
+  _sleepDue: (now: number) => boolean;
   /** Extend the autoplay continuation (keeps existing items and their uids). */
   appendAutoplaySongs: (songs: Song[]) => void;
 
@@ -106,10 +113,14 @@ export const usePlayer = create<PlayerState>((set, get) => {
   /** Advance to the next item. `auto` = triggered by track end (respects repeat-one). */
   const advance = (auto: boolean) => {
     const s = get();
-    if (auto && s.repeat === 'one' && s.current) { set({ seekRequest: seekTo(0), isPlaying: true }); return; }
+    // Sleep timer "after this song": the next item loads paused instead of playing.
+    const sleeping = auto && s.sleepAtEnd;
+    const playing = !sleeping;
+    if (sleeping) set({ sleepAtEnd: false, sleepEndsAt: null });
+    if (auto && s.repeat === 'one' && s.current) { set({ seekRequest: seekTo(0), isPlaying: playing }); return; }
     const history = s.current ? [...s.history, s.current].slice(-HISTORY_LIMIT) : s.history;
-    if (s.userQueue.length) { const [n, ...rest] = s.userQueue; set({ history, current: n, userQueue: rest, positionMs: 0, durationMs: n.song.durationMs, loadToken: s.loadToken + 1, isPlaying: true }); return; }
-    if (s.contextQueue.length) { const [n, ...rest] = s.contextQueue; set({ history, current: n, contextQueue: rest, positionMs: 0, durationMs: n.song.durationMs, loadToken: s.loadToken + 1, isPlaying: true }); return; }
+    if (s.userQueue.length) { const [n, ...rest] = s.userQueue; set({ history, current: n, userQueue: rest, positionMs: 0, durationMs: n.song.durationMs, loadToken: s.loadToken + 1, isPlaying: playing }); return; }
+    if (s.contextQueue.length) { const [n, ...rest] = s.contextQueue; set({ history, current: n, contextQueue: rest, positionMs: 0, durationMs: n.song.durationMs, loadToken: s.loadToken + 1, isPlaying: playing }); return; }
     if (s.repeat === 'all' && s.contextOriginal.length) {
       const order = s.shuffle ? shuffleArray(s.contextOriginal) : s.contextOriginal;
       const fresh = order.map((q) => toItem(q.song, 'context'));
@@ -117,10 +128,10 @@ export const usePlayer = create<PlayerState>((set, get) => {
       // Keep contextOriginal in sync with the fresh uids so un-shuffling still finds its place.
       const byId = new Map(fresh.map((q) => [q.song.id, q]));
       const original = s.shuffle ? s.contextOriginal.map((q) => byId.get(q.song.id) ?? toItem(q.song, 'context')) : fresh;
-      set({ history, current: n, contextQueue: rest, contextOriginal: original, positionMs: 0, durationMs: n.song.durationMs, loadToken: s.loadToken + 1, isPlaying: true });
+      set({ history, current: n, contextQueue: rest, contextOriginal: original, positionMs: 0, durationMs: n.song.durationMs, loadToken: s.loadToken + 1, isPlaying: playing });
       return;
     }
-    if (s.autoplayEnabled && s.autoplay.length) { const [n, ...rest] = s.autoplay; set({ history, current: n, autoplay: rest, positionMs: 0, durationMs: n.song.durationMs, loadToken: s.loadToken + 1, isPlaying: true }); return; }
+    if (s.autoplayEnabled && s.autoplay.length) { const [n, ...rest] = s.autoplay; set({ history, current: n, autoplay: rest, positionMs: 0, durationMs: n.song.durationMs, loadToken: s.loadToken + 1, isPlaying: playing }); return; }
     // End of everything: stop at start of last track (reference behaviour).
     set({ isPlaying: false, seekRequest: seekTo(0), positionMs: 0 });
   };
@@ -143,6 +154,8 @@ export const usePlayer = create<PlayerState>((set, get) => {
     shuffle: persisted?.shuffle ?? false,
     repeat: persisted?.repeat ?? 'off',
     autoplayEnabled: persisted?.autoplayEnabled ?? true,
+    sleepEndsAt: null,
+    sleepAtEnd: false,
     loadToken: 0,
     seekRequest: persisted?.positionMs ? { ms: persisted.positionMs, token: 1 } : null, // restore point; engine applies it paused
     error: null,
@@ -245,6 +258,15 @@ export const usePlayer = create<PlayerState>((set, get) => {
     toggleMute: () => { const s = get(); if (s.muted && s.volume <= 0) set({ muted: false, volume: 0.5 }); else set({ muted: !s.muted }); },
     setAutoplayEnabled: (autoplayEnabled) => set({ autoplayEnabled }),
     setAutoplaySongs: (songs) => set({ autoplay: songs.map((x) => toItem(x, 'autoplay')) }),
+    setSleep: (mode) => set(mode === null ? { sleepEndsAt: null, sleepAtEnd: false }
+      : mode === 'end' ? { sleepAtEnd: true, sleepEndsAt: null }
+      : { sleepEndsAt: Date.now() + mode * 60_000, sleepAtEnd: false }),
+    _sleepDue: (now) => {
+      const at = get().sleepEndsAt;
+      if (at === null || now < at) return false;
+      set({ sleepEndsAt: null });
+      return true;
+    },
     appendAutoplaySongs: (songs) => set({ autoplay: [...get().autoplay, ...songs.map((x) => toItem(x, 'autoplay'))] }),
 
     _onTime: (positionMs, durationMs, bufferedMs) => set({ positionMs, durationMs: durationMs || get().durationMs, bufferedMs }),

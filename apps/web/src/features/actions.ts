@@ -57,7 +57,7 @@ export async function startStationFrom(item: ContentItem) {
 const libType = (item: ContentItem) => (item.type === 'station' ? null : item.type);
 
 /** Build the "···" context menu for any content item. `extra` entries are prepended (e.g. "Remove from Playlist"). */
-export function menuFor(item: ContentItem, opts: { extra?: MenuEntry[]; navigate?: (to: string) => void } = {}): MenuEntry[] {
+export function menuFor(item: ContentItem, opts: { extra?: MenuEntry[]; navigate?: (to: string) => void; sleepTimer?: boolean } = {}): MenuEntry[] {
   const lib = useLibrary.getState();
   const ui = useUI.getState();
   const t = libType(item);
@@ -100,6 +100,7 @@ export function menuFor(item: ContentItem, opts: { extra?: MenuEntry[]; navigate
   }
   if (item.type === 'song') goTo.push({ label: 'Credits', icon: 'info', onSelect: () => ui.openCredits(item.data) });
 
+  if (opts.sleepTimer) goTo.push({ label: 'Sleep Timer…', icon: 'clock', onSelect: () => ui.setSleepOpen(true) });
   const share: MenuEntry[] = imported ? [] : [{ label: 'Share', icon: 'share', onSelect: () => ui.share(item) }];
 
   const destructive: MenuEntry[] = [...(opts.extra ?? [])];

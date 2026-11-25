@@ -52,6 +52,8 @@ interface UIState {
 
   share: (item: ContentItem) => void;
   shareItem: ContentItem | null;
+  sleepOpen: boolean;
+  setSleepOpen: (v: boolean) => void;
   creditsSong: Song | null;
   openCredits: (song: Song) => void;
   closeCredits: () => void;
@@ -104,6 +106,8 @@ export const useUI = create<UIState>((set, get) => ({
   setPageTint: (pageTint) => { if (get().pageTint?.url !== pageTint?.url) set({ pageTint }); },
 
   shareItem: null,
+  sleepOpen: false,
+  setSleepOpen: (sleepOpen) => set({ sleepOpen }),
   creditsSong: null,
   openCredits: (creditsSong) => set({ creditsSong }),
   closeCredits: () => set({ creditsSong: null }),

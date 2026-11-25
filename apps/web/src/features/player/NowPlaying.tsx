@@ -114,6 +114,7 @@ function Sheet({ shown }: { shown: boolean }) {
             <Transport />
             <VolumeRow className={s.volume} />
             <Toggles hasLyrics={song.hasLyrics} pane={effectivePane} />
+            <SleepChip />
           </div>
         </div>
       ) : (
@@ -125,6 +126,7 @@ function Sheet({ shown }: { shown: boolean }) {
             <Transport />
             <VolumeRow className={s.volume} />
             <Toggles hasLyrics={song.hasLyrics} pane={effectivePane} />
+            <SleepChip />
           </div>
           <div className={s.pane} inert={!effectivePane} aria-hidden={!effectivePane}>{paneNode}</div>
         </div>
@@ -152,10 +154,30 @@ function Meta({ song, compact }: { song: Song; compact?: boolean }) {
         onClick={() => useLibrary.getState().toggleLove('song', song.id)}>
         <Icon name={loved ? 'heart-fill' : 'heart'} size={18} />
       </button>
-      <button className={s.round} aria-label="More" title="More" onClick={(e) => openMenuAt(e, menuFor({ type: 'song', data: song }, { navigate: go }))}>
+      <button className={s.round} aria-label="More" title="More" onClick={(e) => openMenuAt(e, menuFor({ type: 'song', data: song }, { navigate: go, sleepTimer: true }))}>
         <Icon name="more" size={18} />
       </button>
     </div>
+  );
+}
+
+/** Shows the active sleep timer (countdown or "after this song"); tap to change it. */
+export function SleepChip() {
+  const endsAt = usePlayer((p) => p.sleepEndsAt);
+  const atEnd = usePlayer((p) => p.sleepAtEnd);
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (!endsAt) return;
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [endsAt]);
+  if (!endsAt && !atEnd) return null;
+  const left = endsAt ? Math.max(0, endsAt - now) : 0;
+  const label = atEnd ? 'Sleep after this song' : `Sleep in ${Math.floor(left / 60000)}:${String(Math.floor((left % 60000) / 1000)).padStart(2, '0')}`;
+  return (
+    <button className={s.sleepChip} onClick={() => useUI.getState().setSleepOpen(true)} aria-label={`${label}. Change sleep timer`}>
+      <Icon name="clock" size={13} />{label}
+    </button>
   );
 }
 

@@ -98,6 +98,7 @@ let fadeTimer: ReturnType<typeof setInterval> | undefined;
 
 function maybeStartCrossfade(a: El) {
   const secs = useSettings.getState().crossfadeSec;
+  if (P().sleepAtEnd) return; // let the song finish; the timer stops playback at its end
   if (!secs || crossfadeArmed || !Number.isFinite(a.duration) || a.duration < secs * 3) return;
   const remaining = a.duration - a.currentTime;
   if (remaining > secs || remaining < 0.3) return;
@@ -107,6 +108,20 @@ function maybeStartCrossfade(a: El) {
   if (!next || !sb || sb._url !== next.song.audioUrl || sb.readyState < 2) return; // only when preloaded
   crossfadeArmed = true;
   s.next();
+}
+
+// Sleep timer: ease the volume to zero over 3 s, then pause (volume is restored for next time).
+let sleepFade: ReturnType<typeof setInterval> | undefined;
+function fadeOutAndPause() {
+  const a = active();
+  if (!a || a.paused) return;
+  clearInterval(sleepFade);
+  const start = a.volume, t0 = performance.now();
+  sleepFade = setInterval(() => {
+    const k = Math.min(1, (performance.now() - t0) / 3000);
+    a.volume = Math.max(0, start * (1 - k));
+    if (k >= 1) { clearInterval(sleepFade); P().pause(); applyVolume(P(), a); }
+  }, 50);
 }
 
 /** Fade `from` out and `to` in over `ms`, then pause `from`. */
@@ -189,6 +204,7 @@ function playSafe(a: El) {
 function load(s: PlayerState, opts: { autoplay: boolean; atMs: number }) {
   if (!els) return;
   clearTimeout(errorTimer);
+  clearInterval(sleepFade);
   const item = s.current;
   const cur = active()!;
   if (!item) { quietPause(cur); cur.removeAttribute('src'); cur._url = undefined; cur._uid = undefined; cur.load(); emitFrame(); return; }
@@ -290,6 +306,8 @@ export function startEngine() {
     if (s.userQueue !== prev.userQueue || s.contextQueue !== prev.contextQueue || s.autoplay !== prev.autoplay || s.repeat !== prev.repeat) schedulePreload();
   });
 
+  const sleepTimer = setInterval(() => { if (P()._sleepDue(Date.now())) fadeOutAndPause(); }, 1000);
+
   const unsubSettings = useSettings.subscribe((st, prev) => {
     if (st.soundCheck !== prev.soundCheck) { const a = active(); if (a) applyVolume(P(), a); }
   });
@@ -297,6 +315,7 @@ export function startEngine() {
   return () => {
     unsub();
     unsubSettings();
+    clearInterval(sleepTimer); clearInterval(sleepFade);
     clearInterval(fadeTimer);
     cancelAnimationFrame(rafId); rafId = 0;
     clearTimeout(preloadTimer); clearTimeout(errorTimer);

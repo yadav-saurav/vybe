@@ -1,0 +1,10 @@
+.sheet { width: min(340px, 100%); }
+.wrap { display: flex; flex-direction: column; gap: 6px; padding: 6px; }
+.title { font-size: 20px; font-weight: 700; }
+.sub { color: var(--text-2); font-size: var(--fs-callout); margin-bottom: 8px; }
+.list { display: flex; flex-direction: column; gap: 6px; }
+.opt { width: 100%; height: 44px; padding: 0 16px; border-radius: var(--r-md); background: var(--bg-hover); text-align: left; font-size: var(--fs-body); font-weight: 500; }
+.opt:hover { background: var(--bg-selected); }
+.optOn, .optOn:hover { background: var(--key); color: var(--text-on-key); }
+.off { margin-top: 6px; height: 40px; border-radius: var(--r-pill); color: #e5484d; font-weight: 600; }
+.off:hover { background: var(--bg-hover); }
