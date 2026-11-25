@@ -1,0 +1,15 @@
+.sheet { width: min(400px, 100%); }
+.form { display: flex; flex-direction: column; gap: 6px; padding: 6px; }
+.title { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+.body { color: var(--text-2); font-size: var(--fs-callout); margin-bottom: 6px; line-height: 1.4; }
+.label { font-size: var(--fs-footnote); font-weight: 600; color: var(--text-2); margin-top: 8px; }
+.input { height: 40px; padding: 0 12px; border-radius: var(--r-md); border: 1px solid var(--separator); background: var(--bg); color: var(--text-1); font-size: var(--fs-body); }
+.input:focus { border-color: rgba(var(--key-rgb), 0.6); box-shadow: var(--focus-ring); }
+.hint { font-size: var(--fs-footnote); color: var(--text-2); }
+.error { color: #e5484d; font-size: var(--fs-callout); margin-top: 6px; }
+.actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px; }
+.ghost, .primary, .danger { height: 40px; padding: 0 20px; border-radius: var(--r-pill); font-weight: 600; }
+.ghost:hover { background: var(--bg-hover); }
+.primary { background: var(--key); color: var(--text-on-key); }
+.danger { background: #e5484d; color: #fff; }
+.primary:disabled, .danger:disabled { opacity: 0.45; }

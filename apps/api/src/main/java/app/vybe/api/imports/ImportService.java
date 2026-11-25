@@ -318,6 +318,31 @@ public class ImportService {
         }
     }
 
+    /** Removes every imported file of a user (used when the account is deleted; rows go with the user). */
+    public void deleteAllFor(String userId) {
+        if (blobs.remote()) {
+            for (ImportRepository.Row r : repo.findByUser(userId)) {
+                blobs.delete(userId + "/" + r.id() + "." + r.fileExt(), userId + "/" + r.id() + ".jpg");
+            }
+            return;
+        }
+        Path dir = root.resolve(userId).normalize();
+        if (!dir.startsWith(root) || !Files.isDirectory(dir)) {
+            return;
+        }
+        try (var walk = Files.walk(dir)) {
+            walk.sorted(java.util.Comparator.reverseOrder()).forEach(p -> {
+                try {
+                    Files.deleteIfExists(p);
+                } catch (IOException e) {
+                    log.warn("could not delete {}: {}", p, e.toString());
+                }
+            });
+        } catch (IOException e) {
+            log.warn("could not clean imports of {}: {}", userId, e.toString());
+        }
+    }
+
     // ------------------------------------------------------------------ mapping
 
     public Song toSong(ImportRepository.Row r) {

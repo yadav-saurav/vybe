@@ -30,3 +30,12 @@
 .segBtn { height: 28px; padding: 0 14px; border-radius: 7px; font-size: var(--fs-callout); font-weight: 500; }
 .segOn { background: var(--bg); box-shadow: 0 1px 3px rgba(0,0,0,0.15); }
 @media (max-width: 760px) { .account { flex-direction: column; } .rowItem { flex-wrap: wrap; } .range { width: 140px; } }
+
+.textBtn { color: var(--key); font-weight: 600; font-size: var(--fs-callout); padding: 6px 4px; border-radius: var(--r-sm); }
+.textBtn:hover { text-decoration: underline; }
+.danger { color: #e5484d; }
+.eq { display: flex; align-items: flex-end; gap: 14px; padding: 8px 0 16px; border-top: 1px solid var(--separator); flex-wrap: wrap; }
+.band { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 64px; }
+.bandRange { writing-mode: vertical-lr; direction: rtl; height: 110px; accent-color: var(--key); }
+.bandGain { font-size: var(--fs-caption); color: var(--text-2); font-variant-numeric: tabular-nums; }
+.bandFreq { font-size: var(--fs-caption); color: var(--text-2); }

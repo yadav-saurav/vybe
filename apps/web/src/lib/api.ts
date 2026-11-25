@@ -56,6 +56,8 @@ export const api = {
 
   // profile
   updateProfile: (patch: { displayName?: string; avatarColor?: string }) => request<{ user: T.User }>('PATCH', '/me', patch),
+  changePassword: (currentPassword: string, newPassword: string) => request<{ ok: true }>('PUT', '/me/password', { currentPassword, newPassword }),
+  deleteAccount: (password: string) => request<{ ok: true }>('DELETE', '/me', { password }),
   userProfile: (id: string, s?: AbortSignal) => get<PublicProfile>(`/users/${enc(id)}`, s),
   follow: (id: string) => request<PublicProfile>('PUT', `/me/following/${enc(id)}`),
   unfollow: (id: string) => request<PublicProfile>('DELETE', `/me/following/${enc(id)}`),

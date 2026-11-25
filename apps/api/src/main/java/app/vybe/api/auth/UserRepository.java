@@ -76,6 +76,24 @@ class UserRepository {
         jdbc.update("DELETE FROM sessions WHERE token_hash = ?", tokenHash);
     }
 
+    Optional<String> passwordHash(String id) {
+        return jdbc.query("SELECT password_hash FROM users WHERE id = ?", (rs, n) -> rs.getString(1), id).stream().findFirst();
+    }
+
+    void updatePasswordHash(String id, String hash) {
+        jdbc.update("UPDATE users SET password_hash = ? WHERE id = ?", hash, id);
+    }
+
+    /** Signs the user out everywhere except the session identified by {@code keepTokenHash}. */
+    void deleteOtherSessions(String userId, String keepTokenHash) {
+        jdbc.update("DELETE FROM sessions WHERE user_id = ? AND token_hash <> ?", userId, keepTokenHash);
+    }
+
+    /** Foreign keys cascade to sessions, library, loves, history, playlists, imports and follows. */
+    void deleteUser(String id) {
+        jdbc.update("DELETE FROM users WHERE id = ?", id);
+    }
+
     void updateProfile(String id, String displayName, String avatarColor) {
         jdbc.update("UPDATE users SET display_name = ?, avatar_color = ? WHERE id = ?", displayName, avatarColor, id);
     }

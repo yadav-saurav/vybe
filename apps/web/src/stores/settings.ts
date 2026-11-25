@@ -6,6 +6,8 @@ export interface Settings {
   soundCheck: boolean;       // level loud tracks using Song.gainDb
   audioQuality: 'normal' | 'high';
   showLyricsTranslation: boolean;
+  eqPreset: string;          // key of EQ_PRESETS, or 'custom'
+  eqGains: number[];         // dB for 60 Hz, 230 Hz, 910 Hz, 3.6 kHz, 14 kHz
   set: (patch: Partial<Omit<Settings, 'set'>>) => void;
 }
 
@@ -17,10 +19,12 @@ export const useSettings = create<Settings>((set, get) => ({
   soundCheck: true,
   audioQuality: 'high',
   showLyricsTranslation: false,
+  eqPreset: 'flat',
+  eqGains: [0, 0, 0, 0, 0],
   ...saved,
   set: (patch) => {
     set(patch);
-    const { crossfadeSec, soundCheck, audioQuality, showLyricsTranslation } = get();
-    try { localStorage.setItem(KEY, JSON.stringify({ crossfadeSec, soundCheck, audioQuality, showLyricsTranslation })); } catch { /* private mode */ }
+    const { crossfadeSec, soundCheck, audioQuality, showLyricsTranslation, eqPreset, eqGains } = get();
+    try { localStorage.setItem(KEY, JSON.stringify({ crossfadeSec, soundCheck, audioQuality, showLyricsTranslation, eqPreset, eqGains })); } catch { /* private mode */ }
   },
 }));

@@ -81,6 +81,31 @@ public class AuthService {
         return stored.get().user();
     }
 
+    /** Throws 403 unless {@code password} matches the account's current one. */
+    @Transactional(readOnly = true)
+    public void requirePassword(User user, String password) {
+        String hash = users.passwordHash(user.id()).orElse(DUMMY_HASH);
+        if (password == null || !encoder.matches(password, hash)) {
+            throw ApiException.forbidden("Current password is incorrect");
+        }
+    }
+
+    /** Changes the password and signs every other device out; the session in {@code keepToken} stays. */
+    @Transactional
+    public void changePassword(User user, String currentPassword, String newPassword, String keepToken) {
+        requirePassword(user, currentPassword);
+        if (currentPassword.equals(newPassword)) {
+            throw ApiException.badRequest("same_password", "Choose a password you haven't used here");
+        }
+        users.updatePasswordHash(user.id(), encoder.encode(newPassword));
+        users.deleteOtherSessions(user.id(), keepToken == null ? "" : hash(keepToken));
+    }
+
+    @Transactional
+    public void deleteUser(String userId) {
+        users.deleteUser(userId);
+    }
+
     /** Creates a session and returns the raw token for the cookie. Only its hash is stored. */
     @Transactional
     public String createSession(String userId) {

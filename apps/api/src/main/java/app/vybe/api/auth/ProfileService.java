@@ -1,6 +1,7 @@
 package app.vybe.api.auth;
 
 import app.vybe.api.error.ApiException;
+import app.vybe.api.imports.ImportService;
 import app.vybe.api.model.Playlist;
 import app.vybe.api.model.User;
 import app.vybe.api.playlists.PlaylistRepository;
@@ -24,11 +25,16 @@ public class ProfileService {
     private final UserRepository users;
     private final PlaylistRepository playlistRows;
     private final PlaylistService playlists;
+    private final AuthService auth;
+    private final ImportService imports;
 
-    public ProfileService(UserRepository users, PlaylistRepository playlistRows, PlaylistService playlists) {
+    public ProfileService(UserRepository users, PlaylistRepository playlistRows, PlaylistService playlists,
+                          AuthService auth, ImportService imports) {
         this.users = users;
         this.playlistRows = playlistRows;
         this.playlists = playlists;
+        this.auth = auth;
+        this.imports = imports;
     }
 
     @Transactional
@@ -69,5 +75,12 @@ public class ProfileService {
 
     public List<String> followingIds(String userId) {
         return users.followingIds(userId);
+    }
+
+    /** Permanently deletes the account, its data and its imported files after re-checking the password. */
+    public void deleteAccount(User me, String password) {
+        auth.requirePassword(me, password);
+        imports.deleteAllFor(me.id());
+        auth.deleteUser(me.id());
     }
 }

@@ -1,5 +1,6 @@
 import { usePlayer, type PlayerState, type QueueItem } from '../../stores/player';
 import { useSettings } from '../../stores/settings';
+import { applyEq, resumeEq } from './eq';
 import { useUI } from '../../stores/ui';
 
 /**
@@ -151,6 +152,7 @@ let errorTimer: ReturnType<typeof setTimeout> | undefined;
 
 function makeEl(): El {
   const a = new Audio() as El;
+  a.crossOrigin = 'anonymous'; // required for the equalizer when audio is served from object storage (CORS enabled)
   a.preload = 'auto';
   const isActive = () => a === active();
   a.addEventListener('playing', () => { if (!isActive()) return; P()._onBuffering(false); P()._onPlaying(true); startTicker(); });
@@ -191,6 +193,9 @@ function makeEl(): El {
 function quietPause(a: El) { if (!a.paused) { a._quiet = true; a.pause(); } }
 
 function playSafe(a: El) {
+  const eqGains = useSettings.getState().eqGains;
+  applyEq(els ?? [a], eqGains);
+  void resumeEq();
   const p = a.play();
   if (p && typeof p.catch === 'function') {
     p.catch((err: DOMException) => {
@@ -310,6 +315,7 @@ export function startEngine() {
 
   const unsubSettings = useSettings.subscribe((st, prev) => {
     if (st.soundCheck !== prev.soundCheck) { const a = active(); if (a) applyVolume(P(), a); }
+    if (st.eqGains !== prev.eqGains && els) applyEq(els, st.eqGains);
   });
 
   return () => {

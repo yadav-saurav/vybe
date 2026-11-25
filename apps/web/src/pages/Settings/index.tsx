@@ -9,6 +9,8 @@ import { useSettings } from '../../stores/settings';
 import { PillButton } from '../../components/Buttons';
 import { useDocumentTitle } from '../../features/shelves/useDocumentTitle';
 import { promptInstall, useInstallState } from '../../lib/install';
+import { EQ_BANDS, EQ_PRESETS } from '../../features/player/eq';
+import { AccountSheets } from './AccountSheets';
 import s from './Settings.module.css';
 
 const COLORS = ['#e11d48', '#f97316', '#eab308', '#22c55e', '#14b8a6', '#0ea5e9', '#6366f1', '#a855f7', '#ec4899', '#64748b'];
@@ -22,6 +24,8 @@ export default function SettingsPage() {
   const [name, setName] = useState(user?.displayName ?? '');
   const [color, setColor] = useState(user?.avatarColor ?? COLORS[0]);
   const install = useInstallState();
+  const [sheet, setSheet] = useState<'password' | 'delete' | null>(null);
+  const [eqOpen, setEqOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   useEffect(() => { setName(user?.displayName ?? ''); setColor(user?.avatarColor ?? COLORS[0]); }, [user]);
@@ -64,6 +68,17 @@ export default function SettingsPage() {
         <Section title="Account"><PillButton onClick={() => useUI.getState().openSignIn()}>Sign In</PillButton></Section>
       )}
 
+      {user && (
+        <Section title="Security">
+          <Row label="Password" hint="Changing it signs you out on your other devices">
+            <button className={s.textBtn} onClick={() => setSheet('password')}>Change Password</button>
+          </Row>
+          <Row label="Delete account" hint="Permanently removes your library, playlists, history and imported songs">
+            <button className={clsx(s.textBtn, s.danger)} onClick={() => setSheet('delete')}>Delete Account…</button>
+          </Row>
+        </Section>
+      )}
+
       <Section title="Playback">
         <Row label="Crossfade" hint={st.crossfadeSec ? `${st.crossfadeSec} seconds of overlap between songs` : 'Off: songs play back to back'}>
           <input type="range" min={0} max={12} step={1} value={st.crossfadeSec} className={s.range} aria-label="Crossfade seconds"
@@ -76,6 +91,27 @@ export default function SettingsPage() {
         <Row label="Autoplay" hint="Keep playing similar music when your queue ends">
           <Toggle on={autoplay} onChange={(v) => usePlayer.getState().setAutoplayEnabled(v)} label="Autoplay" />
         </Row>
+        <Row label="Equalizer" hint={st.eqPreset === 'custom' ? 'Custom' : EQ_PRESETS[st.eqPreset]?.label}>
+          <select className={s.select} aria-label="Equalizer preset" value={st.eqPreset}
+            onChange={(e) => { const k = e.target.value; st.set(k === 'custom' ? { eqPreset: 'custom' } : { eqPreset: k, eqGains: EQ_PRESETS[k].gains }); }}>
+            {Object.entries(EQ_PRESETS).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+            {st.eqPreset === 'custom' && <option value="custom">Custom</option>}
+          </select>
+          <button className={s.textBtn} aria-expanded={eqOpen} onClick={() => setEqOpen((v) => !v)}>{eqOpen ? 'Hide' : 'Adjust'}</button>
+        </Row>
+        {eqOpen && (
+          <div className={s.eq} role="group" aria-label="Equalizer bands">
+            {EQ_BANDS.map((b, i) => (
+              <label key={b.freq} className={s.band}>
+                <span className={s.bandGain}>{st.eqGains[i] > 0 ? '+' : ''}{st.eqGains[i]} dB</span>
+                <input type="range" min={-12} max={12} step={1} value={st.eqGains[i]} aria-label={`${b.label} gain`} className={s.bandRange}
+                  onChange={(e) => { const gains = st.eqGains.slice(); gains[i] = Number(e.target.value); st.set({ eqGains: gains, eqPreset: 'custom' }); }} />
+                <span className={s.bandFreq}>{b.label}</span>
+              </label>
+            ))}
+            <button className={s.textBtn} onClick={() => st.set({ eqPreset: 'flat', eqGains: EQ_PRESETS.flat.gains })}>Reset</button>
+          </div>
+        )}
         <Row label="Audio quality" hint="High uses more data on mobile networks">
           <select className={s.select} value={st.audioQuality} onChange={(e) => st.set({ audioQuality: e.target.value as 'normal' | 'high' })}>
             <option value="high">High</option><option value="normal">Normal</option>
@@ -102,6 +138,7 @@ export default function SettingsPage() {
           </div>
         </Row>
       </Section>
+      {user && <AccountSheets which={sheet} onClose={() => setSheet(null)} />}
     </div>
   );
 }
