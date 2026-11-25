@@ -1,0 +1,11 @@
+<!-- Docker build only: fetch libraries from Google's public mirror of Maven Central (same files, no 429s for shared build hosts). -->
+<settings>
+  <mirrors>
+    <mirror>
+      <id>google-maven-central</id>
+      <name>Google mirror of Maven Central</name>
+      <url>https://maven-central.storage-download.googleapis.com/maven2/</url>
+      <mirrorOf>central</mirrorOf>
+    </mirror>
+  </mirrors>
+</settings>

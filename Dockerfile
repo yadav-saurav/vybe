@@ -16,8 +16,9 @@ FROM maven:3.9-eclipse-temurin-21 AS api
 # Optional, e.g. proxy settings for restricted networks: --build-arg MAVEN_OPTS="-Dhttps.proxyHost=... -Dhttps.proxyPort=..."
 ARG MAVEN_OPTS=""
 ENV MAVEN_OPTS=${MAVEN_OPTS}
-# Maven Central sometimes answers shared build hosts with 429/503: wait and retry instead of failing the build.
-ENV MAVEN_ARGS="-Daether.connector.http.retryHandler.count=8 -Daether.connector.http.retryHandler.interval=15000 -Daether.connector.http.retryHandler.serviceUnavailable=429,503"
+# Libraries come from Google's mirror of Maven Central (Central rate-limits shared build hosts), with retries.
+COPY apps/api/maven-mirror.xml /usr/share/maven/ref/settings-mirror.xml
+ENV MAVEN_ARGS="-s /usr/share/maven/ref/settings-mirror.xml -Daether.connector.http.retryHandler.count=8 -Daether.connector.http.retryHandler.interval=15000 -Daether.connector.http.retryHandler.serviceUnavailable=429,503"
 WORKDIR /src
 COPY apps/api/pom.xml .
 RUN mvn -q -B dependency:go-offline
