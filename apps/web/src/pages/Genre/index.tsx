@@ -21,7 +21,7 @@ function GenreView({ id }: { id: string }) {
       <header className="page-header">
         {heading ? <h1 className="t-large-title">{heading}</h1> : <Skel className={s.titleSkel} />}
       </header>
-      <PageBody data={data} error={error} loading={loading} onRetry={reload} emptyMessage="No music in this genre yet." />
+      <PageBody pageKey={`genre:${id}`} data={data} error={error} loading={loading} onRetry={reload} emptyMessage="No music in this genre yet." />
     </div>
   );
 }

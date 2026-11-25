@@ -25,7 +25,7 @@ export default function HomePage() {
         <h1 className="t-large-title">Home</h1>
         {user && <p className={s.greeting}>{greetingFor(user.displayName)}</p>}
       </header>
-      <PageBody data={data} error={error} loading={loading || !ready} onRetry={reload} emptyMessage="Nothing for you yet. Play a few songs to get started." />
+      <PageBody pageKey="home" data={data} error={error} loading={loading || !ready} onRetry={reload} emptyMessage="Nothing for you yet. Play a few songs to get started." />
     </div>
   );
 }

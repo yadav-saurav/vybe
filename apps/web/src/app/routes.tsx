@@ -14,6 +14,7 @@ const Playlist = lazy(() => import('../pages/Playlist'));
 const Artist = lazy(() => import('../pages/Artist'));
 const Station = lazy(() => import('../pages/Station'));
 const Library = lazy(() => import('../pages/Library'));
+const SeeAll = lazy(() => import('../pages/SeeAll'));
 
 export const router = createBrowserRouter([
   {
@@ -25,6 +26,7 @@ export const router = createBrowserRouter([
       { path: '/radio', element: <Radio /> },
       { path: '/search', element: <Search /> },
       { path: '/genre/:id', element: <Genre /> },
+      { path: '/see-all/:page/:shelfId', element: <SeeAll /> },
       { path: '/album/:id', element: <Album /> },
       { path: '/playlist/:id', element: <Playlist /> },
       { path: '/artist/:id', element: <Artist /> },

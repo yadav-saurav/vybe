@@ -12,7 +12,7 @@ export default function NewPage() {
       <header className="page-header">
         <h1 className="t-large-title">New</h1>
       </header>
-      <PageBody data={data} error={error} loading={loading} onRetry={reload} emptyMessage="Nothing new right now. Check back soon." />
+      <PageBody pageKey="new" data={data} error={error} loading={loading} onRetry={reload} emptyMessage="Nothing new right now. Check back soon." />
     </div>
   );
 }

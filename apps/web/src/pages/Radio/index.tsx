@@ -12,7 +12,7 @@ export default function RadioPage() {
       <header className="page-header">
         <h1 className="t-large-title">Radio</h1>
       </header>
-      <PageBody data={data} error={error} loading={loading} onRetry={reload} emptyMessage="No stations are available right now." />
+      <PageBody pageKey="radio" data={data} error={error} loading={loading} onRetry={reload} emptyMessage="No stations are available right now." />
     </div>
   );
 }
