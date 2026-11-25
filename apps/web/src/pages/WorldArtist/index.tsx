@@ -42,7 +42,7 @@ export default function WorldArtistPage() {
         <div className={s.meta}>
           <p className={s.eyebrow}>Artist{a?.genre ? ` · ${a.genre}` : ''}</p>
           <h1 className={s.name}>{a?.name ?? ' '}</h1>
-          {data && <p className={s.sub}>{data.songs.length} songs · 30-second previews</p>}
+          {data && <p className={s.sub}>{data.songs.length} popular songs</p>}
           {data && data.songs.length > 0 && (
             <div className={s.actions}>
               <button className={s.play} onClick={() => play()}><Icon name="play" size={18} />Play</button>
@@ -56,7 +56,6 @@ export default function WorldArtistPage() {
         {error ? <div className={s.state}><p>{error}</p><button className={s.shuffle} onClick={() => setRetry((n) => n + 1)}>Try Again</button></div>
           : data ? <WorldRows songs={data.songs} ranked title={data.artist.name} /> : <WorldSkeleton />}
       </section>
-      <p className={s.credit}>Previews provided courtesy of Apple Music.</p>
     </div>
   );
 }

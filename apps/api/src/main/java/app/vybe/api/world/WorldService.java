@@ -279,7 +279,7 @@ public class WorldService {
                 }
                 yield all.isEmpty() ? null : new WorldShelf("popular-artists", "Popular artists", "From India and around the world", "artists", List.of(), all);
             }
-            case "charts" -> new WorldShelf("charts", signedIn ? "Featured Charts" : "Top playlists", "Updated daily from Apple Music", "charts",
+            case "charts" -> new WorldShelf("charts", signedIn ? "Featured Charts" : "Top playlists", "Updated daily", "charts",
                     List.of(), List.of(), List.of(), List.of(), "/shelf/charts");
             default -> built(id);
         };

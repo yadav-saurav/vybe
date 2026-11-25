@@ -65,7 +65,6 @@ export default function WorldAlbumPage() {
         {error ? <div className={s.state}><p>{error}</p><button className={s.shuffle} onClick={() => setRetry((n) => n + 1)}>Try Again</button></div>
           : data ? <WorldRows songs={data.songs} title={data.album.title} /> : <WorldSkeleton />}
       </section>
-      <p className={s.credit}>30-second previews courtesy of Apple Music.</p>
     </div>
   );
 }

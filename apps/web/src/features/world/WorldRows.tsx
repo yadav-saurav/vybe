@@ -8,7 +8,7 @@ import { menuFor, openMenuAt } from '../actions';
 import { PlayPauseIcon } from '../player/PlayerChrome';
 import s from './WorldRows.module.css';
 
-/** A list of worldwide previews: tap to play the list from that song; ··· for Play Next / Apple Music. */
+/** A list of worldwide previews: tap to play the list from that song; ··· for more. */
 export function WorldRows({ songs, title, ranked, stale }: { songs: Song[]; title: string; ranked?: boolean; stale?: boolean }) {
   const navigate = useNavigate();
   return (
@@ -38,7 +38,6 @@ export function WorldRow({ song, rank, songs, index, title, navigate }: { song: 
         <span className={clsx(s.songSub, 'clamp-1')}>{song.artist.name}{song.album.title ? ` — ${song.album.title}` : ''}</span>
       </button>
       <span className={s.year}>{year}</span>
-      <span className={s.badge}>Preview</span>
       <button className={s.more} aria-label={`More for ${song.title}`} title="More" onClick={(e) => openMenuAt(e, menuFor({ type: 'song', data: song }, { navigate }))}>
         <Icon name="more" size={18} />
       </button>

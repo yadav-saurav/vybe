@@ -1,20 +1,14 @@
 import type { Song } from '@vybe/shared';
 
 /**
- * Worldwide songs are Apple's official 30-second previews (ids `wd_<cc>_<trackId>`, albums
- * `wl_<cc>_<collectionId>`). They play everywhere in Vybe but have no Vybe album/artist page and
- * can't go in your library; "Listen on Apple Music" opens the full song.
+ * Worldwide songs (ids `wd_<cc>_<trackId>`, albums `wl_<cc>_<collectionId>`, artists `wa_<id>`)
+ * play everywhere in Vybe and have their own album and artist pages.
  */
 export const WORLD_PATH = '/world';
 export const isWorld = (song: Pick<Song, 'id' | 'source'> | null | undefined) => !!song && (song.source === 'world' || song.id.startsWith('wd_'));
 
 const parts = (id: string) => id.split('_'); // [prefix, cc, number]
 
-export const appleMusicUrl = (song: Song) => {
-  const [, cc, track] = parts(song.id);
-  const [, , album] = parts(song.album.id);
-  return `https://music.apple.com/${cc}/album/${album}?i=${track}`;
-};
 
 export const worldCountryOf = (song: Song) => parts(song.id)[1];
 
@@ -44,6 +38,3 @@ export const rememberWorldCountry = (c: string) => { try { localStorage.setItem(
 /** A worldwide artist's page in Vybe (their popular songs as previews). */
 export const worldArtistHref = (song: Song) => `${WORLD_PATH}/artist/${song.artist.id}?c=${worldCountryOf(song)}`;
 
-/** Apple songs show licensed lyrics links (never copied text); Vybe's demo songs have their own synced lyrics. */
-export const lyricsAvailable = (song: Song | null | undefined) => !!song && (song.hasLyrics || isWorld(song));
-export const geniusSearchUrl = (song: Song) => `https://genius.com/search?q=${encodeURIComponent(`${song.title} ${song.artist.name}`)}`;

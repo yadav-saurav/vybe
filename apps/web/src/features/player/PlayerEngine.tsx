@@ -5,7 +5,7 @@ import { artUrl } from '../../lib/color';
 import { usePlayer, type PlayerState } from '../../stores/player';
 import { useUI } from '../../stores/ui';
 import { useAuth } from '../../stores/auth';
-import { isWorld, lyricsAvailable } from '../../lib/world';
+import { isWorld } from '../../lib/world';
 import { getAudioTime, getDurationMs, setTimeHook, startEngine } from './engine';
 
 const P = () => usePlayer.getState();
@@ -236,7 +236,6 @@ function useKeyboardShortcuts() {
       if (mod || e.altKey) return;
       switch (e.key.toLowerCase()) {
         case 'm': e.preventDefault(); s.toggleMute(); return;
-        case 'l': if (lyricsAvailable(s.current?.song) || ui.sidePanel === 'lyrics') { e.preventDefault(); ui.setSidePanel(ui.sidePanel === 'lyrics' ? null : 'lyrics'); } return;
         case 'q': e.preventDefault(); ui.setSidePanel(ui.sidePanel === 'queue' ? null : 'queue'); return;
       }
     };

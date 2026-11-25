@@ -163,7 +163,6 @@ function Hero({ shelf, onLight }: { shelf: WorldShelf; onLight?: OnLight }) {
             <button className={s.heroPlay} onClick={() => playList(shelf.songs, 0, shelf.title)}>
               {isCurrent ? <PlayPauseIcon size={18} /> : <Icon name="play" size={18} />}{isCurrent && playing ? 'Pause' : 'Play'}
             </button>
-            <span className={s.previewNote}>30-second preview</span>
           </div>
         </div>
       </div>

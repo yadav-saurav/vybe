@@ -5,17 +5,15 @@ import { Icon } from '../../components/Icon';
 import { usePlayer } from '../../stores/player';
 import { useUI } from '../../stores/ui';
 import { Marquee, Scrubber, VolumeControl } from './controls';
-import { LyricsView } from './LyricsView';
 import { QueuePanel } from './QueuePanel';
 import { JamChip } from '../jam/JamSheet';
 import { useJam } from '../../stores/jam';
-import { lyricsAvailable } from '../../lib/world';
 import s from './PlayerChrome.module.css';
 
 const P = () => usePlayer.getState();
 const openNowPlaying = () => { if (P().current) useUI.getState().setNowPlayingOpen(true); };
 
-/** Desktop floating pill + mobile mini player + desktop lyrics/queue side panel. */
+/** Desktop floating pill + mobile mini player + desktop queue side panel. */
 export function PlayerChrome() {
   const panel = useUI((u) => u.sidePanel);
   return (
@@ -95,10 +93,6 @@ function DesktopPill() {
 
       <div className={s.right}>
         <JamChip compact className={s.jamChip} />
-        <button className={clsx(s.ctl, s.ctlSmall, panel === 'lyrics' && s.on)} aria-label="Lyrics" title={song && !lyricsAvailable(song) ? 'Lyrics not available' : 'Lyrics'}
-          aria-pressed={panel === 'lyrics'} disabled={empty || !lyricsAvailable(song)} onClick={() => setPanel(panel === 'lyrics' ? null : 'lyrics')}>
-          <Icon name="lyrics" size={18} />
-        </button>
         <button className={clsx(s.ctl, s.ctlSmall, panel === 'queue' && s.on)} aria-label="Playing Next" title="Playing Next" aria-pressed={panel === 'queue'}
           onClick={() => setPanel(panel === 'queue' ? null : 'queue')}>
           <Icon name="queue" size={18} />
@@ -162,7 +156,6 @@ function MiniPlayer() {
 function SidePanel() {
   const panel = useUI((u) => u.sidePanel);
   const setPanel = useUI((u) => u.setSidePanel);
-  const hasLyrics = usePlayer((p) => lyricsAvailable(p.current?.song));
   // Keep the last content mounted during the slide-out.
   const [shown, setShown] = useState(panel);
   useEffect(() => {
@@ -172,16 +165,14 @@ function SidePanel() {
   }, [panel]);
   const content = panel ?? shown;
   return (
-    <aside className={clsx(s.panel, panel && s.panelOpen)} aria-label={content === 'lyrics' ? 'Lyrics' : 'Queue'} aria-hidden={!panel} inert={!panel}>
+    <aside className={clsx(s.panel, panel && s.panelOpen)} aria-label="Queue" aria-hidden={!panel} inert={!panel}>
       <div className={s.panelHead}>
         <div className={s.seg} role="tablist" aria-label="Side panel">
-          <button role="tab" aria-selected={content === 'lyrics'} className={clsx(s.segBtn, content === 'lyrics' && s.segOn)} disabled={!hasLyrics} onClick={() => setPanel('lyrics')}>Lyrics</button>
           <button role="tab" aria-selected={content === 'queue'} className={clsx(s.segBtn, content === 'queue' && s.segOn)} onClick={() => setPanel('queue')}>Playing Next</button>
         </div>
         <button className={s.panelClose} aria-label="Close panel" onClick={() => setPanel(null)}><Icon name="close" size={14} /></button>
       </div>
       <div className={s.panelBody}>
-        {content === 'lyrics' && <LyricsView variant="panel" />}
         {content === 'queue' && <QueuePanel variant="panel" />}
       </div>
     </aside>

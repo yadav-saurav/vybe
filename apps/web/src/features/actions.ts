@@ -7,7 +7,7 @@ import { useAuth } from '../stores/auth';
 import { invalidate } from '../lib/useAsync';
 import { IMPORTED_PATH, isImported } from '../lib/imports';
 import { useJam } from '../stores/jam';
-import { appleMusicUrl, isWorld, worldArtistHref } from '../lib/world';
+import { isWorld, worldArtistHref } from '../lib/world';
 
 /**
  * Central content actions so every surface (lockups, rows, headers, Now Playing) behaves identically.
@@ -115,7 +115,7 @@ export function menuFor(item: ContentItem, opts: { extra?: MenuEntry[]; navigate
   return groups.flatMap((g, i) => (i ? ['separator' as const, ...g] : g));
 }
 
-/** Apple songs: queue, save, favourite, add to a playlist, artist/album pages, the full song on Apple Music. */
+/** Worldwide songs: queue, save, favourite, add to a playlist, artist and album pages. */
 function worldMenu(song: Song, opts: { navigate?: (to: string) => void; sleepTimer?: boolean }): MenuEntry[] {
   const item: ContentItem = { type: 'song', data: song };
   const nav = opts.navigate;
@@ -137,7 +137,6 @@ function worldMenu(song: Song, opts: { navigate?: (to: string) => void; sleepTim
     out.push({ label: 'Go to Album', icon: 'album', onSelect: () => nav(`/world/album/${song.album.id}`) });
     out.push({ label: 'Go to Artist', icon: 'artist', onSelect: () => nav(worldArtistHref(song)) });
   }
-  out.push({ label: 'Listen on Apple Music', icon: 'arrow-up-right', onSelect: () => { window.open(appleMusicUrl(song), '_blank', 'noopener'); } });
   if (opts.sleepTimer) {
     out.push({ label: useJam.getState().jam ? 'Jam…' : 'Start a Jam…', icon: 'jam', onSelect: () => useJam.getState().setSheetOpen(true) });
     out.push({ label: 'Sleep Timer…', icon: 'clock', onSelect: () => ui.setSleepOpen(true) });

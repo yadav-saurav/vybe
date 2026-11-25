@@ -156,6 +156,11 @@ export default function SettingsPage() {
           </div>
         </Row>
       </Section>
+      <Section title="About">
+        <Row label="Vybe">
+          <span className={s.about}>Music previews and artwork provided by Apple.</span>
+        </Row>
+      </Section>
       {user && <AccountSheets which={sheet} onClose={() => setSheet(null)} />}
     </div>
   );

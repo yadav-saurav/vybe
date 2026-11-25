@@ -2,7 +2,6 @@ import { Link } from 'react-router-dom';
 import { api } from '../../lib/api';
 import { useAsync } from '../../lib/useAsync';
 import { useUI } from '../../stores/ui';
-import { LyricsDemo } from '../../features/world/LyricsDemo';
 import { useAuth } from '../../stores/auth';
 import { useDocumentTitle } from '../../features/shelves/useDocumentTitle';
 import { WorldSection } from '../../features/world/WorldSection';
@@ -27,7 +26,6 @@ export default function HomePage() {
       </header>
       {/* Remount on sign-in/out: signed-in listeners get the full home. */}
       {ready && <WorldSection key={user?.id ?? 'anon'} source="home" more={false} />}
-      <LyricsDemo />
       {user && <ReplayCard userId={user.id} />}
     </div>
   );

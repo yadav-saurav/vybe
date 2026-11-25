@@ -89,7 +89,7 @@ export default function WorldPage() {
       <header className={`page-header ${s.header}`}>
         <p className={s.eyebrow}><Icon name="globe" size={14} />Worldwide</p>
         <h1 className={s.title}>Music from around the world</h1>
-        <p className={s.sub}>Famous artists from every country. Songs play as 30-second previews from Apple Music.</p>
+        <p className={s.sub}>Famous artists and top charts from every country.</p>
       </header>
 
       <form className={s.searchRow} role="search" onSubmit={submit}>
@@ -143,12 +143,11 @@ export default function WorldPage() {
           : error ? (
             <div className={s.state}><p>{error}</p><button className={s.secondary} onClick={() => setRetry((n) => n + 1)}>Try Again</button></div>
           ) : songs.length === 0 ? (
-            <div className={s.state}><p>{q ? `No previews found for “${q}” in ${countryName}. Try another spelling or country.` : 'No chart for this country right now.'}</p></div>
+            <div className={s.state}><p>{q ? `No songs found for “${q}” in ${countryName}. Try another spelling or country.` : 'No chart for this country right now.'}</p></div>
           ) : (
             <WorldRows songs={songs} ranked={!q} title={data?.title ?? 'Worldwide'} stale={loading} />
           )}
       </section>}
-      <p className={s.credit}>Previews provided courtesy of Apple Music. Use ··· → Listen on Apple Music for the full song.</p>
     </div>
   );
 }
