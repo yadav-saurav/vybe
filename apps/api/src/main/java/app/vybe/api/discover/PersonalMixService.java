@@ -28,7 +28,9 @@ import java.util.Set;
 public class PersonalMixService {
 
     public static final String PREFIX = "pl_mix_";
-    public static final List<String> KINDS = List.of("favorites", "discovery", "chill", "newmusic");
+    public static final List<String> KINDS = List.of("favorites", "discovery", "chill", "newmusic", "weekly");
+    /** Daily Mix 1..6: one per top genre; ids are pl_mix_dailyN_<userId>. */
+    public static final int MAX_DAILY = 6;
     private static final int MIX_SIZE = 30;
 
     /** The user's listening signals, derived once per request. */
@@ -95,10 +97,18 @@ public class PersonalMixService {
             return Optional.empty();
         }
         String kind = rest.substring(0, rest.length() - suffix.length());
+        Profile profile = profile(user.id());
+        if (kind.startsWith("daily")) {
+            int n;
+            try { n = Integer.parseInt(kind.substring(5)); } catch (NumberFormatException e) { return Optional.empty(); }
+            List<String> genres = dailyGenres(profile);
+            if (n < 1 || n > genres.size()) return Optional.empty();
+            return Optional.of(buildDaily(n, genres.get(n - 1), user, profile));
+        }
         if (!KINDS.contains(kind)) {
             return Optional.empty();
         }
-        return Optional.of(build(kind, user, profile(user.id())));
+        return Optional.of(build(kind, user, profile));
     }
 
     static String mixId(String kind, String userId) {
@@ -111,6 +121,7 @@ public class PersonalMixService {
             case "discovery" -> discovery(profile);
             case "chill" -> chill(user, profile);
             case "newmusic" -> newMusic();
+            case "weekly" -> discoverWeekly(user, profile);
             default -> throw new IllegalArgumentException("unknown mix " + kind);
         };
         List<Song> songs = tracks.stream().map(catalog::song).toList();
@@ -128,6 +139,8 @@ public class PersonalMixService {
                     "New finds in your genres."};
             case "chill" -> new String[]{"Chill Mix", "Calm, dreamy and focused music for slow moments.",
                     "Slow down and unwind."};
+            case "weekly" -> new String[]{"Discover Weekly", "Your weekly mixtape of fresh music you haven't heard yet, picked from what you love. Updated every Monday.",
+                    "Fresh finds, every Monday."};
             default -> new String[]{"New Music Mix", "The newest releases in the catalog, picked for you.",
                     "Fresh releases every week."};
         };
@@ -156,6 +169,88 @@ public class PersonalMixService {
                 .filter(s -> topGenres.contains(s.genreId()) && !p.plays().containsKey(s.id()))
                 .toList();
         return ids(Similarity.diversify(candidates, MIX_SIZE, 3));
+    }
+
+    // ------------------------------------------------------------------ Discover Weekly + Daily Mixes
+
+    static String weekKey(java.time.LocalDate d) {
+        return d.get(java.time.temporal.IsoFields.WEEK_BASED_YEAR) + "-W" + d.get(java.time.temporal.IsoFields.WEEK_OF_WEEK_BASED_YEAR);
+    }
+
+    private static <K> List<K> topKeys(Map<K, Integer> counts, int n) {
+        return counts.entrySet().stream()
+                .sorted(Map.Entry.<K, Integer>comparingByValue().reversed().thenComparing(e -> String.valueOf(e.getKey())))
+                .limit(n).map(Map.Entry::getKey).toList();
+    }
+
+    /** Unheard songs near the user's taste; the ordering seed changes every ISO week. */
+    private List<String> discoverWeekly(User user, Profile p) {
+        String seed = user.id() + ":" + weekKey(java.time.LocalDate.now(java.time.ZoneOffset.UTC));
+        Set<String> genres = new java.util.HashSet<>(topKeys(p.genrePlays(), 3));
+        Set<String> nearArtists = new java.util.HashSet<>();
+        for (String a : topKeys(p.artistPlays(), 5)) {
+            similarity.similarArtists(a, 5).forEach(x -> nearArtists.add(x.id()));
+        }
+        List<Song> ranked = catalog.songs().stream()
+                .filter(s -> !p.plays().containsKey(s.id()) && !p.lovedSongs().contains(s.id()))
+                .sorted(Comparator.<Song>comparingDouble(s -> (genres.contains(s.genreId()) ? 1.0 : 0)
+                        + (nearArtists.contains(s.artist().id()) ? 0.8 : 0)
+                        + s.popularity() / 200.0 + 0.6 * Similarity.jitter(seed, s.id())).reversed()
+                        .thenComparing(Song::id))
+                .toList();
+        if (ranked.size() < 10) {
+            // Heavy listeners may have heard almost everything: top up with popular songs, least-played first.
+            List<Song> topUp = catalog.songsByPopularity().stream()
+                    .filter(s -> !ranked.contains(s))
+                    .sorted(Comparator.<Song>comparingInt(s -> p.plays().getOrDefault(s.id(), 0))
+                            .thenComparing(Comparator.comparingInt(Song::popularity).reversed()).thenComparing(Song::id))
+                    .toList();
+            List<Song> all = new ArrayList<>(ranked);
+            all.addAll(topUp);
+            return ids(Similarity.diversify(all, MIX_SIZE, 2));
+        }
+        return ids(Similarity.diversify(ranked, MIX_SIZE, 2));
+    }
+
+    /** Top genres by plays (up to six); new listeners get the catalog's first genres. */
+    public List<String> dailyGenres(Profile p) {
+        List<String> top = topKeys(p.genrePlays(), MAX_DAILY);
+        return top.isEmpty() ? catalog.genres().stream().map(Genre::id).limit(3).toList() : top;
+    }
+
+    public List<Playlist> dailyMixes(User user, Profile profile) {
+        List<String> genres = dailyGenres(profile);
+        List<Playlist> out = new ArrayList<>();
+        for (int i = 0; i < genres.size(); i++) out.add(buildDaily(i + 1, genres.get(i), user, profile));
+        return out;
+    }
+
+    private Playlist buildDaily(int n, String genreId, User user, Profile p) {
+        String seed = user.id() + ":" + java.time.LocalDate.now(java.time.ZoneOffset.UTC);
+        List<Song> inGenre = catalog.songs().stream().filter(s -> genreId.equals(s.genreId())).toList();
+        List<Song> favs = inGenre.stream().filter(s -> p.plays().containsKey(s.id()))
+                .sorted(Comparator.<Song>comparingInt(s -> -p.plays().get(s.id())).thenComparing(Song::id))
+                .limit(MIX_SIZE / 2).toList();
+        List<Song> fresh = inGenre.stream().filter(s -> !p.plays().containsKey(s.id()))
+                .sorted(Comparator.<Song>comparingDouble(s -> s.popularity() / 100.0 + Similarity.jitter(seed, s.id())).reversed()
+                        .thenComparing(Song::id))
+                .toList();
+        // Interleave favourites with new songs from the same genre, like a radio mix.
+        List<Song> mixed = new ArrayList<>();
+        for (int i = 0; mixed.size() < MIX_SIZE && (i < favs.size() || i < fresh.size()); i++) {
+            if (i < favs.size()) mixed.add(favs.get(i));
+            if (i < fresh.size() && mixed.size() < MIX_SIZE) mixed.add(fresh.get(i));
+        }
+        List<String> tracks = ids(Similarity.diversify(mixed, MIX_SIZE, 4));
+        List<Song> songs = tracks.stream().map(catalog::song).toList();
+        Genre g = catalog.genre(genreId);
+        String gName = g != null ? g.name() : genreId;
+        List<String> artistNames = songs.stream().map(s -> s.artist().name()).distinct().limit(2).toList();
+        String shortDesc = gName + (artistNames.isEmpty() ? "" : ", " + String.join(", ", artistNames)) + " and more";
+        Artwork art = songs.isEmpty() ? genreArtwork(genreId) : songs.get(0).artwork();
+        return new Playlist(mixId("daily" + n, user.id()), "personal-mix", "Daily Mix " + n, "Vybe",
+                gName + " favourites mixed with new songs you'll like. Updated daily.", shortDesc, art, tracks,
+                songs.stream().mapToLong(Song::durationMs).sum(), user.createdAt(), false, user.id());
     }
 
     private List<String> chill(User user, Profile p) {
@@ -192,6 +287,7 @@ public class PersonalMixService {
                 case "favorites" -> 0;
                 case "discovery" -> 1;
                 case "chill" -> 2;
+                case "weekly" -> 4;
                 default -> 3;
             };
             return songs.get(Math.min(idx, songs.size() - 1)).artwork();

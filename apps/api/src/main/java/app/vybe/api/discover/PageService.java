@@ -81,6 +81,9 @@ public class PageService implements InitializingBean {
         add(shelves, Shelf.of("recently-played", "Recently Played", "grid-lockups", recentlyPlayed(user, profile)));
         add(shelves, Shelf.of("made-for-you", "Made For You", "large-tiles",
                 mixList.stream().map(ContentItem::playlist).toList()));
+        add(shelves, Shelf.of("daily-mixes", "Your Daily Mixes", "large-tiles",
+                mixes.dailyMixes(user, profile).stream().map(ContentItem::playlist).toList()));
+        add(shelves, Shelf.of("jump-back-in", "Jump Back In", "grid-lockups", jumpBackIn(profile)));
 
         String topArtistId = topKey(profile.artistPlays());
         if (topArtistId != null) {
@@ -121,6 +124,31 @@ public class PageService implements InitializingBean {
             }
             return new PageResponse("Home", shelves);
         });
+    }
+
+    /** Albums played often that you haven't returned to in the last few days. */
+    private List<ContentItem> jumpBackIn(PersonalMixService.Profile profile) {
+        java.time.OffsetDateTime cutoff = java.time.OffsetDateTime.now(java.time.ZoneOffset.UTC).minusDays(3);
+        Map<String, Integer> count = new java.util.HashMap<>();
+        Map<String, String> last = new java.util.HashMap<>();
+        for (var row : profile.recent()) {
+            Song s = catalog.song(row.songId());
+            if (s == null) continue;
+            count.merge(s.album().id(), 1, Integer::sum);
+            last.merge(s.album().id(), row.playedAt(), (a, b) -> a.compareTo(b) >= 0 ? a : b);
+        }
+        return count.entrySet().stream()
+                .filter(e -> e.getValue() >= 2)
+                .filter(e -> {
+                    try { return java.time.OffsetDateTime.parse(last.get(e.getKey())).isBefore(cutoff); }
+                    catch (RuntimeException ex) { return false; }
+                })
+                .sorted(Map.Entry.<String, Integer>comparingByValue().reversed().thenComparing(Map.Entry.comparingByKey()))
+                .limit(12)
+                .map(e -> catalog.album(e.getKey()))
+                .filter(java.util.Objects::nonNull)
+                .map(ContentItem::album)
+                .toList();
     }
 
     private List<ContentItem> recentlyPlayed(User user, PersonalMixService.Profile profile) {
