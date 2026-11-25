@@ -5,9 +5,9 @@
  */
 :root {
   /* Brand */
-  --key: #fc3c64;            /* Vybe key colour (nav icons, links, active controls) */
-  --key-rgb: 252, 60, 100;
-  --key-pressed: #e02a52;
+  --key: #e11d48;            /* Vybe key colour (nav icons, links, active controls); 4.7:1 on white */
+  --key-rgb: 225, 29, 72;
+  --key-pressed: #be123c;
   --key-soft: rgba(var(--key-rgb), 0.12);
 
   /* Surfaces (light) */
@@ -124,6 +124,9 @@
     --artwork-border: rgba(255, 255, 255, 0.1);
     --shadow-menu: 0 0 0 0.5px rgba(255, 255, 255, 0.12), 0 10px 40px rgba(0, 0, 0, 0.5);
     --shadow-player: 0 8px 30px rgba(0, 0, 0, 0.35);
+    --key: #ff5c7c;
+    --key-rgb: 255, 92, 124;
+    --text-on-key: #000000;
     color-scheme: dark;
   }
 }
@@ -150,6 +153,9 @@
   --artwork-border: rgba(255, 255, 255, 0.1);
   --shadow-menu: 0 0 0 0.5px rgba(255, 255, 255, 0.12), 0 10px 40px rgba(0, 0, 0, 0.5);
   --shadow-player: 0 8px 30px rgba(0, 0, 0, 0.35);
+  --key: #ff5c7c;
+  --key-rgb: 255, 92, 124;
+  --text-on-key: #000000;
   color-scheme: dark;
 }
 
@@ -181,7 +187,7 @@
   --bg-hover: color-mix(in srgb, var(--tint-1) 8%, transparent);
   --key: var(--tint-3);
   --bg: var(--tint-bg);
-  --bg-sidebar: color-mix(in srgb, var(--tint-1) 4%, transparent);
+  --bg-sidebar: transparent;
   --bg-sidebar-border: color-mix(in srgb, var(--tint-1) 10%, transparent);
   --bg-selected: color-mix(in srgb, var(--tint-1) 10%, transparent);
   --bg-input: color-mix(in srgb, var(--tint-1) 8%, transparent);

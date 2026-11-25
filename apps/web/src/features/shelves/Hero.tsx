@@ -17,6 +17,7 @@ export function HeroShelf({ shelf }: { shelf: Shelf }) {
   if (!cards.length) return null;
   return (
     <Track label={shelf.title} columns={2} variant="hero">
+      <h2 className="visually-hidden">{shelf.title}</h2>
       {cards.map((card, i) => <HeroCard key={`${card.item.type}:${card.item.data.id}:${i}`} card={card} />)}
     </Track>
   );

@@ -181,6 +181,7 @@ function Results({ q, data, failed, tab, setTab }: {
 
   return (
     <>
+      <h1 className="visually-hidden">Search results for “{q}”</h1>
       <div className={s.tabs} role="group" aria-label="Filter results">
         {TABS.map((t) => (
           <button key={t.id} type="button" aria-pressed={tab === t.id} className={clsx(s.tab, tab === t.id && s.tabOn)} onClick={() => setTab(t.id)}>

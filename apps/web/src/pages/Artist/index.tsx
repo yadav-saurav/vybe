@@ -159,8 +159,9 @@ function TopSongRow({ song, index, songs, context }: { song: Song; index: number
   };
   return (
     <li className={clsx(s.topRow, isCurrent && s.topCurrent)} onContextMenu={menu}>
-      <div role="button" tabIndex={0} className={s.topMain} aria-label={`Play ${song.title}`}
+      <div role="button" tabIndex={0} className={s.topMain}
         onClick={play} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); play(); } }}>
+        <span className="visually-hidden">Play </span>
         <Artwork artwork={song.artwork} size={80} rounded="xs" className={s.topArt} />
         <span className={s.topText}>
           <span className={clsx(s.topTitle, 'clamp-1')}>{song.title}{song.isExplicit && <ExplicitBadge />}</span>

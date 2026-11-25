@@ -46,7 +46,8 @@ const ChartRow = memo(function ChartRow({ song, index, songs, context }: {
 
   return (
     <div className={clsx(s.row, isCurrent && s.current)} onContextMenu={menu}>
-      <button type="button" className={s.hit} onClick={play} aria-label={`${isPlaying ? 'Pause' : 'Play'} ${song.title} by ${song.artist.name}`}>
+      <button type="button" className={s.hit} onClick={play}>
+        <span className="visually-hidden">{isPlaying ? 'Pause' : 'Play'} </span>
         <span className={s.artWrap}>
           <Artwork artwork={song.artwork} size={80} rounded="xs" />
           <span className={s.artPlay}><Icon name={isPlaying ? 'pause' : 'play'} size={14} /></span>
