@@ -1,0 +1,144 @@
+/*
+ * Now Playing always sits on the artwork's colours (like the reference), so it re-maps the colour
+ * tokens to light-on-dark for everything inside it, whatever the app theme is.
+ */
+.np {
+  --text-1: rgba(255, 255, 255, 0.96);
+  --text-2: rgba(255, 255, 255, 0.62);
+  --text-3: rgba(255, 255, 255, 0.36);
+  --separator: rgba(255, 255, 255, 0.14);
+  --bg-hover: rgba(255, 255, 255, 0.1);
+  --bg-selected: rgba(255, 255, 255, 0.16);
+  --bg-elevated: rgba(72, 72, 76, 0.92);
+  --bg-menu: rgba(36, 36, 38, 0.82);
+  --bg-placeholder: rgba(255, 255, 255, 0.12);
+  --artwork-border: rgba(255, 255, 255, 0.08);
+  --key: #ffffff;
+  --key-rgb: 255, 255, 255;
+  --text-on-key: rgba(0, 0, 0, 0.86);
+  --focus-ring: 0 0 0 3px rgba(255, 255, 255, 0.55);
+  --sheet-ease: cubic-bezier(0.32, 0.72, 0, 1);
+  color-scheme: dark;
+
+  position: fixed; inset: 0; z-index: calc(var(--z-menu) - 5); overflow: hidden;
+  color: var(--text-1); background: var(--np-bg, #222);
+  transform: translate3d(0, 100%, 0);
+  transition: transform var(--close-ms) cubic-bezier(0.4, 0, 0.9, 0.6), border-radius var(--close-ms);
+  touch-action: pan-x;
+}
+.np:focus-visible { box-shadow: none; outline: none; }
+.open { transform: none; transition: transform var(--open-ms) var(--sheet-ease); }
+.dragging { transition: none !important; border-radius: 18px 18px 0 0; }
+.dragging .artBox { transition: none; }
+
+/* ---------- Background ---------- */
+.bg { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.bgLayer { position: absolute; inset: 0; animation: bgIn 1.2s var(--ease) both; }
+@keyframes bgIn { from { opacity: 0; } }
+/* Small blurred images scaled up: same look as a huge 80px blur, a fraction of the cost. */
+.blob { position: absolute; left: 50%; top: 50%; width: 40vmax; height: 40vmax; margin: -20vmax 0 0 -20vmax; max-width: none; object-fit: cover; border-radius: 50%; filter: blur(22px) saturate(1.9) brightness(0.95); will-change: transform; }
+.blobA { transform: translate(-28%, -22%) scale(3.2); animation: driftA 48s ease-in-out infinite alternate; }
+.blobB { transform: translate(30%, 26%) scale(2.6) rotate(140deg); opacity: 0.85; mix-blend-mode: screen; animation: driftB 60s ease-in-out infinite alternate; }
+.blobC { transform: translate(-36%, 40%) scale(2.2) rotate(250deg); opacity: 0.6; animation: driftC 70s ease-in-out infinite alternate; }
+@keyframes driftA { from { transform: translate(-28%, -22%) scale(3.2) rotate(0deg); } to { transform: translate(18%, 12%) scale(3.6) rotate(70deg); } }
+@keyframes driftB { from { transform: translate(30%, 26%) scale(2.6) rotate(140deg); } to { transform: translate(-22%, -18%) scale(3) rotate(40deg); } }
+@keyframes driftC { from { transform: translate(-36%, 40%) scale(2.2) rotate(250deg); } to { transform: translate(34%, -30%) scale(2.8) rotate(330deg); } }
+.shade { position: absolute; inset: 0; background: radial-gradient(120% 90% at 50% 40%, rgba(0, 0, 0, 0.12), rgba(0, 0, 0, 0.42)), rgba(0, 0, 0, 0.22); }
+
+/* ---------- Top bar ---------- */
+.topBar { position: absolute; top: 0; left: 0; right: 0; height: 64px; z-index: 3; display: flex; align-items: center; padding: 0 22px; }
+.grabber { display: none; }
+.close { width: 36px; height: 36px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: var(--text-1); background: rgba(255, 255, 255, 0.12); transition: background var(--dur), transform var(--dur-fast); }
+.close:hover { background: rgba(255, 255, 255, 0.2); }
+.close:active { transform: scale(0.92); }
+
+/* ---------- Artwork ---------- */
+.artBox {
+  width: 100%; border-radius: var(--r-lg);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.38), 0 4px 14px rgba(0, 0, 0, 0.18);
+  transform: scale(1); transform-origin: 50% 50%;
+  transition: transform 0.7s var(--ease-spring), box-shadow 0.7s var(--ease);
+}
+.paused .artBox { transform: scale(0.84); box-shadow: 0 12px 30px rgba(0, 0, 0, 0.24), 0 2px 8px rgba(0, 0, 0, 0.12); }
+/* entrance: artwork rises slightly as the sheet lands */
+.np:not(.open) .artBox { transform: scale(0.9) translateY(24px); }
+
+/* ---------- Meta / transport ---------- */
+.meta { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.metaText { flex: 1; min-width: 0; }
+.title { font-family: var(--font-display); font-size: 20px; line-height: 26px; font-weight: 700; letter-spacing: -0.01em; }
+.artist { font-size: 17px; line-height: 22px; color: var(--text-2); }
+.artist a:hover { color: var(--text-1); text-decoration: underline; }
+.album { color: var(--text-3); }
+.album a { color: var(--text-2); }
+.metaCompact .title { font-size: 16px; line-height: 20px; }
+.metaCompact .artist { font-size: 14px; line-height: 18px; }
+.explicit { display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px; margin-left: 6px; border-radius: 3px; background: var(--text-3); color: #000; font-size: 9.5px; font-weight: 700; vertical-align: 2px; }
+.round { width: 32px; height: 32px; flex-shrink: 0; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, 0.14); color: var(--text-1); transition: background var(--dur), transform var(--dur-fast); }
+.round:hover { background: rgba(255, 255, 255, 0.22); }
+.round:active { transform: scale(0.9); }
+.loved { color: #fff; }
+.loved svg { animation: pop 0.4s var(--ease-spring); }
+@keyframes pop { 0% { transform: scale(0.6); } 100% { transform: scale(1); } }
+
+.transport { display: flex; align-items: center; justify-content: space-between; }
+.tBig, .tSmall { position: relative; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; color: var(--text-1); transition: transform 0.15s var(--ease), background var(--dur), color var(--dur); }
+.tBig { width: 64px; height: 64px; }
+.tBig:hover { background: rgba(255, 255, 255, 0.08); }
+.tBig:active { transform: scale(0.86); background: rgba(255, 255, 255, 0.14); }
+.tPlay { width: 76px; height: 76px; }
+.tSmall { width: 40px; height: 40px; color: var(--text-2); }
+.tSmall:hover:not(:disabled) { color: var(--text-1); }
+.tOn, .tOn:hover:not(:disabled) { color: var(--text-on-key); background: var(--key); }
+.tSmall:disabled { opacity: 0.35; }
+
+.volume { margin-top: 2px; }
+.toggles { display: flex; justify-content: space-between; padding: 0 2px; }
+.toggle { width: 44px; height: 36px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; color: var(--text-2); transition: background var(--dur), color var(--dur), transform var(--dur-fast); }
+.toggle:hover:not(:disabled) { color: var(--text-1); background: rgba(255, 255, 255, 0.08); }
+.toggle:active:not(:disabled) { transform: scale(0.92); }
+.toggleOn, .toggleOn:hover:not(:disabled) { color: var(--text-on-key); background: var(--key); }
+.toggle:disabled { opacity: 0.3; }
+
+/* ---------- Desktop layout ---------- */
+.stage { position: absolute; inset: 0; z-index: 2; --np-art: min(46vh, 34vw, 500px, calc(100vh - 420px)); }
+.col {
+  position: absolute; left: 50%; top: calc(50% + 14px); width: var(--np-art);
+  display: flex; flex-direction: column; gap: 14px;
+  transform: translate(-50%, -50%);
+  transition: transform 0.65s var(--sheet-ease);
+}
+.withPane .col { transform: translate(calc(-50% - 24vw), -50%); }
+.artSlot { margin-bottom: 14px; }
+.desktop .meta { margin-bottom: -2px; }
+.pane {
+  position: absolute; top: 64px; bottom: 32px; left: 50%; right: 5vw;
+  opacity: 0; transform: translate3d(48px, 0, 0); pointer-events: none;
+  transition: opacity 0.35s var(--ease), transform 0.6s var(--sheet-ease);
+}
+.withPane .pane { opacity: 1; transform: none; pointer-events: auto; transition: opacity 0.5s var(--ease) 0.08s, transform 0.65s var(--sheet-ease); }
+@media (max-height: 640px) { .stage { --np-art: min(38vh, 30vw, 500px, calc(100vh - 340px)); } .col { gap: 8px; } .artSlot { margin-bottom: 4px; } }
+
+/* ---------- Mobile layout ---------- */
+.mobile { border-radius: 0; }
+.mobile .topBar { height: 44px; justify-content: center; padding: 0 16px; padding-top: env(safe-area-inset-top, 0px); }
+.mobile .grabber { display: block; width: 38px; height: 5px; border-radius: 3px; background: rgba(255, 255, 255, 0.4); }
+.mobile .close { position: absolute; left: 14px; top: calc(4px + env(safe-area-inset-top, 0px)); width: 32px; height: 32px; background: transparent; }
+.m { position: absolute; inset: 0; z-index: 2; display: flex; flex-direction: column; padding: calc(48px + env(safe-area-inset-top, 0px)) 24px calc(18px + env(safe-area-inset-bottom, 0px)); }
+.mArt { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; padding: 8px 0 18px; }
+.mArt .artBox { height: min(100%, calc(100vw - 48px)); width: auto; aspect-ratio: 1; }
+.mArt .artBox > div { height: 100%; }
+.mHeader { display: flex; align-items: center; gap: 12px; padding: 6px 0 10px; animation: fadeUp 0.4s var(--sheet-ease); }
+.mHeaderArt { width: 56px; flex-shrink: 0; border-radius: var(--r-sm); box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3); }
+.mHeader .meta { flex: 1; }
+.mPane { position: relative; flex: 1; min-height: 0; margin: 0 -16px; animation: fadeUp 0.45s var(--sheet-ease); }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } }
+.mControls { display: flex; flex-direction: column; gap: 12px; flex-shrink: 0; }
+.mobile .tBig { width: 58px; height: 58px; }
+.mobile .tPlay { width: 70px; height: 70px; }
+.mobile .meta { margin-bottom: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .blob { animation: none !important; }
+  .np, .open { transition-duration: 0.01ms; }
+}

@@ -1,0 +1,114 @@
+/* ---------------- Desktop floating pill ---------------- */
+.pillDock {
+  position: fixed; z-index: var(--z-player); left: var(--sidebar-w); right: 0; bottom: var(--player-bottom);
+  display: flex; justify-content: center; pointer-events: none;
+  transition: transform 0.45s cubic-bezier(0.32, 0.72, 0, 1);
+}
+/* With the side panel open, centre over what is left of the content column. */
+@media (min-width: 1100px) { .pillDockShifted { transform: translateX(-180px); } }
+
+.pill {
+  pointer-events: auto; position: relative;
+  width: min(var(--player-w), calc(100% - 32px)); height: var(--player-h);
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 10px;
+  padding: 0 10px 0 14px; border-radius: var(--r-pill);
+  background: var(--bg-player); border: 1px solid var(--bg-player-border); box-shadow: var(--shadow-player);
+  backdrop-filter: blur(30px) saturate(190%); -webkit-backdrop-filter: blur(30px) saturate(190%);
+  color: var(--text-1);
+}
+.controls, .right { display: flex; align-items: center; gap: 0; }
+.right { gap: 2px; }
+.ctl {
+  position: relative; display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%;
+  color: var(--text-1); transition: color var(--dur) var(--ease), background var(--dur) var(--ease), transform var(--dur-fast) var(--ease);
+}
+.ctl:hover:not(:disabled) { background: var(--bg-hover); }
+.ctl:active:not(:disabled) { transform: scale(0.88); }
+.ctl:disabled, .empty .ctl, .empty .vol button { color: var(--text-3); opacity: 1; cursor: default; }
+.ctl:focus-visible { border-radius: 50%; }
+.ctlSmall { color: var(--text-2); }
+.ctlPlay { width: 36px; height: 36px; }
+.on, .on:hover { color: var(--key); }
+.on::after { content: ""; position: absolute; bottom: 2px; left: 50%; width: 3px; height: 3px; margin-left: -1.5px; border-radius: 50%; background: currentColor; }
+
+/* play/pause crossfade */
+.ppIcon { position: relative; display: inline-block; }
+.ppGlyph { position: absolute; inset: 0; transition: opacity 0.18s var(--ease), transform 0.25s var(--ease-spring); }
+.ppHidden { opacity: 0; transform: scale(0.6); }
+
+/* LCD */
+.lcd {
+  position: relative; height: 44px; min-width: 0; border-radius: 9px; /* not clipped: the scrub tooltip floats above the pill */
+  display: grid; grid-template-columns: 44px minmax(0, 1fr); align-items: stretch;
+  background: color-mix(in srgb, var(--text-1) 4%, transparent);
+  box-shadow: inset 0 0 0 0.5px color-mix(in srgb, var(--text-1) 8%, transparent);
+}
+.empty .lcd { background: transparent; box-shadow: none; }
+.lcdArt { position: relative; width: 44px; height: 44px; display: block; border-radius: 9px 0 0 9px; overflow: hidden; }
+.lcdArt:focus-visible { box-shadow: inset var(--focus-ring); border-radius: 0; }
+.lcdArtHover { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.42); color: #fff; opacity: 0; transition: opacity var(--dur) var(--ease); }
+.lcdArt:hover .lcdArtHover, .lcdArt:focus-visible .lcdArtHover { opacity: 1; }
+.lcdText { position: relative; min-width: 0; display: flex; flex-direction: column; justify-content: center; align-items: stretch; text-align: center; padding: 0 14px 3px; }
+.lcdTitle { display: block; min-width: 0; max-width: 100%; font-size: var(--fs-callout); line-height: 16px; font-weight: 500; color: var(--text-1); text-align: center; }
+.lcdTitle:hover { text-decoration: underline; text-decoration-color: var(--text-3); text-underline-offset: 2px; }
+.lcdTitle > div, .lcdSub { text-align: center; }
+.lcdSub { font-size: var(--fs-footnote); line-height: 15px; color: var(--text-2); }
+.explicit { display: inline-flex; align-items: center; justify-content: center; width: 12px; height: 12px; margin-left: 5px; border-radius: 2px; background: var(--text-3); color: var(--bg); font-size: 8.5px; font-weight: 700; vertical-align: 1px; }
+.lcdScrub { position: absolute; left: 44px; right: 0; bottom: 0; }
+.lcdScrub [role="slider"] > div:first-child { border-radius: 0 0 9px 0; }
+.lcdEmpty { grid-column: 1 / -1; display: flex; align-items: center; justify-content: center; color: var(--text-3); }
+.buffering { position: absolute; right: 8px; top: 50%; width: 12px; height: 12px; margin-top: -8px; border-radius: 50%; border: 1.6px solid var(--text-3); border-top-color: var(--text-1); animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 1000px) {
+  .pill { gap: 6px; padding: 0 8px 0 10px; }
+  .ctl { width: 30px; }
+}
+@media (max-width: 760px) { .pillDock { display: none; } }
+
+/* ---------------- Mobile mini player ---------------- */
+.mini { display: none; }
+@media (max-width: 760px) {
+  .mini {
+    position: fixed; z-index: var(--z-player); left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    display: flex; align-items: center; gap: 2px; height: var(--mobile-player-h); padding: 0 10px 0 10px; border-radius: 16px; overflow: hidden;
+    background: var(--bg-player); border: 1px solid var(--bg-player-border); box-shadow: var(--shadow-player);
+    backdrop-filter: blur(30px) saturate(190%); -webkit-backdrop-filter: blur(30px) saturate(190%);
+    color: var(--text-1); touch-action: pan-x; user-select: none; -webkit-user-select: none;
+    transition: transform 0.4s var(--ease-spring), opacity var(--dur) var(--ease);
+  }
+}
+.miniHidden { opacity: 0; transform: translateY(24px) scale(0.96) !important; pointer-events: none; }
+.miniMain { flex: 1; min-width: 0; height: 100%; display: flex; align-items: center; gap: 12px; text-align: left; -webkit-tap-highlight-color: transparent; }
+.miniMain:disabled { opacity: 1; }
+.miniMain:focus-visible { border-radius: 10px; }
+.miniArt { width: 34px; height: 34px; flex-shrink: 0; border-radius: var(--r-xs); overflow: hidden; display: flex; align-items: center; justify-content: center; background: var(--bg-placeholder); color: var(--text-3); box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12); }
+.miniArt > div { width: 100%; }
+.miniText { min-width: 0; flex: 1; display: flex; flex-direction: column; }
+.miniTitle { font-size: var(--fs-callout); line-height: 16px; font-weight: 500; }
+.miniSub { font-size: var(--fs-footnote); line-height: 15px; color: var(--text-2); }
+.miniBtn { width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; color: var(--text-1); -webkit-tap-highlight-color: transparent; transition: transform var(--dur-fast); }
+.miniBtn:active:not(:disabled) { transform: scale(0.86); background: var(--bg-hover); }
+.miniBtn:disabled { color: var(--text-3); opacity: 1; }
+.miniProgress { position: absolute; left: 16px; right: 16px; bottom: 0; }
+
+/* ---------------- Desktop side panel (lyrics / queue) ---------------- */
+.panel {
+  position: fixed; z-index: calc(var(--z-player) - 1); top: 0; right: 0; bottom: 0; width: 360px;
+  display: flex; flex-direction: column;
+  background: color-mix(in srgb, var(--bg) 84%, transparent); border-left: 1px solid var(--bg-sidebar-border);
+  box-shadow: -12px 0 40px rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(50px) saturate(190%); -webkit-backdrop-filter: blur(50px) saturate(190%);
+  transform: translateX(calc(100% + 40px)); visibility: hidden;
+  transition: transform 0.45s cubic-bezier(0.32, 0.72, 0, 1), visibility 0s linear 0.45s;
+}
+.panelOpen { transform: none; visibility: visible; transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1), visibility 0s; }
+.panelHead { display: flex; align-items: center; gap: 10px; height: 60px; padding: 0 14px 0 16px; flex-shrink: 0; }
+.seg { flex: 1; display: grid; grid-template-columns: 1fr 1fr; padding: 2px; border-radius: 9px; background: var(--bg-hover); }
+.segBtn { height: 28px; border-radius: 7px; font-size: var(--fs-footnote); font-weight: 600; color: var(--text-2); transition: background var(--dur) var(--ease), color var(--dur), box-shadow var(--dur); }
+.segBtn:hover:not(:disabled) { color: var(--text-1); }
+.segOn { background: var(--bg-elevated); color: var(--text-1); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 0 0 0.5px rgba(0, 0, 0, 0.04); }
+.panelClose { width: 26px; height: 26px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; background: var(--bg-hover); color: var(--text-2); flex-shrink: 0; }
+.panelClose:hover { background: var(--bg-selected); color: var(--text-1); }
+.panelBody { position: relative; flex: 1; min-height: 0; }
+@media (max-width: 760px) { .panel { display: none; } }

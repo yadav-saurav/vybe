@@ -47,6 +47,9 @@ const paths: Record<string, ReactElement> = {
   info: <><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" strokeWidth="1.8" /><path d="M12 11v5.5M12 7.6v.1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></>,
   star: <path d="m12 3.8 2.5 5.1 5.6.8-4 4 .9 5.6-5-2.7-5 2.7.9-5.6-4-4 5.6-.8z" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />,
   logo: <path d="M3 6.5 8.2 18h2.1L15.5 6.5h-2.4L9.3 15.2 5.4 6.5zm13.2 0V18h2.1V6.5zM17.25 2.5a1.4 1.4 0 1 0 0 2.8 1.4 1.4 0 0 0 0-2.8Z" fill="currentColor" />,
+  grip: <path d="M5 8.5h14M5 12h14M5 15.5h14" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />,
+  /** Monochrome Vybe mark (rounded tile with a cut-out V), used for empty player states. */
+  'vybe-mark': <path fillRule="evenodd" d="M8.6 3h6.8c3.1 0 5.6 2.5 5.6 5.6v6.8c0 3.1-2.5 5.6-5.6 5.6H8.6A5.6 5.6 0 0 1 3 15.4V8.6C3 5.5 5.5 3 8.6 3Zm-.3 6.1a1.15 1.15 0 0 0-.42 1.57l3.12 5.4a1.15 1.15 0 0 0 2 0l3.12-5.4a1.15 1.15 0 1 0-2-1.15L12 13.6l-2.12-3.67a1.15 1.15 0 0 0-1.57-.42Z" fill="currentColor" />,
   wave: <path d="M4 12h1.5M7.5 8v8M11 5v14M14.5 9v6M18 7v10M20.5 12H20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />,
 };
 

@@ -1,0 +1,94 @@
+/* ---------- Scrubber / slider (shared) ---------- */
+.scrubber { position: relative; }
+.hit, .slider { position: relative; display: flex; align-items: center; cursor: pointer; touch-action: none; -webkit-tap-highlight-color: transparent; border-radius: var(--r-pill); }
+.hit:focus-visible, .slider:focus-visible { box-shadow: none; }
+.hit:focus-visible .track, .slider:focus-visible .track { box-shadow: var(--focus-ring); }
+.disabled .hit { cursor: default; }
+.track {
+  position: relative; width: 100%; height: var(--trk, 4px); border-radius: var(--r-pill); overflow: hidden;
+  background: color-mix(in srgb, var(--text-1) 14%, transparent);
+  transition: height var(--dur) var(--ease);
+}
+.buffer, .fill { position: absolute; inset: 0; transform-origin: 0 50%; transform: scaleX(0); border-radius: inherit; }
+.buffer { background: color-mix(in srgb, var(--text-1) 12%, transparent); transition: transform 0.4s var(--ease); }
+.fill { background: var(--fill, var(--text-2)); }
+.knobLane { position: absolute; inset: 0; pointer-events: none; transform: translateX(0); }
+.knob {
+  position: absolute; left: 0; top: 50%; width: var(--knob, 0px); height: var(--knob, 0px); margin: calc(var(--knob, 0px) / -2) 0 0 calc(var(--knob, 0px) / -2);
+  border-radius: 50%; background: var(--knob-bg, var(--text-1)); box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+  transform: scale(var(--knob-scale, 0)); transition: transform var(--dur) var(--ease-spring);
+}
+.tipLane { position: absolute; inset: 0; pointer-events: none; }
+.tip {
+  position: absolute; left: 0; bottom: calc(100% + 6px); transform: translateX(-50%);
+  padding: 3px 7px; border-radius: 6px; background: var(--bg-menu); color: var(--text-1); box-shadow: var(--shadow-menu);
+  backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%);
+  font-size: var(--fs-caption); font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap;
+  animation: tipIn 0.12s var(--ease-out);
+}
+@keyframes tipIn { from { opacity: 0; transform: translate(-50%, 3px); } }
+
+/* LCD: hairline along the bottom of the LCD that thickens on hover */
+.lcd .hit { height: 14px; }
+.lcd { --trk: 3px; --fill: color-mix(in srgb, var(--text-1) 55%, transparent); }
+.lcd .track { align-self: flex-end; margin-bottom: 0; border-radius: 0; }
+.lcd:hover:not(.disabled), .lcd.scrubbing { --trk: 5px; --fill: var(--key); }
+.lcd .track { background: color-mix(in srgb, var(--text-1) 9%, transparent); }
+.lcd .tip { bottom: calc(100% + 46px); }
+
+/* Mini (mobile) progress: hairline, not interactive */
+.mini { --trk: 2px; --fill: var(--text-1); pointer-events: none; }
+.mini .track { border-radius: 0; background: color-mix(in srgb, var(--text-1) 7%, transparent); }
+.mini .buffer { display: none; }
+
+/* Now Playing: big rounded bar that grows while scrubbing */
+.np { --trk: 7px; --fill: color-mix(in srgb, var(--text-1) 82%, transparent); --knob: 0px; }
+.np .hit { height: 24px; }
+.np:hover:not(.disabled), .np.scrubbing { --trk: 11px; --fill: var(--text-1); }
+.np .track { background: color-mix(in srgb, var(--text-1) 20%, transparent); }
+.np .tip { bottom: calc(100% + 2px); }
+.times { display: flex; justify-content: space-between; margin-top: 4px; font-size: var(--fs-footnote); line-height: var(--lh-footnote); font-weight: 600; color: var(--text-2); font-variant-numeric: tabular-nums; transition: color var(--dur); }
+.np.scrubbing .times { color: var(--text-1); }
+
+/* Slider (volume) */
+.slider { height: 22px; --trk: 4px; --knob: 14px; --knob-scale: 1; --fill: var(--text-1); }
+.slider.scrubbing { --knob-scale: 1.15; }
+
+/* ---------- Volume ---------- */
+.iconBtn { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; color: var(--text-1); transition: background var(--dur) var(--ease), transform var(--dur-fast), color var(--dur); }
+.iconBtn:hover:not(:disabled) { background: var(--bg-hover); }
+.iconBtn:active:not(:disabled) { transform: scale(0.9); }
+.iconBtn:disabled { color: var(--text-3); opacity: 1; }
+.volume { position: relative; display: inline-flex; }
+.volPop {
+  position: absolute; right: -12px; bottom: calc(100% + 14px); display: flex; align-items: center; gap: 8px;
+  width: 190px; height: 44px; padding: 0 14px; border-radius: var(--r-pill);
+  background: var(--bg-menu); box-shadow: var(--shadow-menu); color: var(--text-2);
+  backdrop-filter: blur(40px) saturate(180%); -webkit-backdrop-filter: blur(40px) saturate(180%);
+  opacity: 0; transform: translateY(6px) scale(0.96); transform-origin: 85% 100%; pointer-events: none; visibility: hidden;
+  transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease-out), visibility 0s linear var(--dur);
+}
+.volPop::after { content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 16px; } /* hover bridge */
+.volPopOpen { opacity: 1; transform: none; pointer-events: auto; visibility: visible; transition: opacity var(--dur) var(--ease), transform 0.3s var(--ease-spring), visibility 0s; }
+.volSlider { flex: 1; }
+.volEnd { flex-shrink: 0; }
+.volRow { display: flex; align-items: center; gap: 6px; color: var(--text-2); }
+.volRow .iconBtn { color: var(--text-2); width: 28px; height: 28px; }
+.volRowSlider { flex: 1; --knob: 0px; --trk: 6px; --fill: color-mix(in srgb, var(--text-1) 82%, transparent); }
+.volRowSlider:hover, .volRowSlider.scrubbing { --trk: 9px; --fill: var(--text-1); }
+.volRowSlider .track { background: color-mix(in srgb, var(--text-1) 20%, transparent); }
+
+/* ---------- Marquee ---------- */
+.marquee { overflow: hidden; white-space: nowrap; min-width: 0; text-overflow: ellipsis; }
+.marqueeTrack { display: inline-flex; }
+.marqueeText { flex-shrink: 0; }
+/* The fade gutter hangs 8px outside the box so the resting text stays aligned with its neighbours. */
+.marqueeOn { text-overflow: clip; margin-left: -8px; -webkit-mask-image: linear-gradient(90deg, transparent, #000 8px, #000 calc(100% - 16px), transparent); mask-image: linear-gradient(90deg, transparent, #000 8px, #000 calc(100% - 16px), transparent); }
+.marqueeOn .marqueeTrack { padding-left: 8px; animation: marquee var(--mq-dur) linear infinite; will-change: transform; }
+.marqueeOn .marqueeText + .marqueeText { margin-left: 40px; }
+@keyframes marquee { 0%, 22% { transform: translateX(0); } 100% { transform: translateX(calc(-1 * var(--mq-dist))); } }
+@media (prefers-reduced-motion: reduce) {
+  .marqueeOn .marqueeTrack { animation: none; }
+  .marqueeOn .marqueeText + .marqueeText { display: none; }
+  .marqueeOn { text-overflow: ellipsis; }
+}
