@@ -7,6 +7,10 @@ import java.nio.file.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.server.MimeMappings;
+import org.springframework.boot.web.server.WebServerFactoryCustomizer;
+import org.springframework.boot.web.servlet.server.ConfigurableServletWebServerFactory;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -30,6 +34,16 @@ public class SpaConfig implements WebMvcConfigurer {
 
     public SpaConfig(@Value("${vybe.web-dir:${VYBE_WEB_DIR:../web/dist}}") String webDir) {
         this.webDir = Path.of(webDir).toAbsolutePath().normalize();
+    }
+
+    /** Serve the PWA manifest with its registered media type (the default table lacks .webmanifest). */
+    @Bean
+    WebServerFactoryCustomizer<ConfigurableServletWebServerFactory> pwaMimeTypes() {
+        return factory -> {
+            MimeMappings mappings = new MimeMappings(MimeMappings.DEFAULT);
+            mappings.add("webmanifest", "application/manifest+json");
+            factory.setMimeMappings(mappings);
+        };
     }
 
     private boolean enabled() {

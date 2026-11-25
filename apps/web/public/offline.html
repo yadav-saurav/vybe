@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Offline — Vybe</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; text-align: center; padding: 24px;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", Inter, "Helvetica Neue", Arial, sans-serif;
+      background: #110f0f; color: #f4f1f1; }
+    img { width: 72px; height: 72px; border-radius: 18px; box-shadow: 0 8px 30px rgba(0,0,0,.5); }
+    h1 { font-size: 22px; margin: 18px 0 6px; }
+    p { margin: 0 0 20px; color: #b9b3b3; font-size: 15px; max-width: 320px; line-height: 1.45; }
+    button { height: 40px; padding: 0 22px; border: 0; border-radius: 999px; background: #ff5c7c; color: #000; font-weight: 600; font-size: 15px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <main>
+    <img src="/logo-mark.webp" alt="" width="72" height="72" />
+    <h1>You’re offline</h1>
+    <p>Vybe streams music over the internet. Reconnect and your music will be right where you left it.</p>
+    <button onclick="location.reload()">Try Again</button>
+  </main>
+</body>
+</html>

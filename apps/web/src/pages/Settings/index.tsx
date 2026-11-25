@@ -8,6 +8,7 @@ import { usePlayer } from '../../stores/player';
 import { useSettings } from '../../stores/settings';
 import { PillButton } from '../../components/Buttons';
 import { useDocumentTitle } from '../../features/shelves/useDocumentTitle';
+import { promptInstall, useInstallState } from '../../lib/install';
 import s from './Settings.module.css';
 
 const COLORS = ['#e11d48', '#f97316', '#eab308', '#22c55e', '#14b8a6', '#0ea5e9', '#6366f1', '#a855f7', '#ec4899', '#64748b'];
@@ -20,6 +21,7 @@ export default function SettingsPage() {
   const autoplay = usePlayer((p) => p.autoplayEnabled);
   const [name, setName] = useState(user?.displayName ?? '');
   const [color, setColor] = useState(user?.avatarColor ?? COLORS[0]);
+  const install = useInstallState();
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   useEffect(() => { setName(user?.displayName ?? ''); setColor(user?.avatarColor ?? COLORS[0]); }, [user]);
@@ -80,6 +82,14 @@ export default function SettingsPage() {
           </select>
         </Row>
       </Section>
+
+      {(install === 'prompt' || install === 'ios') && (
+        <Section title="Install">
+          <Row label="Install Vybe" hint={install === 'ios' ? 'Tap Share, then Add to Home Screen' : 'Open Vybe like an app, with its own icon and window'}>
+            {install === 'prompt' && <PillButton onClick={async () => { if (await promptInstall()) useUI.getState().toast('Vybe Installed'); }}>Install</PillButton>}
+          </Row>
+        </Section>
+      )}
 
       <Section title="Appearance">
         <Row label="Theme">
