@@ -1,0 +1,17 @@
+.pill { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 36px; min-width: 100px; padding: 0 24px; border-radius: var(--r-pill); font-size: var(--fs-headline); font-weight: 600; line-height: 20px; transition: transform var(--dur-fast) var(--ease), filter var(--dur) var(--ease), background var(--dur) var(--ease); }
+.pill:active { transform: scale(0.97); }
+.key { background: var(--key); color: var(--text-on-key); }
+.key:hover { filter: brightness(1.08); }
+.contrast { background: #fff; color: #000; }
+.contrast:hover { background: rgba(255,255,255,0.9); }
+.soft { background: var(--bg-hover); color: var(--key); }
+.soft:hover { background: var(--bg-selected); }
+.circle { display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--circle-btn-bg); border: 1px solid var(--circle-btn-border); color: var(--key); transition: background var(--dur) var(--ease), transform var(--dur-fast); backdrop-filter: blur(20px); }
+.circle:hover { background: var(--bg-selected); }
+.circle:active { transform: scale(0.94); }
+.active { color: var(--key); }
+.icon { display: inline-flex; align-items: center; justify-content: center; color: var(--text-2); padding: 4px; border-radius: var(--r-sm); transition: color var(--dur) var(--ease), transform var(--dur-fast); }
+.icon:hover { color: var(--text-1); }
+.icon:active { transform: scale(0.92); }
+.iconActive, .iconActive:hover { color: var(--key); }
+.explicit { display: inline-flex; align-items: center; justify-content: center; width: 13px; height: 13px; border-radius: 2px; background: var(--text-3); color: var(--bg); font-size: 9px; font-weight: 700; line-height: 1; margin-left: 5px; vertical-align: 1px; flex-shrink: 0; }

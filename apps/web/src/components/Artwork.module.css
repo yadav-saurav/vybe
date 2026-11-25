@@ -1,0 +1,5 @@
+.art { position: relative; width: 100%; aspect-ratio: 1; overflow: hidden; background: var(--bg-placeholder); flex-shrink: 0; isolation: isolate; }
+.art::after { content: ""; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 1px var(--artwork-border); pointer-events: none; }
+.img { width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity var(--dur-slow) var(--ease); }
+.loaded { opacity: 1; }
+.none { border-radius: 0; } .xs { border-radius: var(--r-xs); } .sm { border-radius: var(--r-sm); } .md { border-radius: var(--r-md); } .lg { border-radius: var(--r-lg); } .circle { border-radius: 50%; }

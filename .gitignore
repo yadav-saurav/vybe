@@ -1,0 +1,10 @@
+node_modules
+dist
+*.db
+*.db-*
+data/media/audio/*
+data/media/art/*
+!data/media/**/.gitkeep
+.vite
+test-results
+playwright-report

@@ -1,0 +1,21 @@
+{
+  "name": "vybe",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -n api,web -c blue,magenta \"npm run dev -w @vybe/server\" \"npm run dev -w @vybe/web\"",
+    "build": "npm run build -w @vybe/web && npm run build -w @vybe/server",
+    "start": "npm run start -w @vybe/server",
+    "test": "npm run test --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "generate:catalog": "python3 scripts/generate_catalog.py",
+    "seed": "npm run seed -w @vybe/server"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.5"
+  }
+}

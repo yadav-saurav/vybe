@@ -1,0 +1,183 @@
+/*
+ * Vybe design tokens.
+ * Measured from the reference (Apple Music web, Nov 2026) and adapted to the Vybe brand.
+ * Light/dark follow the OS unless <html data-theme="light|dark"> is set by the user.
+ */
+:root {
+  /* Brand */
+  --key: #fc3c64;            /* Vybe key colour (nav icons, links, active controls) */
+  --key-rgb: 252, 60, 100;
+  --key-pressed: #e02a52;
+  --key-soft: rgba(var(--key-rgb), 0.12);
+
+  /* Surfaces (light) */
+  --bg: #ffffff;
+  --bg-elevated: #ffffff;
+  --bg-sidebar: #f7f7f9;
+  --bg-sidebar-border: rgba(0, 0, 0, 0.08);
+  --bg-hover: rgba(0, 0, 0, 0.05);
+  --bg-selected: rgba(0, 0, 0, 0.08);
+  --bg-input: rgba(0, 0, 0, 0.04);
+  --bg-menu: rgba(250, 250, 252, 0.86);
+  --bg-player: rgba(246, 246, 248, 0.78);
+  --bg-player-border: rgba(0, 0, 0, 0.1);
+  --bg-placeholder: #ebebee;
+  --separator: rgba(0, 0, 0, 0.1);
+
+  /* Text (light) */
+  --text-1: rgba(0, 0, 0, 0.88);
+  --text-2: rgba(0, 0, 0, 0.56);
+  --text-3: rgba(0, 0, 0, 0.36);
+  --text-on-key: #ffffff;
+
+  /* Controls */
+  --pill-bg: #000000;
+  --pill-fg: #ffffff;
+  --circle-btn-bg: rgba(0, 0, 0, 0.06);
+  --circle-btn-border: rgba(0, 0, 0, 0.04);
+  --artwork-border: rgba(0, 0, 0, 0.1);
+  --scrim: rgba(0, 0, 0, 0.4);
+  --shadow-artwork: 0 4px 14px rgba(0, 0, 0, 0.1);
+  --shadow-hero-artwork: 0 8px 40px rgba(0, 0, 0, 0.25);
+  --shadow-menu: 0 0 0 0.5px rgba(0, 0, 0, 0.12), 0 10px 40px rgba(0, 0, 0, 0.18);
+  --shadow-player: 0 8px 30px rgba(0, 0, 0, 0.1);
+  --focus-ring: 0 0 0 3px rgba(var(--key-rgb), 0.45);
+
+  /* Typography — SF on Apple platforms, Inter elsewhere */
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro", Inter, "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro", Inter, "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --fs-large-title: 34px;   /* page titles: New, Radio */
+  --lh-large-title: 41px;
+  --fs-title-1: 26px;       /* album/playlist title */
+  --lh-title-1: 30px;
+  --fs-title-2: 22px;
+  --fs-title-3: 17px;       /* shelf headers */
+  --lh-title-3: 22px;
+  --fs-headline: 15px;
+  --fs-body: 14px;          /* nav items */
+  --fs-callout: 13px;       /* song rows, descriptions */
+  --lh-callout: 16px;
+  --fs-footnote: 12px;      /* lockup titles/subtitles */
+  --lh-footnote: 15px;
+  --fs-caption: 11px;       /* eyebrows */
+  --fs-caption-2: 10px;
+
+  /* Layout */
+  --sidebar-w: 260px;
+  --content-pad: 40px;      /* horizontal page gutter (desktop) */
+  --content-max: 1680px;
+  --shelf-gap: 20px;        /* gap between lockups */
+  --player-h: 56px;
+  --player-w: 668px;
+  --player-bottom: 18px;
+  --mobile-header-h: 52px;
+  --mobile-player-h: 52px;
+  --tabbar-h: 0px;
+
+  /* Radii */
+  --r-xs: 4px;
+  --r-sm: 6px;              /* artwork */
+  --r-md: 8px;              /* nav items, rows */
+  --r-lg: 12px;             /* hero cards, menus */
+  --r-xl: 16px;
+  --r-pill: 1000px;
+
+  /* Motion */
+  --ease: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.36, 0.64, 1);
+  --dur-fast: 0.1s;
+  --dur: 0.2s;
+  --dur-slow: 0.4s;
+
+  --z-sidebar: 20;
+  --z-player: 40;
+  --z-menu: 80;
+  --z-modal: 90;
+  --z-fullscreen: 100;
+  --z-toast: 120;
+
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #1f1f1f;
+    --bg-elevated: #2a2a2c;
+    --bg-sidebar: rgba(38, 38, 40, 0.6);
+    --bg-sidebar-border: rgba(255, 255, 255, 0.1);
+    --bg-hover: rgba(255, 255, 255, 0.06);
+    --bg-selected: rgba(255, 255, 255, 0.08);
+    --bg-input: rgba(255, 255, 255, 0.06);
+    --bg-menu: rgba(44, 44, 46, 0.86);
+    --bg-player: rgba(44, 44, 46, 0.72);
+    --bg-player-border: rgba(255, 255, 255, 0.1);
+    --bg-placeholder: #343436;
+    --separator: rgba(255, 255, 255, 0.1);
+    --text-1: rgba(255, 255, 255, 0.92);
+    --text-2: rgba(255, 255, 255, 0.64);
+    --text-3: rgba(255, 255, 255, 0.4);
+    --pill-bg: #ffffff;
+    --pill-fg: #000000;
+    --circle-btn-bg: rgba(255, 255, 255, 0.08);
+    --circle-btn-border: rgba(255, 255, 255, 0.06);
+    --artwork-border: rgba(255, 255, 255, 0.1);
+    --shadow-menu: 0 0 0 0.5px rgba(255, 255, 255, 0.12), 0 10px 40px rgba(0, 0, 0, 0.5);
+    --shadow-player: 0 8px 30px rgba(0, 0, 0, 0.35);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #1f1f1f;
+  --bg-elevated: #2a2a2c;
+  --bg-sidebar: rgba(38, 38, 40, 0.6);
+  --bg-sidebar-border: rgba(255, 255, 255, 0.1);
+  --bg-hover: rgba(255, 255, 255, 0.06);
+  --bg-selected: rgba(255, 255, 255, 0.08);
+  --bg-input: rgba(255, 255, 255, 0.06);
+  --bg-menu: rgba(44, 44, 46, 0.86);
+  --bg-player: rgba(44, 44, 46, 0.72);
+  --bg-player-border: rgba(255, 255, 255, 0.1);
+  --bg-placeholder: #343436;
+  --separator: rgba(255, 255, 255, 0.1);
+  --text-1: rgba(255, 255, 255, 0.92);
+  --text-2: rgba(255, 255, 255, 0.64);
+  --text-3: rgba(255, 255, 255, 0.4);
+  --pill-bg: #ffffff;
+  --pill-fg: #000000;
+  --circle-btn-bg: rgba(255, 255, 255, 0.08);
+  --circle-btn-border: rgba(255, 255, 255, 0.06);
+  --artwork-border: rgba(255, 255, 255, 0.1);
+  --shadow-menu: 0 0 0 0.5px rgba(255, 255, 255, 0.12), 0 10px 40px rgba(0, 0, 0, 0.5);
+  --shadow-player: 0 8px 30px rgba(0, 0, 0, 0.35);
+  color-scheme: dark;
+}
+
+@media (max-width: 1000px) {
+  :root { --sidebar-w: 220px; --content-pad: 25px; }
+}
+@media (max-width: 760px) {
+  :root { --sidebar-w: 0px; --content-pad: 20px; --fs-large-title: 28px; --lh-large-title: 34px; --fs-title-1: 22px; }
+}
+
+/*
+ * Tinted pages (album / playlist / artist): a container sets --tint-bg, --tint-1..3 from artwork palette,
+ * and children use var(--page-text-1) etc. Outside tinted containers these resolve to normal text colors.
+ */
+:root {
+  --page-text-1: var(--text-1);
+  --page-text-2: var(--text-2);
+  --page-accent: var(--key);
+}
+.tinted {
+  background: var(--tint-bg);
+  --page-text-1: var(--tint-1);
+  --page-text-2: var(--tint-2);
+  --page-accent: var(--tint-3);
+  --text-1: var(--tint-1);
+  --text-2: var(--tint-2);
+  --text-3: color-mix(in srgb, var(--tint-2) 70%, transparent);
+  --separator: color-mix(in srgb, var(--tint-1) 14%, transparent);
+  --bg-hover: color-mix(in srgb, var(--tint-1) 8%, transparent);
+  --key: var(--tint-3);
+}
