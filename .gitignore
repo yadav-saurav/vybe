@@ -2,9 +2,14 @@ node_modules
 dist
 *.db
 *.db-*
+# Generated media: never committed (regenerate with `npm run generate:catalog`)
+data/media/*
+!data/media/audio
+!data/media/art
 data/media/audio/*
 data/media/art/*
-!data/media/**/.gitkeep
+!data/media/audio/.gitkeep
+!data/media/art/.gitkeep
 .vite
 test-results
 playwright-report

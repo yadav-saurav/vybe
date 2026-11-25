@@ -79,12 +79,16 @@ public class ImportService {
     private final CatalogStore catalog;
     private final Path root;
     private final long maxFileBytes;
+    private final long maxUserBytes;   // 0 = unlimited
+    private final long maxTotalBytes;  // 0 = unlimited (set on hosts with a storage cap)
     private final app.vybe.api.storage.BlobStore blobs;
     private static final java.time.Duration SIGNED_TTL = java.time.Duration.ofHours(2);
 
     public ImportService(ImportRepository repo, PlaylistRepository playlists, TagReader tags, CatalogStore catalog,
                          VybeProperties props,
                          @Value("${spring.servlet.multipart.max-file-size:50MB}") DataSize maxFileSize,
+                         @Value("${vybe.imports.max-user-mb:${VYBE_IMPORTS_MAX_USER_MB:100}}") long maxUserMb,
+                         @Value("${vybe.imports.max-total-mb:${VYBE_IMPORTS_MAX_TOTAL_MB:0}}") long maxTotalMb,
                          app.vybe.api.storage.BlobStore blobs) {
         this.blobs = blobs;
         this.repo = repo;
@@ -93,6 +97,8 @@ public class ImportService {
         this.catalog = catalog;
         this.root = props.importsDirectory();
         this.maxFileBytes = maxFileSize.toBytes();
+        this.maxUserBytes = Math.max(0, maxUserMb) * 1024 * 1024;
+        this.maxTotalBytes = Math.max(0, maxTotalMb) * 1024 * 1024;
     }
 
     // ------------------------------------------------------------------ ids
@@ -156,6 +162,12 @@ public class ImportService {
         }
         if (file.getSize() == 0) {
             throw new SkipException("empty file");
+        }
+        if (maxUserBytes > 0 && repo.usedBytes(userId) + file.getSize() > maxUserBytes) {
+            throw new SkipException("storage limit reached (" + maxUserBytes / (1024 * 1024) + " MB per listener)");
+        }
+        if (maxTotalBytes > 0 && repo.usedBytesAll() + file.getSize() > maxTotalBytes) {
+            throw new SkipException("Vybe's import storage is full right now");
         }
         Path temp = dir.resolve(".upload-" + Ids.random("", 12) + "." + ext);
         try {

@@ -11,7 +11,7 @@ Writes:
     data/catalog.json            domain model (see packages/shared/src/index.ts)
     data/lyrics.json             { songId: LyricLine[] } for songs with hasLyrics
     data/media/art/*.webp        <id>.webp (1000px), <id>_400.webp, <id>_160.webp
-    data/media/audio/*.m4a       AAC 128k stereo 44.1 kHz, +faststart
+    data/media/audio/*.m4a       AAC 96k stereo 44.1 kHz, +faststart
 
 Test mode (optional environment variables):
     VYBE_LIMIT=N   render audio for the first N songs only
@@ -1504,7 +1504,7 @@ def render_song(task):
     out_path = AUDIO_DIR / f"{sid}.m4a"
     pcm = np.ascontiguousarray(mix.T.astype("<f4")).tobytes()
     subprocess.run(["ffmpeg", "-hide_banner", "-loglevel", "error", "-y", "-f", "f32le", "-ar", str(SR),
-                    "-ac", "2", "-i", "pipe:0", "-c:a", "aac", "-b:a", "128k", "-ar", "44100", "-ac", "2",
+                    "-ac", "2", "-i", "pipe:0", "-c:a", "aac", "-b:a", "96k", "-ar", "44100", "-ac", "2",
                     "-movflags", "+faststart", str(out_path)], input=pcm, check=True)
     pr = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0",
                          str(out_path)], capture_output=True, text=True, check=True)

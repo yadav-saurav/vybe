@@ -47,6 +47,18 @@ public class ImportRepository {
                 (rs, i) -> map(rs), userId);
     }
 
+    /** Bytes of imported audio stored for one user. */
+    public long usedBytes(String userId) {
+        Long n = jdbc.queryForObject("SELECT COALESCE(SUM(size_bytes), 0) FROM imported_tracks WHERE user_id = ?", Long.class, userId);
+        return n == null ? 0 : n;
+    }
+
+    /** Bytes of imported audio stored across all users (bounded by the storage plan). */
+    public long usedBytesAll() {
+        Long n = jdbc.queryForObject("SELECT COALESCE(SUM(size_bytes), 0) FROM imported_tracks", Long.class);
+        return n == null ? 0 : n;
+    }
+
     public boolean isDuplicate(String userId, long sizeBytes, String title, String artist) {
         Integer n = jdbc.queryForObject("""
                 SELECT COUNT(*) FROM imported_tracks
