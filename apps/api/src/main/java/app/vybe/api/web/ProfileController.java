@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /** Account settings, public listener profiles and follows. */
@@ -80,5 +81,22 @@ public class ProfileController {
     @PatchMapping("/api/me/settings")
     public ProfileService.AccountSettings updateSettings(@CurrentUser User me, @RequestBody SettingsPatch body) {
         return profiles.updateSettings(me, body.shareActivity());
+    }
+
+    record Listeners(java.util.List<ProfileService.ListenerCard> listeners) { }
+
+    @GetMapping("/api/users/search")
+    public Listeners searchListeners(@CurrentUser(required = false) User viewer, @RequestParam(value = "q", required = false) String q) {
+        return new Listeners(profiles.search(viewer, q));
+    }
+
+    @GetMapping("/api/users/{id}/followers")
+    public Listeners followers(@CurrentUser(required = false) User viewer, @PathVariable String id) {
+        return new Listeners(profiles.followers(viewer, id));
+    }
+
+    @GetMapping("/api/users/{id}/following")
+    public Listeners following(@CurrentUser(required = false) User viewer, @PathVariable String id) {
+        return new Listeners(profiles.following(viewer, id));
     }
 }

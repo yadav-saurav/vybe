@@ -94,6 +94,41 @@ class UserRepository {
                 """, (rs, n) -> new UserRow(rs.getString(1), rs.getString(2), rs.getString(3)), followerId, limit);
     }
 
+    /** Display-name search (case-insensitive substring; % and _ are matched literally). */
+    java.util.List<UserRow> searchByName(String query, String excludeId, int limit) {
+        String like = "%" + query.toLowerCase(java.util.Locale.ROOT).replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") + "%";
+        return jdbc.query("""
+                SELECT id, display_name, avatar_color FROM users
+                WHERE lower(display_name) LIKE ? ESCAPE '\\' AND id <> ?
+                ORDER BY CASE WHEN lower(display_name) LIKE ? ESCAPE '\\' THEN 0 ELSE 1 END, display_name, id LIMIT ?
+                """, (rs, n) -> new UserRow(rs.getString(1), rs.getString(2), rs.getString(3)),
+                like, excludeId == null ? "" : excludeId, like.substring(1), limit);
+    }
+
+    java.util.List<UserRow> followersOf(String userId, int limit) {
+        return jdbc.query("""
+                SELECT u.id, u.display_name, u.avatar_color FROM user_follows f JOIN users u ON u.id = f.follower_id
+                WHERE f.followee_id = ? ORDER BY f.created_at DESC LIMIT ?
+                """, (rs, n) -> new UserRow(rs.getString(1), rs.getString(2), rs.getString(3)), userId, limit);
+    }
+
+    java.util.List<UserRow> followingOf(String userId, int limit) {
+        return jdbc.query("""
+                SELECT u.id, u.display_name, u.avatar_color FROM user_follows f JOIN users u ON u.id = f.followee_id
+                WHERE f.follower_id = ? ORDER BY f.created_at DESC LIMIT ?
+                """, (rs, n) -> new UserRow(rs.getString(1), rs.getString(2), rs.getString(3)), userId, limit);
+    }
+
+    java.util.Set<String> followedAmong(String followerId, java.util.Collection<String> ids) {
+        if (followerId == null || ids.isEmpty()) return java.util.Set.of();
+        String marks = String.join(",", java.util.Collections.nCopies(ids.size(), "?"));
+        java.util.List<Object> args = new java.util.ArrayList<>();
+        args.add(followerId);
+        args.addAll(ids);
+        return new java.util.HashSet<>(jdbc.queryForList(
+                "SELECT followee_id FROM user_follows WHERE follower_id = ? AND followee_id IN (" + marks + ")", String.class, args.toArray()));
+    }
+
     record UserRow(String id, String displayName, String avatarColor) { }
 
     Optional<String> passwordHash(String id) {

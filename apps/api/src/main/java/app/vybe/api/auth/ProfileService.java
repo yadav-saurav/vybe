@@ -17,6 +17,9 @@ import java.util.regex.Pattern;
 @Service
 public class ProfileService {
 
+    /** A listener in search results or follower lists, with whether the viewer follows them. */
+    public record ListenerCard(String id, String displayName, String avatarColor, boolean isFollowing, boolean isMe) { }
+
     public record AccountSettings(boolean shareActivity, boolean isDemo) { }
     public record PublicUser(String id, String displayName, String avatarColor, String createdAt) { }
     public record Profile(PublicUser user, long followers, long following, boolean isFollowing, boolean isMe,
@@ -98,5 +101,27 @@ public class ProfileService {
     public AccountSettings updateSettings(User me, Boolean shareActivity) {
         if (shareActivity != null) friends.setSharing(me.id(), shareActivity);
         return settings(me);
+    }
+
+    private List<ListenerCard> cards(User viewer, List<UserRepository.UserRow> rows) {
+        String me = viewer == null ? null : viewer.id();
+        java.util.Set<String> followed = users.followedAmong(me, rows.stream().map(UserRepository.UserRow::id).toList());
+        return rows.stream().map(r -> new ListenerCard(r.id(), r.displayName(), r.avatarColor(), followed.contains(r.id()), r.id().equals(me))).toList();
+    }
+
+    public List<ListenerCard> search(User viewer, String query) {
+        String q = query == null ? "" : query.strip();
+        if (q.length() < 2) return List.of();
+        return cards(viewer, users.searchByName(q.length() > 60 ? q.substring(0, 60) : q, viewer == null ? null : viewer.id(), 20));
+    }
+
+    public List<ListenerCard> followers(User viewer, String userId) {
+        users.findById(userId).orElseThrow(() -> ApiException.notFound("No such listener"));
+        return cards(viewer, users.followersOf(userId, 200));
+    }
+
+    public List<ListenerCard> following(User viewer, String userId) {
+        users.findById(userId).orElseThrow(() -> ApiException.notFound("No such listener"));
+        return cards(viewer, users.followingOf(userId, 200));
     }
 }

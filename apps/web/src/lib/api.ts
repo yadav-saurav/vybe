@@ -60,6 +60,9 @@ export const api = {
   deleteAccount: (password: string) => request<{ ok: true }>('DELETE', '/me', { password }),
   settings: (s?: AbortSignal) => get<{ shareActivity: boolean; isDemo: boolean }>('/me/settings', s),
   updateSettings: (patch: { shareActivity?: boolean }) => request<{ shareActivity: boolean; isDemo: boolean }>('PATCH', '/me/settings', patch),
+  searchListeners: (q: string, s?: AbortSignal) => get<{ listeners: ListenerCard[] }>(`/users/search?q=${enc(q)}`, s),
+  followersOf: (id: string, s?: AbortSignal) => get<{ listeners: ListenerCard[] }>(`/users/${enc(id)}/followers`, s),
+  followingOf: (id: string, s?: AbortSignal) => get<{ listeners: ListenerCard[] }>(`/users/${enc(id)}/following`, s),
   userProfile: (id: string, s?: AbortSignal) => get<PublicProfile>(`/users/${enc(id)}`, s),
   follow: (id: string) => request<PublicProfile>('PUT', `/me/following/${enc(id)}`),
   unfollow: (id: string) => request<PublicProfile>('DELETE', `/me/following/${enc(id)}`),
@@ -138,3 +141,5 @@ export interface PublicProfile {
   user: { id: string; displayName: string; avatarColor: string; createdAt: string };
   followers: number; following: number; isFollowing: boolean; isMe: boolean; playlists: T.Playlist[];
 }
+
+export interface ListenerCard { id: string; displayName: string; avatarColor: string; isFollowing: boolean; isMe: boolean }

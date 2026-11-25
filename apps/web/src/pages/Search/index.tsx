@@ -14,9 +14,10 @@ import { Highlight } from '../../features/search/Highlight';
 import { SearchSuggestions } from '../../features/search/SearchSuggestions';
 import { richSubtitle } from '../../features/search/labels';
 import { clearRecent, loadRecent, saveRecent, type RecentEntry } from '../../features/search/recent';
+import { ListenerList } from '../../features/social/ListenerList';
 import s from './Search.module.css';
 
-type Tab = 'top' | 'artists' | 'albums' | 'songs' | 'playlists' | 'stations';
+type Tab = 'top' | 'artists' | 'albums' | 'songs' | 'playlists' | 'stations' | 'listeners';
 const TABS: { id: Tab; label: string }[] = [
   { id: 'top', label: 'Top Results' },
   { id: 'artists', label: 'Artists' },
@@ -24,6 +25,7 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 'songs', label: 'Songs' },
   { id: 'playlists', label: 'Playlists' },
   { id: 'stations', label: 'Stations' },
+  { id: 'listeners', label: 'Listeners' },
 ];
 const DEBOUNCE_MS = 250;
 
@@ -170,14 +172,7 @@ function Results({ q, data, failed, tab, setTab }: {
   if (!data) return <Skeletons />;
 
   const total = data.top.length + data.songs.length + data.albums.length + data.artists.length + data.playlists.length + data.stations.length;
-  if (total === 0) {
-    return (
-      <div className={s.empty} role="status">
-        <p className={s.emptyTitle}>No results for “{q}”</p>
-        <p className={s.emptyText}>Check the spelling, or try a shorter or different search.</p>
-      </div>
-    );
-  }
+  if (total === 0) return <NoMusicResults q={q} />;
 
   return (
     <>
@@ -189,7 +184,7 @@ function Results({ q, data, failed, tab, setTab }: {
           </button>
         ))}
       </div>
-      {tab === 'top' ? <TopResults q={q} data={data} setTab={setTab} /> : <TabResults q={q} data={data} tab={tab} />}
+      {tab === 'top' ? <TopResults q={q} data={data} setTab={setTab} /> : tab === 'listeners' ? <ListenerResults q={q} /> : <TabResults q={q} data={data} tab={tab} />}
     </>
   );
 }
@@ -238,7 +233,53 @@ function TopResults({ q, data, setTab }: { q: string; data: SearchResults; setTa
           {data.stations.map((st) => cardFor({ type: 'station', data: st }, q))}
         </Shelf>
       )}
+      <ListenerPreview q={q} onSeeAll={() => setTab('listeners')} />
     </>
+  );
+}
+
+/** No music matched: listeners may still match (people search by name), otherwise the usual empty state. */
+function NoMusicResults({ q }: { q: string }) {
+  const { data } = useAsync(q.length >= 2 ? `listeners:${q}` : null, (sig) => api.searchListeners(q, sig));
+  if (data?.listeners.length) {
+    return (
+      <>
+        <h1 className="visually-hidden">Search results for “{q}”</h1>
+        <section className={s.block} aria-labelledby="listeners-only-title">
+          <h2 id="listeners-only-title" className={s.sectionTitle}>Listeners</h2>
+          <ListenerList listeners={data.listeners} empty="" />
+        </section>
+        <p className={s.emptyText}>No music matches “{q}”.</p>
+      </>
+    );
+  }
+  return (
+    <div className={s.empty} role="status">
+      <p className={s.emptyTitle}>No results for “{q}”</p>
+      <p className={s.emptyText}>Check the spelling, or try a shorter or different search.</p>
+    </div>
+  );
+}
+
+/** People whose display name matches. Search is the one place to find listeners. */
+function ListenerResults({ q }: { q: string }) {
+  const { data, error } = useAsync(`listeners:${q}`, (sig) => api.searchListeners(q, sig));
+  if (error) return <p className={s.none}>Couldn’t search listeners right now.</p>;
+  if (!data) return <div className={s.skelRow} aria-busy="true" />;
+  return <ListenerList listeners={data.listeners} empty={`No listeners match “${q}”.`} />;
+}
+
+function ListenerPreview({ q, onSeeAll }: { q: string; onSeeAll: () => void }) {
+  const { data } = useAsync(q.length >= 2 ? `listeners:${q}` : null, (sig) => api.searchListeners(q, sig));
+  if (!data?.listeners.length) return null;
+  return (
+    <section className={s.block} aria-labelledby="listeners-title">
+      <div className={s.rowHead}>
+        <h2 id="listeners-title" className={s.sectionTitle}>Listeners</h2>
+        {data.listeners.length > 3 && <button type="button" className={s.seeAll} onClick={onSeeAll}>See All</button>}
+      </div>
+      <ListenerList listeners={data.listeners.slice(0, 3)} empty="" />
+    </section>
   );
 }
 
