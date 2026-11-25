@@ -26,7 +26,8 @@ public record Song(
         double energy,
         int popularity,
         String composer,
-        String source) {
+        String source,
+        Double gainDb) {
 
     public Song {
         featuring = featuring == null ? List.of() : List.copyOf(featuring);

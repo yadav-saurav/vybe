@@ -41,7 +41,30 @@ public class DataSourceConfig {
         String schema = ds.getJdbcUrl().startsWith("jdbc:postgresql:") ? "schema-postgres.sql" : "schema.sql";
         ResourceDatabasePopulator populator = new ResourceDatabasePopulator(new ClassPathResource(schema));
         DatabasePopulatorUtils.execute(populator, ds);
+        migrate(ds);
         return ds;
+    }
+
+    /**
+     * Additive column migrations for databases created by older versions. Each statement is attempted
+     * independently; "already exists" / "duplicate column" errors mean it was applied before.
+     */
+    private static final String[] MIGRATIONS = {
+            "ALTER TABLE imported_tracks ADD COLUMN gain_db REAL",
+    };
+
+    private static void migrate(DataSource ds) {
+        for (String sql : MIGRATIONS) {
+            try (var c = ds.getConnection(); var st = c.createStatement()) {
+                st.execute(sql);
+                log.info("Applied migration: {}", sql);
+            } catch (java.sql.SQLException e) {
+                String msg = String.valueOf(e.getMessage()).toLowerCase();
+                if (!msg.contains("duplicate column") && !msg.contains("already exists")) {
+                    log.warn("Migration failed ({}): {}", sql, e.getMessage());
+                }
+            }
+        }
     }
 
     private static HikariDataSource sqlite(VybeProperties props) throws IOException {

@@ -51,6 +51,6 @@ class TextMatchingTest {
     private static Song song(String id, String artistId) {
         return new Song(id, id, new app.vybe.api.model.ArtistRef(artistId, artistId), List.of(),
                 new app.vybe.api.model.AlbumRef("al", "al"), "pop", 1, 1, 1000, false, false,
-                "/api/stream/" + id, null, "2026-01-01", 100, "chill", 0.5, 50, "c", null);
+                "/api/stream/" + id, null, "2026-01-01", 100, "chill", 0.5, 50, "c", null, null);
     }
 }

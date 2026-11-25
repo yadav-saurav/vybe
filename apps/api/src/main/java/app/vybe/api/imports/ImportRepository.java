@@ -15,12 +15,12 @@ public class ImportRepository {
     public record Row(String id, String userId, String title, String artist, String album, String albumArtist,
                       int trackNumber, int discNumber, Integer year, String genre, long durationMs,
                       String fileExt, String mime, long sizeBytes, boolean hasArt, String bgColor,
-                      String textColor1, String textColor2, String textColor3, String createdAt) {
+                      String textColor1, String textColor2, String textColor3, String createdAt, Double gainDb) {
     }
 
     private static final String COLUMNS = """
             id, user_id, title, artist, album, album_artist, track_number, disc_number, year, genre, duration_ms,
-            file_ext, mime, size_bytes, has_art, bg_color, text_color1, text_color2, text_color3, created_at""";
+            file_ext, mime, size_bytes, has_art, bg_color, text_color1, text_color2, text_color3, created_at, gain_db""";
 
     private final JdbcTemplate jdbc;
 
@@ -29,10 +29,10 @@ public class ImportRepository {
     }
 
     public void insert(Row r) {
-        jdbc.update("INSERT INTO imported_tracks (" + COLUMNS + ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        jdbc.update("INSERT INTO imported_tracks (" + COLUMNS + ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 r.id(), r.userId(), r.title(), r.artist(), r.album(), r.albumArtist(), r.trackNumber(),
                 r.discNumber(), r.year(), r.genre(), r.durationMs(), r.fileExt(), r.mime(), r.sizeBytes(),
-                r.hasArt() ? 1 : 0, r.bgColor(), r.textColor1(), r.textColor2(), r.textColor3(), r.createdAt());
+                r.hasArt() ? 1 : 0, r.bgColor(), r.textColor1(), r.textColor2(), r.textColor3(), r.createdAt(), r.gainDb());
     }
 
     /** The row only when it belongs to {@code userId}. */
@@ -80,6 +80,7 @@ public class ImportRepository {
                 rs.getInt("disc_number"), yearOrNull, rs.getString("genre"), rs.getLong("duration_ms"),
                 rs.getString("file_ext"), rs.getString("mime"), rs.getLong("size_bytes"), rs.getInt("has_art") == 1,
                 rs.getString("bg_color"), rs.getString("text_color1"), rs.getString("text_color2"),
-                rs.getString("text_color3"), rs.getString("created_at"));
+                rs.getString("text_color3"), rs.getString("created_at"),
+                rs.getObject("gain_db") == null ? null : rs.getDouble("gain_db"));
     }
 }

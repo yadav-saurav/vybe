@@ -90,6 +90,7 @@ CREATE TABLE IF NOT EXISTS imported_tracks (
     text_color1   TEXT NOT NULL,
     text_color2   TEXT NOT NULL,
     text_color3   TEXT NOT NULL,
-    created_at    TEXT NOT NULL
+    created_at    TEXT NOT NULL,
+    gain_db       REAL
 );
 CREATE INDEX IF NOT EXISTS idx_imported_tracks_user ON imported_tracks(user_id, created_at);

@@ -1,4 +1,5 @@
 import { usePlayer, type PlayerState, type QueueItem } from '../../stores/player';
+import { useSettings } from '../../stores/settings';
 import { useUI } from '../../stores/ui';
 
 /**
@@ -85,7 +86,46 @@ function tick() {
   if (!a || a.paused) return;
   report();
   emitFrame();
+  maybeStartCrossfade(a);
   rafId = requestAnimationFrame(tick);
+}
+
+// --------------------------------------------------------------------------------------------
+// Crossfade: start the preloaded next song early and overlap the two volumes.
+
+let crossfadeArmed = false;   // next load() should fade instead of cutting
+let fadeTimer: ReturnType<typeof setInterval> | undefined;
+
+function maybeStartCrossfade(a: El) {
+  const secs = useSettings.getState().crossfadeSec;
+  if (!secs || crossfadeArmed || !Number.isFinite(a.duration) || a.duration < secs * 3) return;
+  const remaining = a.duration - a.currentTime;
+  if (remaining > secs || remaining < 0.3) return;
+  const s = P();
+  const next = nextUp(s);
+  const sb = standby();
+  if (!next || !sb || sb._url !== next.song.audioUrl || sb.readyState < 2) return; // only when preloaded
+  crossfadeArmed = true;
+  s.next();
+}
+
+/** Fade `from` out and `to` in over `ms`, then pause `from`. */
+function crossfade(from: El, to: El, toTarget: number, ms: number) {
+  clearInterval(fadeTimer);
+  const fromStart = from.volume;
+  const t0 = performance.now();
+  to.volume = 0;
+  fadeTimer = setInterval(() => {
+    const k = Math.min(1, (performance.now() - t0) / ms);
+    // Equal-power curve keeps the perceived loudness steady through the overlap.
+    from.volume = Math.max(0, fromStart * Math.cos((k * Math.PI) / 2));
+    to.volume = Math.min(1, toTarget * Math.sin((k * Math.PI) / 2));
+    if (k >= 1) {
+      clearInterval(fadeTimer);
+      quietPause(from);
+      from.volume = fromStart;
+    }
+  }, 50);
 }
 const startTicker = () => { if (!rafId) rafId = requestAnimationFrame(tick); };
 
@@ -155,16 +195,20 @@ function load(s: PlayerState, opts: { autoplay: boolean; atMs: number }) {
   const url = item.song.audioUrl;
   listeners.heard = 0; listeners.lastT = -1; listeners.logged = false;
   const sb = standby()!;
+  const fading = crossfadeArmed;
+  crossfadeArmed = false;
   if (sb._url === url && sb.readyState >= 1 && sb.error == null) {
     // Instant transition: the standby element already buffered this song.
-    quietPause(cur);
+    if (!fading) quietPause(cur);
     activeIdx = 1 - activeIdx;
     const a = active()!;
     a._uid = item.uid;
     applyVolume(s, a);
     a.muted = s.muted;
     try { a.currentTime = opts.atMs / 1000; } catch { /* not seekable yet */ }
+    if (fading && !cur.paused) crossfade(cur, a, a.volume, useSettings.getState().crossfadeSec * 1000);
   } else {
+    clearInterval(fadeTimer);
     quietPause(cur);
     cur._url = url; cur._uid = item.uid;
     cur.src = url;
@@ -179,8 +223,10 @@ function load(s: PlayerState, opts: { autoplay: boolean; atMs: number }) {
   schedulePreload();
 }
 
-function applyVolume(s: Pick<PlayerState, 'volume' | 'muted'>, a: El) {
-  a.volume = Math.max(0, Math.min(1, s.volume * s.volume)); // perceptual curve
+function applyVolume(s: Pick<PlayerState, 'volume' | 'muted' | 'current'>, a: El) {
+  // Sound Check: per-song loudness correction (can only attenuate; element volume tops out at 1).
+  const gain = useSettings.getState().soundCheck ? Math.min(1, 10 ** ((s.current?.song.gainDb ?? 0) / 20)) : 1;
+  a.volume = Math.max(0, Math.min(1, s.volume * s.volume * gain)); // perceptual curve
   a.muted = s.muted;
 }
 
@@ -244,8 +290,14 @@ export function startEngine() {
     if (s.userQueue !== prev.userQueue || s.contextQueue !== prev.contextQueue || s.autoplay !== prev.autoplay || s.repeat !== prev.repeat) schedulePreload();
   });
 
+  const unsubSettings = useSettings.subscribe((st, prev) => {
+    if (st.soundCheck !== prev.soundCheck) { const a = active(); if (a) applyVolume(P(), a); }
+  });
+
   return () => {
     unsub();
+    unsubSettings();
+    clearInterval(fadeTimer);
     cancelAnimationFrame(rafId); rafId = 0;
     clearTimeout(preloadTimer); clearTimeout(errorTimer);
     els?.forEach((e) => { e.pause(); e.removeAttribute('src'); e.load(); });

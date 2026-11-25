@@ -84,6 +84,8 @@ export interface Song {
   energy: number; // 0..1
   popularity: number; // 0..100 (drives Top Songs / charts)
   composer: string;
+  /** Loudness correction in dB applied when Sound Check is on (negative = quieter). */
+  gainDb?: number;
   /**
    * Where the song comes from. Absent or 'catalog' for Vybe's catalog; 'import' for a track the
    * signed-in user imported from their own computer (id "im_…", private to that user, no album or

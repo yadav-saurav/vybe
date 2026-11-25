@@ -203,7 +203,8 @@ public class ImportService {
             ImportRepository.Row row = new ImportRepository.Row(id, userId, title, artist, clip(t.album(), 200),
                     clip(t.albumArtist(), 200), Math.max(0, t.trackNumber()), Math.max(0, t.discNumber()), t.year(),
                     t.genre(), Math.max(0, t.durationMs()), ext, format.mime(), size, hasArt, colors.bg(),
-                    colors.text1(), colors.text2(), colors.text3(), Timestamps.now());
+                    colors.text1(), colors.text2(), colors.text3(), Timestamps.now(),
+                    Loudness.gainDb(dir.resolve(id + "." + ext)));
             if (blobs.remote()) {
                 // Ephemeral hosts: push to private object storage, keep nothing on local disk.
                 Path audio = dir.resolve(id + "." + ext);
@@ -337,7 +338,7 @@ public class ImportService {
                 r.discNumber() > 0 ? r.discNumber() : 1,
                 r.durationMs(), false, false,
                 "/api/imports/" + r.id() + "/stream",
-                artwork, releaseDate, 120, "chill", 0.5, 0, "", "import");
+                artwork, releaseDate, 120, "chill", 0.5, 0, "", "import", r.gainDb());
     }
 
     /** Maps a free-form genre tag to one of the catalog's genre ids, else "pop". */

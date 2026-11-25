@@ -120,11 +120,9 @@ function NavItem({ to, label, icon }: { to: string; label: string; icon: string 
 
 export function VybeWordmark({ height = 26 }: { height?: number }) {
   return (
-    <svg height={height} viewBox="0 0 92 28" aria-hidden className={s.wordmark}>
-      <defs><linearGradient id="vybe-g" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stopColor="#ff5f7e" /><stop offset="1" stopColor="#b44dff" /></linearGradient></defs>
-      <rect x="0" y="2" width="24" height="24" rx="7" fill="url(#vybe-g)" />
-      <path d="M6.5 9.5 12 19l5.5-9.5" fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
-      <text x="30" y="21.5" fontFamily="var(--font-display)" fontWeight="700" fontSize="20" letterSpacing="-0.6" fill="currentColor">vybe</text>
-    </svg>
+    <span className={s.wordmark} style={{ height, gap: Math.round(height * 0.3) }} aria-hidden>
+      <img src="/logo-mark.webp" alt="" width={height} height={height} className={s.wordmarkIcon} />
+      <span className={s.wordmarkText} style={{ fontSize: Math.round(height * 0.77) }}>vybe</span>
+    </span>
   );
 }
