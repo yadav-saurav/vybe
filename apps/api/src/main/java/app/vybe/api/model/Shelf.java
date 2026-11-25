@@ -10,11 +10,18 @@ public record Shelf(
         String layout,
         String seeAllHref,
         List<ContentItem> items,
-        List<HeroCard> heroCards) {
+        List<HeroCard> heroCards,
+        List<FriendCard> friendCards) {
 
     public Shelf {
         items = items == null ? List.of() : List.copyOf(items);
         heroCards = heroCards == null ? null : List.copyOf(heroCards);
+        friendCards = friendCards == null ? null : List.copyOf(friendCards);
+    }
+
+    public Shelf(String id, String title, String subtitle, String layout, String seeAllHref,
+                 List<ContentItem> items, List<HeroCard> heroCards) {
+        this(id, title, subtitle, layout, seeAllHref, items, heroCards, null);
     }
 
     public static Shelf of(String id, String title, String layout, List<ContentItem> items) {
@@ -26,6 +33,6 @@ public record Shelf(
     }
 
     public Shelf withSeeAll(String href) {
-        return new Shelf(id, title, subtitle, layout, href, items, heroCards);
+        return new Shelf(id, title, subtitle, layout, href, items, heroCards, friendCards);
     }
 }

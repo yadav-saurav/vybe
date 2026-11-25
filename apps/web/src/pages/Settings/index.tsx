@@ -11,6 +11,7 @@ import { useDocumentTitle } from '../../features/shelves/useDocumentTitle';
 import { promptInstall, useInstallState } from '../../lib/install';
 import { EQ_BANDS, EQ_PRESETS } from '../../features/player/eq';
 import { AccountSheets } from './AccountSheets';
+import { useAsync } from '../../lib/useAsync';
 import s from './Settings.module.css';
 
 const COLORS = ['#e11d48', '#f97316', '#eab308', '#22c55e', '#14b8a6', '#0ea5e9', '#6366f1', '#a855f7', '#ec4899', '#64748b'];
@@ -26,6 +27,10 @@ export default function SettingsPage() {
   const install = useInstallState();
   const [sheet, setSheet] = useState<'password' | 'delete' | null>(null);
   const [eqOpen, setEqOpen] = useState(false);
+  const { data: acct } = useAsync(user ? `settings:${user.id}` : null, (sig) => api.settings(sig));
+  const [share, setShare] = useState<boolean | null>(null);
+  useEffect(() => { if (acct) setShare(acct.shareActivity); }, [acct]);
+  const toggleShare = async (v: boolean) => { setShare(v); try { await api.updateSettings({ shareActivity: v }); } catch { setShare(!v); useUI.getState().toast('Something went wrong'); } };
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   useEffect(() => { setName(user?.displayName ?? ''); setColor(user?.avatarColor ?? COLORS[0]); }, [user]);
@@ -66,6 +71,14 @@ export default function SettingsPage() {
         </Section>
       ) : (
         <Section title="Account"><PillButton onClick={() => useUI.getState().openSignIn()}>Sign In</PillButton></Section>
+      )}
+
+      {user && (
+        <Section title="Privacy">
+          <Row label="Share my listening activity" hint="People who follow you can see the last song you played, on their Home">
+            <Toggle on={!!share} onChange={toggleShare} label="Share my listening activity" />
+          </Row>
+        </Section>
       )}
 
       {user && (

@@ -30,7 +30,7 @@ class PagesAndCatalogApiTest extends ApiTestBase {
         String token = signInDemo();
         MvcResult r = mvc.perform(get("/api/pages/home").cookie(cookie(token))).andExpect(status().isOk())
                 .andExpect(jsonPath("$.shelves[*].id", hasItems("top-picks-for-you", "recently-played",
-                        "made-for-you", "your-top-artists")))
+                        "made-for-you")))
                 .andReturn();
         Map<?, ?> page = json.readValue(r.getResponse().getContentAsString(), Map.class);
         List<?> shelves = (List<?>) page.get("shelves");

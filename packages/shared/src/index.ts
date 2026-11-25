@@ -149,7 +149,8 @@ export type ShelfLayout =
   | 'song-list' // 3-column paged song chart rows (Best New Songs)
   | 'circle-artists' // circular artist avatars
   | 'tiles' // category tiles (search landing)
-  | 'large-tiles'; // big mixes cards (Made For You)
+  | 'large-tiles' // big mixes cards (Made For You)
+  | 'friends'; // "Friends Are Listening": followed listeners' latest plays
 
 export interface HeroCard {
   eyebrow: string; // "NEW ALBUM" / "UPDATED PLAYLIST"
@@ -157,6 +158,15 @@ export interface HeroCard {
   subtitle: string;
   caption: string; // text on the artwork
   item: ContentItem;
+}
+
+/** A followed listener's latest shared play (only for people who opted in). */
+export interface FriendCard {
+  userId: ID;
+  displayName: string;
+  avatarColor: string;
+  playedAt: string; // ISO
+  item: ContentItem; // the song
 }
 
 export interface Shelf {
@@ -167,6 +177,7 @@ export interface Shelf {
   seeAllHref?: string;
   items: ContentItem[];
   heroCards?: HeroCard[]; // layout === 'hero'
+  friendCards?: FriendCard[]; // layout === 'friends'
 }
 
 export interface PageResponse { title: string; shelves: Shelf[] }

@@ -76,6 +76,26 @@ class UserRepository {
         jdbc.update("DELETE FROM sessions WHERE token_hash = ?", tokenHash);
     }
 
+    boolean shareActivity(String userId) {
+        Integer v = jdbc.query("SELECT share_activity FROM users WHERE id = ?", (rs, n) -> rs.getInt(1), userId)
+                .stream().findFirst().orElse(0);
+        return v != null && v == 1;
+    }
+
+    void setShareActivity(String userId, boolean share) {
+        jdbc.update("UPDATE users SET share_activity = ? WHERE id = ?", share ? 1 : 0, userId);
+    }
+
+    /** Followed listeners who have opted in to sharing, most recently followed first (capped). */
+    java.util.List<UserRow> sharingFollowees(String followerId, int limit) {
+        return jdbc.query("""
+                SELECT u.id, u.display_name, u.avatar_color FROM user_follows f JOIN users u ON u.id = f.followee_id
+                WHERE f.follower_id = ? AND u.share_activity = 1 ORDER BY f.created_at DESC LIMIT ?
+                """, (rs, n) -> new UserRow(rs.getString(1), rs.getString(2), rs.getString(3)), followerId, limit);
+    }
+
+    record UserRow(String id, String displayName, String avatarColor) { }
+
     Optional<String> passwordHash(String id) {
         return jdbc.query("SELECT password_hash FROM users WHERE id = ?", (rs, n) -> rs.getString(1), id).stream().findFirst();
     }

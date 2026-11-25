@@ -1,6 +1,7 @@
 .shelf { padding-top: 13px; padding-bottom: 20px; }
 .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; min-height: 22px; }
 .title { font-size: var(--fs-title-3); line-height: var(--lh-title-3); font-weight: 700; letter-spacing: -0.01em; color: var(--text-1); display: inline-flex; align-items: center; gap: 4px; }
+.titleLink { display: inline-flex; align-items: center; gap: 4px; color: inherit; }
 .titleLink :global(svg) { color: var(--text-2); transition: transform var(--dur) var(--ease); }
 .titleLink:hover :global(svg) { transform: translateX(2px); }
 .viewport { position: relative; margin: 0 calc(var(--content-pad) * -1); }

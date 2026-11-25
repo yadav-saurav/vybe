@@ -6,7 +6,8 @@ CREATE TABLE IF NOT EXISTS users (
     password_hash  TEXT NOT NULL,
     display_name   TEXT NOT NULL,
     avatar_color   TEXT NOT NULL,
-    created_at     TEXT NOT NULL
+    created_at     TEXT NOT NULL,
+    share_activity INTEGER NOT NULL DEFAULT 0
 );
 
 -- Session tokens are stored hashed (SHA-256); the raw token only lives in the cookie.

@@ -28,6 +28,8 @@ public class ProfileController {
 
     record PasswordChange(@NotBlank @Size(max = 72) String currentPassword, @NotBlank @Size(min = 8, max = 72) String newPassword) { }
 
+    record SettingsPatch(Boolean shareActivity) { }
+
     record AccountDelete(@NotBlank @Size(max = 72) String password) { }
 
     private final ProfileService profiles;
@@ -68,5 +70,15 @@ public class ProfileController {
     public ResponseEntity<Pages.Ok> deleteAccount(@CurrentUser User me, @Valid @RequestBody AccountDelete body) {
         profiles.deleteAccount(me, body.password());
         return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, auth.clearedCookie().toString()).body(Pages.Ok.YES);
+    }
+
+    @GetMapping("/api/me/settings")
+    public ProfileService.AccountSettings settings(@CurrentUser User me) {
+        return profiles.settings(me);
+    }
+
+    @PatchMapping("/api/me/settings")
+    public ProfileService.AccountSettings updateSettings(@CurrentUser User me, @RequestBody SettingsPatch body) {
+        return profiles.updateSettings(me, body.shareActivity());
     }
 }

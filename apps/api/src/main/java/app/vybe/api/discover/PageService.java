@@ -44,15 +44,20 @@ public class PageService implements InitializingBean {
     private final PersonalMixService mixes;
     private final PlaylistService playlists;
     private final LibraryRepository library;
+    private final app.vybe.api.library.LibraryService libraryService;
+    private final app.vybe.api.auth.FriendsService friends;
     private final Map<String, PageResponse> anonymousCache = new ConcurrentHashMap<>();
 
     public PageService(CatalogStore catalog, Similarity similarity, PersonalMixService mixes,
-                       PlaylistService playlists, LibraryRepository library) {
+                       PlaylistService playlists, LibraryRepository library,
+                       app.vybe.api.library.LibraryService libraryService, app.vybe.api.auth.FriendsService friends) {
         this.catalog = catalog;
         this.similarity = similarity;
         this.mixes = mixes;
         this.playlists = playlists;
         this.library = library;
+        this.libraryService = libraryService;
+        this.friends = friends;
     }
 
     @Override
@@ -85,6 +90,12 @@ public class PageService implements InitializingBean {
         mixes.mixes(user, profile).forEach(p -> madeForYou.add(ContentItem.playlist(p)));
         mixes.dailyMixes(user, profile).forEach(p -> madeForYou.add(ContentItem.playlist(p)));
         add(shelves, Shelf.of("made-for-you", "Made For You", "large-tiles", madeForYou));
+        List<app.vybe.api.model.FriendCard> friendCards = friends.activity(user.id());
+        if (!friendCards.isEmpty()) {
+            shelves.add(new Shelf("friends-listening", "Friends Are Listening", null, "friends", null,
+                    friendCards.stream().map(app.vybe.api.model.FriendCard::item).toList(), null, friendCards));
+        }
+        add(shelves, Shelf.of("new-from-your-artists", "New From Your Artists", "grid-lockups", newFromYourArtists(user)));
         add(shelves, Shelf.of("jump-back-in", "Jump Back In", "grid-lockups", jumpBackIn(profile)));
 
         String topArtistId = topKey(profile.artistPlays());
@@ -100,7 +111,6 @@ public class PageService implements InitializingBean {
             }
         }
 
-        add(shelves, Shelf.of("your-top-artists", "Your Top Artists", "circle-artists", topArtists(user, profile)));
         anonymousHome().shelves().stream()
                 .filter(s -> !"top-picks".equals(s.id()))
                 .forEach(shelves::add);
@@ -126,6 +136,21 @@ public class PageService implements InitializingBean {
             }
             return new PageResponse("Home", shelves);
         });
+    }
+
+    /** Releases from the last ~6 months by artists in the user's library (followed or derived), newest first. */
+    private List<ContentItem> newFromYourArtists(User user) {
+        String latest = catalog.latestReleaseDate();
+        if (latest == null || latest.length() < 10) return List.of();
+        String cutoff = java.time.LocalDate.parse(latest.substring(0, 10)).minusDays(180).toString();
+        java.util.Set<String> mine = new java.util.HashSet<>(libraryService.state(user.id()).artistIds());
+        return mine.stream()
+                .flatMap(id -> catalog.albumsOfArtist(id).stream())
+                .filter(a -> a.releaseDate() != null && a.releaseDate().compareTo(cutoff) >= 0)
+                .sorted(Comparator.comparing(Album::releaseDate).reversed().thenComparing(Album::id))
+                .limit(12)
+                .map(ContentItem::album)
+                .toList();
     }
 
     /** Albums played often that you haven't returned to in the last few days. */

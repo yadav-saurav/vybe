@@ -17,6 +17,7 @@ import java.util.regex.Pattern;
 @Service
 public class ProfileService {
 
+    public record AccountSettings(boolean shareActivity) { }
     public record PublicUser(String id, String displayName, String avatarColor, String createdAt) { }
     public record Profile(PublicUser user, long followers, long following, boolean isFollowing, boolean isMe,
                           List<Playlist> playlists) { }
@@ -27,14 +28,16 @@ public class ProfileService {
     private final PlaylistService playlists;
     private final AuthService auth;
     private final ImportService imports;
+    private final FriendsService friends;
 
     public ProfileService(UserRepository users, PlaylistRepository playlistRows, PlaylistService playlists,
-                          AuthService auth, ImportService imports) {
+                          AuthService auth, ImportService imports, FriendsService friends) {
         this.users = users;
         this.playlistRows = playlistRows;
         this.playlists = playlists;
         this.auth = auth;
         this.imports = imports;
+        this.friends = friends;
     }
 
     @Transactional
@@ -82,5 +85,14 @@ public class ProfileService {
         auth.requirePassword(me, password);
         imports.deleteAllFor(me.id());
         auth.deleteUser(me.id());
+    }
+
+    public AccountSettings settings(User me) {
+        return new AccountSettings(friends.sharing(me.id()));
+    }
+
+    public AccountSettings updateSettings(User me, Boolean shareActivity) {
+        if (shareActivity != null) friends.setSharing(me.id(), shareActivity);
+        return settings(me);
     }
 }

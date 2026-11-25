@@ -31,7 +31,7 @@ export function Shelf({ title, href, children, columns = 5, rows = 1, className,
     <section className={clsx(s.shelf, className)} style={{ ['--cols' as string]: columns, ['--rows' as string]: rows }}>
       {title && (
         <header className={s.header}>
-          {href ? <Link to={href} className={clsx(s.title, s.titleLink)}>{title}<Icon name="chevron-right" size={14} /></Link> : <h2 className={s.title}>{title}</h2>}
+          <h2 className={s.title}>{href ? <Link to={href} className={s.titleLink}>{title}<Icon name="chevron-right" size={14} /></Link> : title}</h2>
           {headerExtra}
         </header>
       )}
