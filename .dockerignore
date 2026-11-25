@@ -1,0 +1,9 @@
+**/node_modules
+**/dist
+**/target
+data/media
+data/imports
+data/*.db*
+.git
+docs/screenshots
+*.log

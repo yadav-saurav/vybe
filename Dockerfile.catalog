@@ -1,0 +1,10 @@
+# Generates Vybe's original catalog (artwork, synthesized audio, timed lyrics) into /data.
+FROM python:3.12-slim
+RUN sed -i "s#http://#https://#g" /etc/apt/sources.list.d/*.sources 2>/dev/null; \
+    apt-get update && apt-get install -y --no-install-recommends ffmpeg fonts-dejavu-core \
+    && rm -rf /var/lib/apt/lists/* && pip install --no-cache-dir numpy pillow
+WORKDIR /work
+COPY scripts scripts
+ENV VYBE_OUT=/data
+# Skip when the volume already holds a complete catalog.
+CMD ["sh", "-c", "if [ -f /data/catalog.json ] && [ \"$(ls /data/media/audio 2>/dev/null | wc -l)\" -gt 0 ]; then echo 'Catalog present, skipping'; else python scripts/generate_catalog.py; fi"]

@@ -55,7 +55,18 @@ npm run dev
 
 Open http://localhost:5173 and sign in with the demo account **demo@vybe.app** / **vybe1234**. It comes pre-seeded with a library, playlists and listening history.
 
+**Production (single server):** `npm start` builds the web app and the API jar, then serves everything from http://localhost:4000.
+
 **Tests:** `npm test` runs the web unit tests (Vitest) and the API tests (JUnit).
+
+## Docker
+```bash
+docker compose up --build
+```
+Open http://localhost:4000.
+- The first run generates the catalog into a volume, which takes about 11 minutes. Later runs skip this step.
+- The database and imported music live in a separate `state` volume, so they survive restarts.
+- The image runs as a non-root user and includes a health check.
 
 ## Docs
 - [`docs/DESIGN.md`](docs/DESIGN.md): the design spec and tokens.

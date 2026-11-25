@@ -1,0 +1,17 @@
+# docker compose up --build   ->  http://localhost:4000   (demo: demo@vybe.app / vybe1234)
+services:
+  catalog:
+    build: { context: ., dockerfile: Dockerfile.catalog }
+    volumes: [catalog:/data]
+  vybe:
+    build: .
+    depends_on:
+      catalog: { condition: service_completed_successfully }
+    ports: ["4000:4000"]
+    volumes:
+      - catalog:/app/data:ro
+      - state:/app/state
+    restart: unless-stopped
+volumes:
+  catalog:
+  state:
