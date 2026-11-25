@@ -23,6 +23,7 @@ const library = [
   { to: '/library/songs', label: 'Songs', icon: 'note' },
   { to: '/library/imported', label: 'Imported', icon: 'upload' },
   { to: '/library/made-for-you', label: 'Made for You', icon: 'sparkle' },
+  { to: '/replay', label: 'Replay', icon: 'wave' },
 ];
 
 export function Sidebar() {

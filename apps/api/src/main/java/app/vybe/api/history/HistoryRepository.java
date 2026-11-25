@@ -38,6 +38,15 @@ public class HistoryRepository {
                 rs.getString("context_type"), rs.getString("context_id"), rs.getInt("played_ms")), userId, limit);
     }
 
+    /** Plays at or after {@code fromIso} (ISO-8601, lexically sortable), oldest first. */
+    public List<PlayRow> since(String userId, String fromIso) {
+        return jdbc.query("SELECT song_id, played_at, played_ms, context_type, context_id FROM play_history "
+                        + "WHERE user_id = ? AND played_at >= ? ORDER BY played_at ASC, id ASC",
+                (rs, i) -> new PlayRow(rs.getString("song_id"), rs.getString("played_at"),
+                        rs.getString("context_type"), rs.getString("context_id"), rs.getInt("played_ms")),
+                userId, fromIso);
+    }
+
     /** Number of plays per song across all of the user's history. */
     public Map<String, Integer> playCounts(String userId) {
         Map<String, Integer> counts = new HashMap<>();

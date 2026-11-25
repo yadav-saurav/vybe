@@ -54,6 +54,9 @@ export const api = {
   search: (term: string, s?: AbortSignal) => get<T.SearchResults>(`/search?term=${enc(term)}&limit=25`, s),
   suggestions: (term: string, s?: AbortSignal) => get<{ suggestions: T.SearchSuggestion[] }>(`/search/suggestions?term=${enc(term)}`, s),
 
+  // replay
+  stats: (period: 'week' | 'month' | 'year' | 'all', s?: AbortSignal) => get<ReplayStats>(`/me/stats?period=${period}`, s),
+
   // library
   library: () => get<T.LibraryState>('/me/library'),
   addToLibrary: (type: LibType, id: string) => request<T.LibraryState>('PUT', `/me/library/${type}/${enc(id)}`),
@@ -111,3 +114,12 @@ function importFiles(files: File[], onProgress?: (fraction: number) => void, sig
 }
 
 export type LibType = 'song' | 'album' | 'playlist' | 'artist';
+
+export interface ReplayStats {
+  period: string; from: string; to: string; totalMs: number; plays: number; uniqueSongs: number; uniqueArtists: number;
+  longestStreakDays: number; activeDays: number; topHourLabel: string;
+  topSongs: { song: T.Song; plays: number; ms: number }[];
+  topArtists: { id: string; name: string; artist?: T.Artist; plays: number; ms: number }[];
+  topGenres: { id: string; name: string; color: string; plays: number; share: number }[];
+  byHour: number[]; byWeekday: number[]; byMonth: number[];
+}
