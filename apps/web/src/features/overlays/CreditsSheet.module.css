@@ -1,0 +1,16 @@
+.sheet { width: min(420px, 100%); }
+.wrap { display: flex; flex-direction: column; gap: 14px; padding: 6px; }
+.head { display: flex; align-items: center; gap: 14px; }
+.art { width: 64px; flex-shrink: 0; }
+.titles { min-width: 0; }
+.title { font-size: 18px; line-height: 23px; font-weight: 700; overflow-wrap: anywhere; }
+.sub { color: var(--text-2); font-size: var(--fs-callout); }
+.list { margin: 0; border-top: 1px solid var(--separator); }
+.row { display: grid; grid-template-columns: 110px 1fr; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--separator); font-size: var(--fs-callout); }
+.row dt { color: var(--text-2); }
+.row dd { margin: 0; font-weight: 500; overflow-wrap: anywhere; }
+.row a { color: var(--key); }
+.row a:hover { text-decoration: underline; }
+.legal { color: var(--text-2); font-size: var(--fs-footnote); }
+.close { height: 40px; border-radius: var(--r-pill); background: var(--bg-hover); font-weight: 600; }
+.close:hover { background: var(--bg-selected); }

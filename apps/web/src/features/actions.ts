@@ -61,47 +61,52 @@ export function menuFor(item: ContentItem, opts: { extra?: MenuEntry[]; navigate
   const lib = useLibrary.getState();
   const ui = useUI.getState();
   const t = libType(item);
-  const entries: MenuEntry[] = [...(opts.extra ?? [])];
-  if (opts.extra?.length) entries.push('separator');
-
+  const nav = opts.navigate;
   // Imported tracks are always in the library (removing them is "Delete from Vybe") and have no public page.
   const imported = item.type === 'song' && isImported(item.data);
-  if (t) {
-    const inLib = lib.has(t, item.data.id);
-    if (!(item.type === 'playlist' && (item.data as Playlist).kind === 'user') && !imported) {
-      entries.push({ label: inLib ? 'Remove from Library' : 'Add to Library', icon: inLib ? 'trash' : 'plus', destructive: inLib, onSelect: () => lib.toggle(t, item.data.id) });
-    }
-    if (item.type !== 'artist') {
-      const loved = lib.isLoved(item.data.id);
-      entries.push({ label: loved ? 'Undo Favorite' : 'Favorite', icon: loved ? 'heart-fill' : 'heart', onSelect: () => lib.toggleLove(t, item.data.id) });
-    }
+  const inLib = !!t && lib.has(t, item.data.id);
+  const ownPlaylist = item.type === 'playlist' && (item.data as Playlist).kind === 'user';
+
+  // Fixed order, identical everywhere: Play → Library → Go to → Share → destructive (red, always last).
+  const play: MenuEntry[] = [];
+  if (item.type !== 'artist') {
+    play.push({ label: 'Play Next', icon: 'play-next', onSelect: () => queueItem(item, 'next') });
+    play.push({ label: 'Play Last', icon: 'play-later', onSelect: () => queueItem(item, 'later') });
+  }
+  if (item.type === 'song' || item.type === 'artist') play.push({ label: 'Create Station', icon: 'radio', onSelect: () => startStationFrom(item) });
+
+  const library: MenuEntry[] = [];
+  if (t && !inLib && !ownPlaylist && !imported) library.push({ label: 'Add to Library', icon: 'plus', onSelect: () => lib.toggle(t, item.data.id) });
+  if (t && item.type !== 'artist') {
+    const loved = lib.isLoved(item.data.id);
+    library.push({ label: loved ? 'Undo Favorite' : 'Favorite', icon: loved ? 'heart-fill' : 'heart', onSelect: () => lib.toggleLove(t, item.data.id) });
   }
   if (item.type === 'song' || item.type === 'album' || item.type === 'playlist') {
-    entries.push({ label: 'Add to a Playlist…', icon: 'playlist', onSelect: async () => {
+    library.push({ label: 'Add to a Playlist…', icon: 'playlist', onSelect: async () => {
       if (!useAuth.getState().user) { ui.openSignIn(); return; }
       const { songs } = item.type === 'song' ? { songs: [item.data] } : await tracksFor(item);
       ui.openAddToPlaylist(songs);
     } });
   }
-  entries.push('separator');
-  if (item.type !== 'artist') {
-    entries.push({ label: 'Play Next', icon: 'play-next', onSelect: () => queueItem(item, 'next') });
-    entries.push({ label: 'Play Last', icon: 'play-later', onSelect: () => queueItem(item, 'later') });
-  }
-  if (item.type === 'song' || item.type === 'artist') entries.push({ label: 'Create Station', icon: 'radio', onSelect: () => startStationFrom(item) });
-  entries.push('separator');
-  if (opts.navigate) {
-    const nav = opts.navigate;
+
+  const goTo: MenuEntry[] = [];
+  if (nav) {
     if (imported) {
-      entries.push({ label: 'Go to Imported', icon: 'upload', onSelect: () => nav(`${IMPORTED_PATH}?i=${encodeURIComponent(item.data.id)}`) });
+      goTo.push({ label: 'Go to Imported', icon: 'upload', onSelect: () => nav(`${IMPORTED_PATH}?i=${encodeURIComponent(item.data.id)}`) });
     } else if (item.type === 'song') {
-      entries.push({ label: 'Go to Album', icon: 'album', onSelect: () => nav(`/album/${item.data.album.id}?i=${item.data.id}`) });
-      entries.push({ label: 'Go to Artist', icon: 'artist', onSelect: () => nav(`/artist/${item.data.artist.id}`) });
-    } else if (item.type === 'album') entries.push({ label: 'Go to Artist', icon: 'artist', onSelect: () => nav(`/artist/${(item.data as Album).artist.id}`) });
+      goTo.push({ label: 'Go to Album', icon: 'album', onSelect: () => nav(`/album/${item.data.album.id}?i=${item.data.id}`) });
+      goTo.push({ label: 'Go to Artist', icon: 'artist', onSelect: () => nav(`/artist/${item.data.artist.id}`) });
+    } else if (item.type === 'album') goTo.push({ label: 'Go to Artist', icon: 'artist', onSelect: () => nav(`/artist/${(item.data as Album).artist.id}`) });
   }
-  if (!imported) entries.push({ label: 'Share', icon: 'share', onSelect: () => ui.share(item) });
-  // Trim trailing / duplicate separators
-  return entries.filter((e, i, a) => e !== 'separator' || (i > 0 && i < a.length - 1 && a[i - 1] !== 'separator'));
+  if (item.type === 'song') goTo.push({ label: 'Credits', icon: 'info', onSelect: () => ui.openCredits(item.data) });
+
+  const share: MenuEntry[] = imported ? [] : [{ label: 'Share', icon: 'share', onSelect: () => ui.share(item) }];
+
+  const destructive: MenuEntry[] = [...(opts.extra ?? [])];
+  if (t && inLib && !ownPlaylist && !imported) destructive.push({ label: 'Remove from Library', icon: 'trash', destructive: true, onSelect: () => lib.toggle(t, item.data.id) });
+
+  const groups = [play, library, [...goTo, ...share], destructive].filter((g) => g.length);
+  return groups.flatMap((g, i) => (i ? ['separator' as const, ...g] : g));
 }
 
 /** Open a context menu at a mouse event or anchored under a button. */
