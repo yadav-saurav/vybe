@@ -84,6 +84,12 @@ export interface Song {
   energy: number; // 0..1
   popularity: number; // 0..100 (drives Top Songs / charts)
   composer: string;
+  /**
+   * Where the song comes from. Absent or 'catalog' for Vybe's catalog; 'import' for a track the
+   * signed-in user imported from their own computer (id "im_…", private to that user, no album or
+   * artist page: `artist.id` is "imar_<slug>" and `album.id` is "imal_<slug>").
+   */
+  source?: 'catalog' | 'import';
 }
 
 export type Mood = 'chill' | 'upbeat' | 'melancholy' | 'energetic' | 'romantic' | 'dreamy' | 'dark' | 'focus';
@@ -212,6 +218,9 @@ export interface StationPlayback { station: Station; tracks: Song[] } // next N 
 
 export interface ApiError { error: { code: string; message: string } }
 
+/** Result of POST /api/me/imports. Each skipped file has a short reason ("unsupported format", "already imported", "too large (max 50 MB)", …). */
+export interface ImportResult { imported: Song[]; skipped: { name: string; reason: string }[] }
+
 /**
  * HTTP API (all JSON, prefix /api). Auth via httpOnly cookie "vybe_session".
  * Anonymous users can browse + play; library/playlist/history endpoints need auth (401 otherwise).
@@ -259,6 +268,15 @@ export interface ApiError { error: { code: string; message: string } }
  * POST   /api/me/playlists/:id/tracks {trackIds, position?} -> { playlist: Playlist }  (append, duplicates allowed)
  * DELETE /api/me/playlists/:id/tracks/:index -> { playlist: Playlist }  (remove by position)
  * DELETE /api/me/playlists/:id   -> { ok: true }
+ *
+ * Import Music (signed in; imported tracks are private to their owner, everyone else gets 404):
+ * POST   /api/me/imports  multipart "files" (1+ files; mp3, m4a, aac, flac, ogg/oga/opus, wav; max 50 MB each) -> ImportResult  (413 when a file is over the limit)
+ * GET    /api/me/imports                  -> { songs: Song[] }  (newest first; source: 'import')
+ * DELETE /api/me/imports/:id              -> { ok: true }  (id "im_…" or bare; also removes it from library, loves, playlists and history)
+ * GET    /api/imports/:id/stream          -> audio (owner only), Range support (206)
+ * GET    /api/imports/:id/artwork         -> image/jpeg (embedded cover) or image/png (generated gradient)
+ * Imported song ids ("im_…") work wherever the signed-in owner passes a song id: /songs, library, loves,
+ * playlists, history and search. /me/library/songs and songIds include every import automatically.
  */
 export const API_PREFIX = '/api';
 

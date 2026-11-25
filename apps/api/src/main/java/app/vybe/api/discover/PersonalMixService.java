@@ -54,7 +54,9 @@ public class PersonalMixService {
     }
 
     public Profile profile(String userId) {
-        Map<String, Integer> plays = history.playCounts(userId);
+        // Only catalog songs feed mixes; plays of imported tracks (private, "im_" ids) are ignored.
+        Map<String, Integer> plays = new HashMap<>(history.playCounts(userId));
+        plays.keySet().removeIf(id -> catalog.song(id) == null);
         Map<String, Integer> genrePlays = new HashMap<>();
         Map<String, Integer> artistPlays = new HashMap<>();
         for (Map.Entry<String, Integer> e : plays.entrySet()) {

@@ -10,9 +10,16 @@ import java.nio.file.Path;
  * @param dataDir  directory holding catalog.json, lyrics.json and media/ (relative paths resolve against the CWD)
  * @param dbPath   SQLite database file
  * @param autoseed whether to create the demo user when the database has no users
+ * @param importsDir directory for users' imported audio ({@code <importsDir>/<userId>/}); defaults to {@code <dataDir>/imports}
  */
 @ConfigurationProperties(prefix = "vybe")
-public record VybeProperties(String dataDir, String dbPath, boolean autoseed) {
+public record VybeProperties(String dataDir, String dbPath, boolean autoseed, String importsDir) {
+
+    /** Absolute, normalized directory holding every user's imported files. */
+    public Path importsDirectory() {
+        String dir = importsDir == null || importsDir.isBlank() ? null : importsDir;
+        return (dir == null ? dataDirectory().resolve("imports") : Path.of(dir)).toAbsolutePath().normalize();
+    }
 
     /** Absolute, normalized data directory. */
     public Path dataDirectory() {

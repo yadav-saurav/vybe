@@ -9,6 +9,7 @@ import { menuFor, openMenuAt, playFromList } from '../features/actions';
 import { usePlayer, type PlayContext } from '../stores/player';
 import { useLibrary } from '../stores/library';
 import type { MenuEntry } from '../stores/ui';
+import { albumHref, artistHref } from '../lib/imports';
 import s from './TrackList.module.css';
 
 /**
@@ -81,14 +82,14 @@ const TrackRow = memo(function TrackRow({ song, index, songs, context, variant, 
             {song.title}{song.featuring.length > 0 && variant === 'album' && <span className={s.feat}> (feat. {song.featuring.map((f) => f.name).join(' & ')})</span>}
             {song.isExplicit && <ExplicitBadge />}
           </div>
-          {variant === 'compact' && <div className={clsx(s.sub, 'clamp-1')}><Link to={`/artist/${song.artist.id}`}>{song.artist.name}</Link> · <Link to={`/album/${song.album.id}`}>{song.album.title}</Link></div>}
+          {variant === 'compact' && <div className={clsx(s.sub, 'clamp-1')}><Link to={artistHref(song)}>{song.artist.name}</Link> · <Link to={albumHref(song)}>{song.album.title}</Link></div>}
           {variant === 'album' && song.artist.id !== songs[0]?.artist.id && <div className={clsx(s.sub, 'clamp-1')}>{song.artist.name}</div>}
         </div>
         {loved && <Icon name="heart-fill" size={12} className={s.loved} />}
       </div>
       {variant === 'playlist' && <>
-        <div className={clsx(s.cArtist, 'clamp-1')} role="cell"><Link to={`/artist/${song.artist.id}`}>{song.artist.name}</Link></div>
-        <div className={clsx(s.cAlbum, 'clamp-1')} role="cell"><Link to={`/album/${song.album.id}?i=${song.id}`}>{song.album.title}</Link></div>
+        <div className={clsx(s.cArtist, 'clamp-1')} role="cell"><Link to={artistHref(song)}>{song.artist.name}</Link></div>
+        <div className={clsx(s.cAlbum, 'clamp-1')} role="cell"><Link to={albumHref(song)}>{song.album.title}</Link></div>
       </>}
       <div className={s.cTime} role="cell">{formatDuration(song.durationMs)}</div>
       <div className={s.cMore} role="cell">

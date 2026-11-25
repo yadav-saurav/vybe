@@ -3,6 +3,8 @@ package app.vybe.api.history;
 import app.vybe.api.catalog.CatalogStore;
 import app.vybe.api.common.Timestamps;
 import app.vybe.api.error.ApiException;
+import app.vybe.api.imports.ImportService;
+import app.vybe.api.imports.SongResolver;
 import app.vybe.api.model.ContentType;
 import app.vybe.api.model.HistoryEntry;
 import app.vybe.api.model.Song;
@@ -20,15 +22,19 @@ public class HistoryService {
 
     private final HistoryRepository history;
     private final CatalogStore catalog;
+    private final SongResolver songs;
+    private final ImportService imports;
 
-    public HistoryService(HistoryRepository history, CatalogStore catalog) {
+    public HistoryService(HistoryRepository history, CatalogStore catalog, SongResolver songs, ImportService imports) {
         this.history = history;
         this.catalog = catalog;
+        this.songs = songs;
+        this.imports = imports;
     }
 
     @Transactional
     public void record(String userId, String songId, int playedMs, ContentType contextType, String contextId) {
-        if (catalog.song(songId) == null) {
+        if (!songs.exists(userId, songId)) {
             throw ApiException.badRequest("unknown_song", "Unknown song " + songId);
         }
         history.insert(userId, songId, Timestamps.now(), Math.max(0, playedMs),
@@ -39,8 +45,17 @@ public class HistoryService {
     public List<HistoryEntry> list(String userId, Integer limit) {
         int n = limit == null ? DEFAULT_LIMIT : Math.max(1, Math.min(limit, MAX_LIMIT));
         List<HistoryEntry> out = new ArrayList<>(n);
+        java.util.Map<String, Song> imported = null;
         for (var row : history.recent(userId, n)) {
-            Song song = catalog.song(row.songId());
+            Song song;
+            if (ImportService.isImportId(row.songId())) {
+                if (imported == null) {
+                    imported = imports.byId(userId);
+                }
+                song = imported.get(row.songId());
+            } else {
+                song = catalog.song(row.songId());
+            }
             if (song != null) {
                 out.add(new HistoryEntry(row.songId(), row.playedAt(), ContentType.fromValue(row.contextType()),
                         row.contextId(), song));

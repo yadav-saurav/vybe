@@ -87,6 +87,14 @@ public class SearchService {
     }
 
     public SearchResults search(String term, String types, Integer limit) {
+        return search(term, types, limit, List.of());
+    }
+
+    /**
+     * Like {@link #search(String, String, Integer)}, also ranking {@code extraSongs} (the signed-in
+     * user's imported tracks) with the same tiers, so they appear in {@code songs} and {@code top}.
+     */
+    public SearchResults search(String term, String types, Integer limit, List<Song> extraSongs) {
         Set<Kind> wanted = parseTypes(types);
         int n = limit == null ? DEFAULT_LIMIT : Math.max(1, Math.min(limit, MAX_LIMIT));
         String[] query = TextNormalizer.tokens(term);
@@ -95,13 +103,23 @@ public class SearchService {
         }
         String queryNorm = String.join(" ", query);
         List<Hit> hits = new ArrayList<>();
-        for (Doc d : docs) {
-            if (!wanted.contains(d.kind())) {
-                continue;
+        List<Doc> extra = new ArrayList<>();
+        if (wanted.contains(Kind.SONG)) {
+            for (Song s : extraSongs) {
+                // Imports have no popularity; a small fixed boost keeps the user's own music competitive.
+                extra.add(doc(Kind.SONG, ContentType.SONG, s, s.title(), s.title(),
+                        s.artist().name() + " " + s.album().title(), 5));
             }
-            double s = score(d, query, queryNorm);
-            if (s > 0) {
-                hits.add(new Hit(d, s));
+        }
+        for (List<Doc> pool : List.of(docs, extra)) {
+            for (Doc d : pool) {
+                if (!wanted.contains(d.kind())) {
+                    continue;
+                }
+                double s = score(d, query, queryNorm);
+                if (s > 0) {
+                    hits.add(new Hit(d, s));
+                }
             }
         }
         hits.sort(Comparator.comparingDouble(Hit::score).reversed()

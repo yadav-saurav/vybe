@@ -16,6 +16,9 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.MultipartException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
@@ -48,9 +51,20 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler({HttpMessageNotReadableException.class, MissingServletRequestParameterException.class,
-            MethodArgumentTypeMismatchException.class})
+            MethodArgumentTypeMismatchException.class, MissingServletRequestPartException.class})
     public ResponseEntity<Map<String, Object>> badInput(Exception e) {
         return body(HttpStatus.BAD_REQUEST, "invalid_request", "Malformed or missing request input");
+    }
+
+    /** An upload over spring.servlet.multipart.max-file-size / max-request-size. */
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<Map<String, Object>> tooLarge(MaxUploadSizeExceededException e) {
+        return body(HttpStatus.valueOf(413), "payload_too_large", "Files can be at most 50 MB each");
+    }
+
+    @ExceptionHandler(MultipartException.class)
+    public ResponseEntity<Map<String, Object>> badMultipart(MultipartException e) {
+        return body(HttpStatus.BAD_REQUEST, "invalid_request", "Malformed upload");
     }
 
     @ExceptionHandler({NoResourceFoundException.class, NoHandlerFoundException.class})

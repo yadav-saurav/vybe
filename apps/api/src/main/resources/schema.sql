@@ -66,3 +66,29 @@ CREATE TABLE IF NOT EXISTS user_playlist_tracks (
     song_id      TEXT NOT NULL,
     PRIMARY KEY (playlist_id, position)
 );
+
+-- Audio files a user imported from their own computer. Private to the owner. Files live in
+-- <imports-dir>/<user_id>/<id>.<file_ext> (and <id>.jpg when has_art = 1). Song id is "im_" || id.
+CREATE TABLE IF NOT EXISTS imported_tracks (
+    id            TEXT PRIMARY KEY,
+    user_id       TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    title         TEXT NOT NULL,
+    artist        TEXT NOT NULL,
+    album         TEXT NOT NULL DEFAULT '',
+    album_artist  TEXT NOT NULL DEFAULT '',
+    track_number  INTEGER NOT NULL DEFAULT 0,
+    disc_number   INTEGER NOT NULL DEFAULT 0,
+    year          INTEGER,
+    genre         TEXT NOT NULL DEFAULT '',
+    duration_ms   INTEGER NOT NULL DEFAULT 0,
+    file_ext      TEXT NOT NULL,
+    mime          TEXT NOT NULL,
+    size_bytes    INTEGER NOT NULL,
+    has_art       INTEGER NOT NULL DEFAULT 0,
+    bg_color      TEXT NOT NULL,
+    text_color1   TEXT NOT NULL,
+    text_color2   TEXT NOT NULL,
+    text_color3   TEXT NOT NULL,
+    created_at    TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_imported_tracks_user ON imported_tracks(user_id, created_at);

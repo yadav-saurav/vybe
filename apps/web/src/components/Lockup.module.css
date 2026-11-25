@@ -10,6 +10,7 @@
 .overlay > .play :global(svg) { margin-left: 1px; }
 .meta { display: flex; flex-direction: column; min-width: 0; padding-top: 1px; }
 .title { font-size: var(--fs-footnote); line-height: var(--lh-footnote); color: var(--text-1); display: flex; align-items: center; min-width: 0; }
+.titleText { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .subtitle { font-size: var(--fs-footnote); line-height: var(--lh-footnote); color: var(--text-2); }
 a.title:hover, a.subtitle:hover { text-decoration: underline; }
 .lg .title { font-size: var(--fs-callout); }

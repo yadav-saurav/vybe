@@ -1,0 +1,61 @@
+/* Library → Imported. Tokens only; light and dark come from tokens.css. */
+
+.zone {
+  position: relative;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+  min-height: 188px; padding: 28px 24px; margin-bottom: 28px;
+  border: 1.5px dashed var(--text-3); border-radius: var(--r-xl);
+  background: var(--bg-hover); color: var(--text-1); text-align: center;
+  cursor: pointer; outline: none;
+  transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+.zone:hover { background: var(--bg-selected); }
+.zone:focus-visible { box-shadow: var(--focus-ring); border-color: var(--key); }
+.zoneArmed { border-color: rgba(var(--key-rgb), 0.55); background: var(--key-soft); }
+.zoneOver { border-color: var(--key); border-style: solid; background: var(--key-soft); transform: scale(1.005); }
+.zoneIcon {
+  width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--bg-elevated); color: var(--key); box-shadow: var(--shadow-menu); margin-bottom: 4px;
+}
+.zoneTitle { font-size: var(--fs-headline); font-weight: 600; line-height: 22px; }
+.zoneLink { color: var(--key); }
+.zone:hover .zoneLink { text-decoration: underline; }
+.zoneHint { max-width: 460px; color: var(--text-2); font-size: var(--fs-footnote); line-height: var(--lh-footnote); }
+.hiddenInput { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+
+/* Upload queue */
+.queue { margin: -8px 0 28px; padding: 14px 16px 6px; border-radius: var(--r-lg); background: var(--bg-elevated); box-shadow: var(--shadow-menu); }
+.queueHead { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
+.queueTitle { font-size: var(--fs-callout); font-weight: 700; }
+.clear { color: var(--key); font-size: var(--fs-callout); font-weight: 600; padding: 4px 8px; border-radius: var(--r-sm); }
+.clear:hover { background: var(--bg-hover); }
+.clear:focus-visible { box-shadow: var(--focus-ring); outline: none; }
+.queueList { display: flex; flex-direction: column; max-height: 280px; overflow-y: auto; }
+.row { display: flex; align-items: flex-start; gap: 12px; padding: 10px 0; border-top: 1px solid var(--separator); }
+.row:first-child { border-top: 0; }
+.rowIcon { width: 28px; height: 28px; flex-shrink: 0; border-radius: var(--r-sm); display: grid; place-items: center; background: var(--bg-hover); color: var(--text-2); }
+.done .rowIcon { color: var(--key); }
+.rowMain { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+.rowLine { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.rowName { min-width: 0; font-size: var(--fs-callout); font-weight: 500; }
+.rowSize { flex-shrink: 0; color: var(--text-2); font-size: var(--fs-footnote); font-variant-numeric: tabular-nums; }
+.bar { position: relative; height: 4px; border-radius: 2px; background: var(--bg-selected); overflow: hidden; }
+.fill { position: absolute; inset: 0; background: var(--key); transform-origin: left center; transition: transform var(--dur) var(--ease); }
+.skipped .fill, .error .fill { background: var(--text-3); }
+.rowStatus { color: var(--text-2); font-size: var(--fs-footnote); line-height: var(--lh-footnote); }
+.skipped .rowStatus, .error .rowStatus { color: var(--key); }
+
+.empty { padding: 8px 0 40px; max-width: 520px; }
+.songs { min-width: 0; }
+.listSkeleton { height: 220px; border-radius: var(--r-md); background: var(--bg-placeholder); }
+
+@media (max-width: 760px) {
+  .zone { min-height: 0; padding: 20px 16px; gap: 6px; border-radius: var(--r-lg); margin-bottom: 22px; }
+  .zoneIcon { width: 44px; height: 44px; margin-bottom: 2px; }
+  .zoneTitle { font-size: var(--fs-body); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .zone, .fill { transition: none; }
+  .zoneOver { transform: none; }
+}

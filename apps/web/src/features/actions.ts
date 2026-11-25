@@ -5,6 +5,7 @@ import { useLibrary } from '../stores/library';
 import { useUI, type MenuEntry } from '../stores/ui';
 import { useAuth } from '../stores/auth';
 import { invalidate } from '../lib/useAsync';
+import { IMPORTED_PATH, isImported } from '../lib/imports';
 
 /**
  * Central content actions so every surface (lockups, rows, headers, Now Playing) behaves identically.
@@ -63,9 +64,11 @@ export function menuFor(item: ContentItem, opts: { extra?: MenuEntry[]; navigate
   const entries: MenuEntry[] = [...(opts.extra ?? [])];
   if (opts.extra?.length) entries.push('separator');
 
+  // Imported tracks are always in the library (removing them is "Delete from Vybe") and have no public page.
+  const imported = item.type === 'song' && isImported(item.data);
   if (t) {
     const inLib = lib.has(t, item.data.id);
-    if (!(item.type === 'playlist' && (item.data as Playlist).kind === 'user')) {
+    if (!(item.type === 'playlist' && (item.data as Playlist).kind === 'user') && !imported) {
       entries.push({ label: inLib ? 'Remove from Library' : 'Add to Library', icon: inLib ? 'trash' : 'plus', destructive: inLib, onSelect: () => lib.toggle(t, item.data.id) });
     }
     if (item.type !== 'artist') {
@@ -89,12 +92,14 @@ export function menuFor(item: ContentItem, opts: { extra?: MenuEntry[]; navigate
   entries.push('separator');
   if (opts.navigate) {
     const nav = opts.navigate;
-    if (item.type === 'song') {
+    if (imported) {
+      entries.push({ label: 'Go to Imported', icon: 'upload', onSelect: () => nav(`${IMPORTED_PATH}?i=${encodeURIComponent(item.data.id)}`) });
+    } else if (item.type === 'song') {
       entries.push({ label: 'Go to Album', icon: 'album', onSelect: () => nav(`/album/${item.data.album.id}?i=${item.data.id}`) });
       entries.push({ label: 'Go to Artist', icon: 'artist', onSelect: () => nav(`/artist/${item.data.artist.id}`) });
     } else if (item.type === 'album') entries.push({ label: 'Go to Artist', icon: 'artist', onSelect: () => nav(`/artist/${(item.data as Album).artist.id}`) });
   }
-  entries.push({ label: 'Share', icon: 'share', onSelect: () => ui.share(item) });
+  if (!imported) entries.push({ label: 'Share', icon: 'share', onSelect: () => ui.share(item) });
   // Trim trailing / duplicate separators
   return entries.filter((e, i, a) => e !== 'separator' || (i > 0 && i < a.length - 1 && a[i - 1] !== 'separator'));
 }

@@ -21,6 +21,7 @@ const library = [
   { to: '/library/artists', label: 'Artists', icon: 'artist' },
   { to: '/library/albums', label: 'Albums', icon: 'album' },
   { to: '/library/songs', label: 'Songs', icon: 'note' },
+  { to: '/library/imported', label: 'Imported', icon: 'upload' },
   { to: '/library/made-for-you', label: 'Made for You', icon: 'sparkle' },
 ];
 

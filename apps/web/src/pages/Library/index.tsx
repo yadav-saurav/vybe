@@ -13,6 +13,7 @@ import { PillButton } from '../../components/Buttons';
 import { useAuth } from '../../stores/auth';
 import { useUI } from '../../stores/ui';
 import { usePlayer, type PlayContext } from '../../stores/player';
+import { ImportedView } from './Imported';
 import s from './Library.module.css';
 
 const SECTIONS: Record<string, string> = {
@@ -20,6 +21,7 @@ const SECTIONS: Record<string, string> = {
   artists: 'Artists',
   albums: 'Albums',
   songs: 'Songs',
+  imported: 'Imported',
   'made-for-you': 'Made for You',
   playlists: 'Playlists',
 };
@@ -34,7 +36,7 @@ export default function LibraryPage() {
     return (
       <div className="page">
         <header className="page-header"><h1 className="t-large-title">{SECTIONS[section]}</h1></header>
-        <SignedOut />
+        <SignedOut section={section} />
       </div>
     );
   }
@@ -51,18 +53,22 @@ function SectionView({ section }: { section: string }) {
     case 'artists': return <ArtistsView />;
     case 'albums': return <AlbumsView />;
     case 'songs': return <SongsView />;
+    case 'imported': return <ImportedView />;
     case 'made-for-you': return <MadeForYouView />;
     case 'playlists': return <PlaylistsView />;
     default: return <RecentlyAddedView />;
   }
 }
 
-function SignedOut() {
+function SignedOut({ section }: { section: string }) {
+  const importing = section === 'imported';
   return (
     <div className={s.gate}>
-      <span className={s.gateIcon}><Icon name="vybe-mark" size={30} /></span>
-      <h2 className={s.gateTitle}>Your library, everywhere</h2>
-      <p className={s.gateText}>Sign in to see the songs, albums, artists and playlists you add, and the mixes made for you.</p>
+      <span className={s.gateIcon}><Icon name={importing ? 'upload' : 'vybe-mark'} size={30} /></span>
+      <h2 className={s.gateTitle}>{importing ? 'Import your own music' : 'Your library, everywhere'}</h2>
+      <p className={s.gateText}>{importing
+        ? 'Sign in to import songs you own from your computer. Files stay private to your account and play alongside the rest of Vybe.'
+        : 'Sign in to see the songs, albums, artists and playlists you add, and the mixes made for you.'}</p>
       <PillButton variant="key" onClick={() => useUI.getState().openSignIn()}>Sign In</PillButton>
     </div>
   );

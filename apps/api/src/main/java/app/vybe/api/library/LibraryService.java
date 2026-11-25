@@ -3,6 +3,8 @@ package app.vybe.api.library;
 import app.vybe.api.catalog.CatalogStore;
 import app.vybe.api.common.Timestamps;
 import app.vybe.api.error.ApiException;
+import app.vybe.api.imports.ImportService;
+import app.vybe.api.imports.SongResolver;
 import app.vybe.api.model.Album;
 import app.vybe.api.model.Artist;
 import app.vybe.api.model.ContentItem;
@@ -33,19 +35,23 @@ public class LibraryService {
     private final PlaylistRepository playlistRows;
     private final PlaylistService playlists;
     private final CatalogStore catalog;
+    private final SongResolver songs;
+    private final ImportService imports;
 
     public LibraryService(LibraryRepository library, PlaylistRepository playlistRows,
-                          PlaylistService playlists, CatalogStore catalog) {
+                          PlaylistService playlists, CatalogStore catalog, SongResolver songs, ImportService imports) {
         this.library = library;
         this.playlistRows = playlistRows;
         this.playlists = playlists;
         this.catalog = catalog;
+        this.songs = songs;
+        this.imports = imports;
     }
 
     @Transactional
     public LibraryState add(String userId, String type, String id) {
         requireType(type);
-        requireExists(type, id);
+        requireExists(userId, type, id);
         String now = Timestamps.now();
         library.addItem(userId, type, id, now);
         return state(userId);
@@ -62,7 +68,7 @@ public class LibraryService {
     @Transactional
     public LibraryState love(String userId, String type, String id) {
         requireType(type);
-        requireExists(type, id);
+        requireExists(userId, type, id);
         String now = Timestamps.now();
         library.addLove(userId, type, id, now);
         library.addItem(userId, type, id, now);
@@ -78,7 +84,8 @@ public class LibraryService {
 
     /**
      * Full library snapshot. Artists combine followed artists with the primary artists of saved
-     * songs and albums. Own user playlists are included in {@code playlistIds}.
+     * songs and albums. Own user playlists are included in {@code playlistIds}. Every imported track
+     * is in the library automatically ({@code songIds}, dated when it was imported).
      */
     public LibraryState state(String userId) {
         List<LibraryRepository.Ref> songRefs = library.items(userId, "song");
@@ -88,10 +95,17 @@ public class LibraryService {
         List<LibraryRepository.Ref> loveRefs = library.loves(userId);
 
         Map<String, String> addedAt = new HashMap<>();
-        List<String> songIds = new ArrayList<>();
+        Map<String, String> songAt = new LinkedHashMap<>();
         for (var r : songRefs) {
-            songIds.add(r.id());
-            addedAt.put(r.id(), r.at());
+            songAt.merge(r.id(), r.at(), LibraryService::later);
+        }
+        imports.createdAt(userId).forEach((id, at) -> songAt.merge(id, at, LibraryService::later));
+        List<Map.Entry<String, String>> songEntries = new ArrayList<>(songAt.entrySet());
+        songEntries.sort((a, b) -> b.getValue().compareTo(a.getValue()));
+        List<String> songIds = new ArrayList<>();
+        for (var e : songEntries) {
+            songIds.add(e.getKey());
+            addedAt.put(e.getKey(), e.getValue());
         }
         List<String> albumIds = new ArrayList<>();
         for (var r : albumRefs) {
@@ -151,12 +165,13 @@ public class LibraryService {
         return new LibraryState(songIds, albumIds, playlistIds, artistIds, followedArtistIds, lovedIds, addedAt);
     }
 
-    /** Directly added songs plus tracks of library albums, de-duplicated, newest first. */
+    /** Directly added songs, tracks of library albums and every imported track, de-duplicated, newest first. */
     public List<Song> songs(String userId) {
         Map<String, String> at = new LinkedHashMap<>();
         for (var r : library.items(userId, "song")) {
             at.merge(r.id(), r.at(), LibraryService::later);
         }
+        imports.createdAt(userId).forEach((id, added) -> at.merge(id, added, LibraryService::later));
         for (var r : library.items(userId, "album")) {
             for (Song s : catalog.tracksOfAlbum(r.id())) {
                 at.merge(s.id(), r.at(), LibraryService::later);
@@ -164,14 +179,7 @@ public class LibraryService {
         }
         List<Map.Entry<String, String>> entries = new ArrayList<>(at.entrySet());
         entries.sort((a, b) -> b.getValue().compareTo(a.getValue()));
-        List<Song> out = new ArrayList<>(entries.size());
-        for (var e : entries) {
-            Song s = catalog.song(e.getKey());
-            if (s != null) {
-                out.add(s);
-            }
-        }
-        return out;
+        return songs.resolveAll(userId, entries.stream().map(Map.Entry::getKey).toList());
     }
 
     public List<Album> albums(String userId) {
@@ -203,8 +211,9 @@ public class LibraryService {
     }
 
     /**
-     * Most recently added albums, playlists and songs. A song is shown as its album, so an album
-     * appears once even when both it and one of its tracks were saved.
+     * Most recently added albums, playlists and songs. A catalog song is shown as its album, so an
+     * album appears once even when both it and one of its tracks were saved. Imported tracks have no
+     * album page, so each one is listed as a song (dated when it was imported).
      */
     public List<ContentItem> recentlyAdded(String userId) {
         record Entry(String type, String id, String at) {
@@ -214,7 +223,14 @@ public class LibraryService {
             entries.add(new Entry("album", r.id(), r.at()));
         }
         for (var r : library.items(userId, "song")) {
-            entries.add(new Entry("song", r.id(), r.at()));
+            if (!ImportService.isImportId(r.id())) {
+                entries.add(new Entry("song", r.id(), r.at()));
+            }
+        }
+        Map<String, Song> imported = imports.byId(userId);
+        Map<String, String> importedAt = imports.createdAt(userId);
+        for (var e : importedAt.entrySet()) {
+            entries.add(new Entry("import", e.getKey(), e.getValue()));
         }
         for (var r : library.items(userId, "playlist")) {
             entries.add(new Entry("playlist", r.id(), r.at()));
@@ -232,6 +248,12 @@ public class LibraryService {
             }
             switch (e.type()) {
                 case "album" -> addAlbum(out, seenAlbums, e.id());
+                case "import" -> {
+                    Song s = imported.get(e.id());
+                    if (s != null) {
+                        out.add(ContentItem.song(s));
+                    }
+                }
                 case "song" -> {
                     Song s = catalog.song(e.id());
                     if (s != null) {
@@ -275,9 +297,9 @@ public class LibraryService {
         }
     }
 
-    private void requireExists(String type, String id) {
+    private void requireExists(String userId, String type, String id) {
         boolean exists = switch (type) {
-            case "song" -> catalog.song(id) != null;
+            case "song" -> songs.exists(userId, id);
             case "album" -> catalog.album(id) != null;
             case "artist" -> catalog.artist(id) != null;
             default -> catalog.playlist(id) != null && "editorial".equals(catalog.playlist(id).kind());

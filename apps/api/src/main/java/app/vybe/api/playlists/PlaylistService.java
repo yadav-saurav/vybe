@@ -7,6 +7,8 @@ import app.vybe.api.common.Text;
 import app.vybe.api.common.Timestamps;
 import app.vybe.api.discover.PersonalMixService;
 import app.vybe.api.error.ApiException;
+import app.vybe.api.imports.ImportService;
+import app.vybe.api.imports.SongResolver;
 import app.vybe.api.model.Artwork;
 import app.vybe.api.model.Pages;
 import app.vybe.api.model.Playlist;
@@ -40,12 +42,15 @@ public class PlaylistService {
     private final CatalogStore catalog;
     private final PersonalMixService mixes;
     private final AuthService auth;
+    private final SongResolver songs;
 
-    public PlaylistService(PlaylistRepository repo, CatalogStore catalog, PersonalMixService mixes, AuthService auth) {
+    public PlaylistService(PlaylistRepository repo, CatalogStore catalog, PersonalMixService mixes, AuthService auth,
+                           SongResolver songs) {
         this.repo = repo;
         this.catalog = catalog;
         this.mixes = mixes;
         this.auth = auth;
+        this.songs = songs;
     }
 
     // ------------------------------------------------------------------ reads
@@ -61,13 +66,15 @@ public class PlaylistService {
         }
         return repo.find(id)
                 .filter(row -> row.isPublic() || (viewer != null && row.userId().equals(viewer.id())))
-                .map(row -> toPlaylist(row, repo.trackIds(row.id())));
+                .map(row -> toPlaylist(row, repo.trackIds(row.id()), viewer == null ? null : viewer.id()));
     }
 
     public Pages.PlaylistPage page(String id, User viewer) {
         Playlist playlist = findVisible(id, viewer)
                 .orElseThrow(() -> ApiException.notFound("No playlist with id " + id));
-        List<Song> tracks = tracks(playlist.trackIds());
+        // Imported tracks only hydrate for the playlist's owner (findVisible already hid them from others).
+        boolean owner = viewer != null && viewer.id().equals(playlist.ownerId());
+        List<Song> tracks = songs.resolveAll(owner ? viewer.id() : null, playlist.trackIds());
         return new Pages.PlaylistPage(playlist, tracks, moreLikeThis(playlist));
     }
 
@@ -114,7 +121,7 @@ public class PlaylistService {
 
     @Transactional
     public Playlist create(User user, CreateRequest req) {
-        List<String> trackIds = validatedTracks(req.trackIds());
+        List<String> trackIds = validatedTracks(req.trackIds(), user.id());
         String now = Timestamps.now();
         String id = Ids.random("pl_u_", 12);
         repo.insert(new PlaylistRepository.Row(id, user.id(), requireName(req.name()),
@@ -132,7 +139,7 @@ public class PlaylistService {
         repo.update(new PlaylistRepository.Row(id, user.id(), name, description, isPublic,
                 row.createdAt(), Timestamps.now()));
         if (patch.trackIds() != null) {
-            repo.replaceTracks(id, validatedTracks(patch.trackIds()));
+            repo.replaceTracks(id, validatedTracks(patch.trackIds(), user.id()));
         }
         return loadOwned(id, user);
     }
@@ -141,7 +148,7 @@ public class PlaylistService {
     @Transactional
     public Playlist addTracks(User user, String id, List<String> trackIds, Integer position) {
         owned(id, user);
-        List<String> incoming = validatedTracks(trackIds);
+        List<String> incoming = validatedTracks(trackIds, user.id());
         List<String> current = new ArrayList<>(repo.trackIds(id));
         int at = position == null ? current.size() : position;
         if (at < 0 || at > current.size()) {
@@ -178,9 +185,20 @@ public class PlaylistService {
 
     // ------------------------------------------------------------------ helpers
 
-    /** Builds the public Playlist shape from a stored row and its ordered tracks. */
+    /** Builds the public Playlist shape from a stored row and its ordered tracks, as its owner sees it. */
     public Playlist toPlaylist(PlaylistRepository.Row row, List<String> trackIds) {
-        List<Song> songs = tracks(trackIds);
+        return toPlaylist(row, trackIds, row.userId());
+    }
+
+    /**
+     * Builds the Playlist shape for {@code viewerId}. Imported tracks ({@code im_} ids) are private:
+     * they resolve for the owner and are left out of {@code trackIds} for everyone else.
+     */
+    public Playlist toPlaylist(PlaylistRepository.Row row, List<String> allTrackIds, String viewerId) {
+        boolean owner = row.userId().equals(viewerId);
+        List<String> trackIds = owner ? allTrackIds
+                : allTrackIds.stream().filter(t -> !ImportService.isImportId(t)).toList();
+        List<Song> songs = this.songs.resolveAll(owner ? row.userId() : null, trackIds);
         long duration = songs.stream().mapToLong(Song::durationMs).sum();
         Artwork artwork = songs.isEmpty() ? catalog.genres().get(0).artwork() : songs.get(0).artwork();
         String curator = auth.userById(row.userId()).map(User::displayName).orElse("Vybe listener");
@@ -214,15 +232,28 @@ public class PlaylistService {
         return out;
     }
 
-    private List<String> validatedTracks(List<String> ids) {
+    private List<String> validatedTracks(List<String> ids, String userId) {
         if (ids == null) {
             return List.of();
         }
         if (ids.size() > MAX_TRACKS) {
             throw ApiException.badRequest("playlist_too_long", "A playlist holds at most " + MAX_TRACKS + " tracks");
         }
+        java.util.Set<String> imported = null;
         for (String id : ids) {
-            if (catalog.song(id) == null) {
+            boolean known;
+            if (ImportService.isImportId(id)) {
+                if (imported == null) {
+                    imported = new java.util.HashSet<>();
+                    for (Song s : songs.resolveAll(userId, ids.stream().filter(ImportService::isImportId).toList())) {
+                        imported.add(s.id());
+                    }
+                }
+                known = imported.contains(id);
+            } else {
+                known = catalog.song(id) != null;
+            }
+            if (!known) {
                 throw ApiException.badRequest("unknown_track", "Unknown track " + id);
             }
         }

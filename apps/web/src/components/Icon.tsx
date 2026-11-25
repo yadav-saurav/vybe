@@ -50,6 +50,8 @@ const paths: Record<string, ReactElement> = {
   grip: <path d="M5 8.5h14M5 12h14M5 15.5h14" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />,
   /** Monochrome Vybe mark (rounded tile with a cut-out V), used for empty player states. */
   'vybe-mark': <path fillRule="evenodd" d="M8.6 3h6.8c3.1 0 5.6 2.5 5.6 5.6v6.8c0 3.1-2.5 5.6-5.6 5.6H8.6A5.6 5.6 0 0 1 3 15.4V8.6C3 5.5 5.5 3 8.6 3Zm-.3 6.1a1.15 1.15 0 0 0-.42 1.57l3.12 5.4a1.15 1.15 0 0 0 2 0l3.12-5.4a1.15 1.15 0 1 0-2-1.15L12 13.6l-2.12-3.67a1.15 1.15 0 0 0-1.57-.42Z" fill="currentColor" />,
+  /** Arrow rising out of a tray (Import Music). */
+  upload: <path d="M12 15.5V4.5M7.5 9 12 4.5 16.5 9M4.5 14v3.5a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />,
   wave: <path d="M4 12h1.5M7.5 8v8M11 5v14M14.5 9v6M18 7v10M20.5 12H20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />,
 };
 

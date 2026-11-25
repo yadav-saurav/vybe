@@ -76,6 +76,38 @@ export const api = {
   addToPlaylist: (id: string, trackIds: string[]) => request<{ playlist: T.Playlist }>('POST', `/me/playlists/${enc(id)}/tracks`, { trackIds }),
   removeFromPlaylist: (id: string, index: number) => request<{ playlist: T.Playlist }>('DELETE', `/me/playlists/${enc(id)}/tracks/${index}`),
   deletePlaylist: (id: string) => request<{ ok: true }>('DELETE', `/me/playlists/${enc(id)}`),
+
+  // imported music (private to the signed-in user)
+  importFiles,
+  imports: (s?: AbortSignal) => get<{ songs: T.Song[] }>('/me/imports', s),
+  deleteImport: (id: string) => request<{ ok: true }>('DELETE', `/me/imports/${enc(id)}`),
 };
+
+/**
+ * Uploads audio files to POST /api/me/imports as multipart "files". Uses XMLHttpRequest because
+ * fetch has no upload progress; `onProgress` receives the sent fraction (0..1) of the whole request.
+ */
+function importFiles(files: File[], onProgress?: (fraction: number) => void, signal?: AbortSignal): Promise<T.ImportResult> {
+  return new Promise((resolve, reject) => {
+    const body = new FormData();
+    for (const f of files) body.append('files', f, f.name);
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', '/api/me/imports');
+    xhr.withCredentials = true;
+    xhr.responseType = 'text';
+    xhr.upload.onprogress = (e) => { if (e.lengthComputable && e.total > 0) onProgress?.(e.loaded / e.total); };
+    xhr.onload = () => {
+      let parsed: unknown;
+      try { parsed = JSON.parse(xhr.responseText); } catch { parsed = undefined; }
+      if (xhr.status >= 200 && xhr.status < 300 && parsed) { onProgress?.(1); resolve(parsed as T.ImportResult); return; }
+      const err = (parsed as T.ApiError | undefined)?.error;
+      reject(new ApiError(xhr.status, err?.code ?? 'http_error', err?.message ?? (xhr.statusText || 'Upload failed')));
+    };
+    xhr.onerror = () => reject(new ApiError(0, 'network_error', 'Can’t reach Vybe right now'));
+    xhr.onabort = () => reject(new ApiError(0, 'aborted', 'Upload cancelled'));
+    signal?.addEventListener('abort', () => xhr.abort(), { once: true });
+    xhr.send(body);
+  });
+}
 
 export type LibType = 'song' | 'album' | 'playlist' | 'artist';

@@ -7,10 +7,11 @@ import { Icon } from './Icon';
 import { ExplicitBadge } from './Buttons';
 import { menuFor, openMenuAt, playItem } from '../features/actions';
 import { usePlayer } from '../stores/player';
+import { albumHref, artistHref } from '../lib/imports';
 import s from './Lockup.module.css';
 
 export const hrefFor = (item: ContentItem) =>
-  item.type === 'song' ? `/album/${item.data.album.id}?i=${item.data.id}` : `/${item.type}/${item.data.id}`;
+  item.type === 'song' ? albumHref(item.data) : `/${item.type}/${item.data.id}`;
 
 export const titleOf = (item: ContentItem) =>
   item.type === 'album' || item.type === 'song' ? item.data.title : item.data.name;
@@ -50,10 +51,10 @@ export function Lockup({ item, size = 'md', showSubtitle = true, subtitle, title
         )}
       </div>
       <div className={s.meta}>
-        <Link to={hrefFor(item)} className={clsx(s.title, 'clamp-1')}>{titleNode ?? titleOf(item)}{explicit && <ExplicitBadge />}</Link>
+        <Link to={hrefFor(item)} className={s.title}><span className={s.titleText}>{titleNode ?? titleOf(item)}</span>{explicit && <ExplicitBadge />}</Link>
         {showSubtitle && !isCircle && (
           item.type === 'album' || item.type === 'song'
-            ? <Link to={`/artist/${item.data.artist.id}`} className={clsx(s.subtitle, 'clamp-1')}>{subtitle ?? subtitleOf(item)}</Link>
+            ? <Link to={item.type === 'song' ? artistHref(item.data) : `/artist/${item.data.artist.id}`} className={clsx(s.subtitle, 'clamp-1')}>{subtitle ?? subtitleOf(item)}</Link>
             : <div className={clsx(s.subtitle, 'clamp-1')}>{subtitle ?? subtitleOf(item)}</div>
         )}
       </div>

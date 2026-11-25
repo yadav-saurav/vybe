@@ -13,6 +13,7 @@ import { Marquee, Scrubber, useIsMobile, VolumeRow } from './controls';
 import { PlayPauseIcon } from './PlayerChrome';
 import { LyricsView } from './LyricsView';
 import { QueuePanel } from './QueuePanel';
+import { albumHref, artistHref } from '../../lib/imports';
 import s from './NowPlaying.module.css';
 
 const P = () => usePlayer.getState();
@@ -142,9 +143,9 @@ function Meta({ song, compact }: { song: Song; compact?: boolean }) {
       <div className={s.metaText}>
         <Marquee className={s.title} textKey={song.id}>{song.title}{song.isExplicit && <span className={s.explicit} aria-label="Explicit">E</span>}</Marquee>
         <div className={clsx(s.artist, 'clamp-1')}>
-          <Link to={`/artist/${song.artist.id}`} onClick={close}>{song.artist.name}</Link>
+          <Link to={artistHref(song)} onClick={close}>{song.artist.name}</Link>
           {song.featuring.map((f) => <span key={f.id}> &amp; <Link to={`/artist/${f.id}`} onClick={close}>{f.name}</Link></span>)}
-          {!compact && <span className={s.album}> — <Link to={`/album/${song.album.id}?i=${song.id}`} onClick={close}>{song.album.title}</Link></span>}
+          {!compact && <span className={s.album}> — <Link to={albumHref(song)} onClick={close}>{song.album.title}</Link></span>}
         </div>
       </div>
       <button className={clsx(s.round, loved && s.loved)} aria-label={loved ? 'Undo Favorite' : 'Favorite'} aria-pressed={loved} title={loved ? 'Undo Favorite' : 'Favorite'}

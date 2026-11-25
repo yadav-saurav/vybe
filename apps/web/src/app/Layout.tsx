@@ -8,6 +8,7 @@ import { useUI } from '../stores/ui';
 import { useAuth } from '../stores/auth';
 import { PlayerChrome, NowPlaying, PlayerEngine } from '../features/player';
 import { Overlays } from '../features/overlays';
+import { DropImport } from './DropImport';
 import { tintVars } from '../lib/color';
 import clsx from 'clsx';
 import s from './Layout.module.css';
@@ -51,6 +52,7 @@ export function Layout() {
       <NowPlaying />
       <PlayerEngine />
       <Overlays />
+      <DropImport />
       <ContextMenuHost />
       <Toasts />
     </div>

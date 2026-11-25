@@ -9,6 +9,8 @@ import app.vybe.api.model.User;
 import app.vybe.api.playlists.PlaylistService;
 import app.vybe.api.catalog.CatalogStore;
 import app.vybe.api.error.ApiException;
+import app.vybe.api.imports.ImportService;
+import app.vybe.api.imports.SongResolver;
 import app.vybe.api.model.Song;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,24 +29,36 @@ public class CatalogController {
     private final StationService stations;
     private final Similarity similarity;
     private final CatalogStore store;
+    private final SongResolver songs;
 
     public CatalogController(CatalogService catalog, PlaylistService playlists, StationService stations,
-                             Similarity similarity, CatalogStore store) {
+                             Similarity similarity, CatalogStore store, SongResolver songs) {
         this.catalog = catalog;
         this.playlists = playlists;
         this.stations = stations;
         this.similarity = similarity;
         this.store = store;
+        this.songs = songs;
     }
 
     @GetMapping("/api/songs/{id}")
-    public Pages.SongWrapper song(@PathVariable String id) {
+    public Pages.SongWrapper song(@PathVariable String id, @CurrentUser(required = false) User viewer) {
+        if (ImportService.isImportId(id)) {
+            Song s = songs.resolve(viewer == null ? null : viewer.id(), id);
+            if (s == null) {
+                throw ApiException.notFound("No song with id " + id);
+            }
+            return new Pages.SongWrapper(s);
+        }
         return new Pages.SongWrapper(catalog.song(id));
     }
 
     @GetMapping("/api/songs")
-    public Pages.Songs songs(@RequestParam(value = "ids", defaultValue = "") String ids) {
-        return new Pages.Songs(catalog.songs(csv(ids)));
+    public Pages.Songs songs(@RequestParam(value = "ids", defaultValue = "") String ids,
+                             @CurrentUser(required = false) User viewer) {
+        // Request order, de-duplicated; unknown ids and other users' imports are skipped.
+        return new Pages.Songs(songs.resolveAll(viewer == null ? null : viewer.id(),
+                new java.util.LinkedHashSet<>(csv(ids))));
     }
 
     @GetMapping("/api/songs/{id}/lyrics")
@@ -84,12 +98,18 @@ public class CatalogController {
     @GetMapping("/api/recommendations/autoplay")
     public Pages.Songs autoplay(@RequestParam("songId") String songId,
                                 @RequestParam(value = "exclude", defaultValue = "") String exclude,
-                                @RequestParam(value = "count", defaultValue = "10") int count) {
+                                @RequestParam(value = "count", defaultValue = "10") int count,
+                                @CurrentUser(required = false) User viewer) {
+        int n = Math.max(1, Math.min(count, 50));
+        if (ImportService.isImportId(songId)) {
+            // An imported seed continues with catalog songs similar to its tags; never an error.
+            Song seed = songs.resolve(viewer == null ? null : viewer.id(), songId);
+            return new Pages.Songs(seed == null ? List.of() : similarity.autoplay(seed, new HashSet<>(csv(exclude)), n));
+        }
         Song seed = store.song(songId);
         if (seed == null) {
             throw ApiException.notFound("No song with id " + songId);
         }
-        int n = Math.max(1, Math.min(count, 50));
         return new Pages.Songs(similarity.autoplay(seed, new HashSet<>(csv(exclude)), n));
     }
 
