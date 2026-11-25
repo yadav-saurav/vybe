@@ -51,6 +51,8 @@ interface UIState {
   setPageTint: (a: Artwork | null) => void;
 
   share: (item: ContentItem) => void;
+  shareItem: ContentItem | null;
+  closeShare: () => void;
 }
 
 let toastId = 0;
@@ -98,9 +100,8 @@ export const useUI = create<UIState>((set, get) => ({
   pageTint: null,
   setPageTint: (pageTint) => { if (get().pageTint?.url !== pageTint?.url) set({ pageTint }); },
 
-  share: (item) => {
-    const path = item.type === 'song' ? `/album/${item.data.album.id}?i=${item.data.id}` : `/${item.type}/${item.data.id}`;
-    const url = location.origin + path;
-    navigator.clipboard?.writeText(url).then(() => get().toast('Link Copied'), () => get().toast(url));
-  },
+  shareItem: null,
+  share: (shareItem) => set({ shareItem }),
+  closeShare: () => set({ shareItem: null }),
+
 }));

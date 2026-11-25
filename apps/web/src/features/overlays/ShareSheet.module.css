@@ -1,0 +1,16 @@
+.sheet { width: min(380px, 100%); }
+.wrap { display: flex; flex-direction: column; gap: 14px; padding: 6px; }
+.card { border-radius: 18px; padding: 26px 26px 18px; text-align: center; box-shadow: 0 14px 40px rgba(0,0,0,0.25); }
+.art { width: 62%; margin: 0 auto 16px; filter: drop-shadow(0 10px 24px rgba(0,0,0,0.3)); }
+.kind { font-size: var(--fs-caption); font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+.title { font-size: 22px; line-height: 27px; font-weight: 800; margin-top: 4px; overflow-wrap: anywhere; }
+.sub { font-size: var(--fs-callout); margin-top: 2px; }
+.brand { display: inline-flex; align-items: center; gap: 6px; margin-top: 16px; font-size: var(--fs-footnote); font-weight: 700; opacity: 0.85; }
+.brand img { border-radius: 4px; }
+.link { padding: 8px 12px; border-radius: var(--r-md); background: var(--bg-hover); color: var(--text-2); font-size: var(--fs-footnote); }
+.actions { display: flex; gap: 10px; }
+.primary, .secondary { flex: 1; height: 40px; border-radius: var(--r-pill); display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-weight: 600; }
+.primary { background: var(--key); color: var(--text-on-key); }
+.secondary { background: var(--bg-hover); }
+.quick { display: flex; justify-content: center; gap: 18px; }
+.quickLink { color: var(--key); font-size: var(--fs-callout); font-weight: 600; }
