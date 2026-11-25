@@ -70,10 +70,11 @@ class PagesAndCatalogApiTest extends ApiTestBase {
     }
 
     @Test
-    void radioPageHasLiveHeroAndStationShelves() throws Exception {
+    void radioPageLeadsWithLiveStationsAndStationShelves() throws Exception {
         mvc.perform(get("/api/pages/radio")).andExpect(status().isOk())
                 .andExpect(jsonPath("$.shelves[0].id").value("live-stations"))
-                .andExpect(jsonPath("$.shelves[0].heroCards[0].item.type").value("station"))
+                .andExpect(jsonPath("$.shelves[0].layout").value("grid-lockups"))
+                .andExpect(jsonPath("$.shelves[0].items[0].data.kind").value("live"))
                 .andExpect(jsonPath("$.shelves[?(@.id=='genre-stations')].items.length()").value(hasItem(2)))
                 .andExpect(jsonPath("$.shelves[?(@.id=='artist-stations')].items[0].data.kind").value(hasItem("artist")));
     }

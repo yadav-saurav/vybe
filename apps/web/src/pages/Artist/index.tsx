@@ -3,7 +3,8 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import clsx from 'clsx';
 import type { Album, ArtistPage, Song } from '@vybe/shared';
 import { api } from '../../lib/api';
-import { artUrl } from '../../lib/color';
+import { artUrl, tintVars } from '../../lib/color';
+import { usePageTint } from '../../features/detail/DetailPage';
 import { useAsync } from '../../lib/useAsync';
 import { Artwork } from '../../components/Artwork';
 import { ExplicitBadge } from '../../components/Buttons';
@@ -48,6 +49,7 @@ function ArtistView({ page }: { page: ArtistPage }) {
   const isPlaying = usePlayer((st) => st.isPlaying) && isActive;
   const following = useLibrary((l) => (l.followedArtistIds ?? []).includes(artist.id));
 
+  usePageTint(artist.heroArtwork);
   const playArtist = () => {
     const p = usePlayer.getState();
     if (isActive) p.togglePlay();
@@ -55,7 +57,7 @@ function ArtistView({ page }: { page: ArtistPage }) {
   };
 
   return (
-    <div className={s.artist}>
+    <div className={clsx(s.artist, 'tinted')} style={tintVars(artist.heroArtwork)}>
       <div className={clsx(s.bar, barOn && s.barOn)} aria-hidden={!barOn}>
         <span className={s.barName}>{artist.name}</span>
         <button className={s.barPlay} tabIndex={barOn ? 0 : -1} aria-label={isPlaying ? `Pause ${artist.name}` : `Play ${artist.name}`} onClick={playArtist}>

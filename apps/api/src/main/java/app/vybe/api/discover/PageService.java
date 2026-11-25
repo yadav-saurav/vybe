@@ -292,15 +292,9 @@ public class PageService implements InitializingBean {
     public PageResponse radioPage() {
         return anonymousCache.computeIfAbsent("radio", k -> {
             List<Shelf> shelves = new ArrayList<>();
-            List<HeroCard> live = new ArrayList<>();
-            for (Station st : catalog.stations()) {
-                if ("live".equals(st.kind())) {
-                    live.add(new HeroCard("LIVE NOW", st.name(), st.tagline(), st.tagline(), ContentItem.station(st)));
-                }
-            }
-            add(shelves, new Shelf("live-stations", "Live Stations", null, "hero", null,
-                    live.stream().map(HeroCard::item).toList(), live));
-            add(shelves, Shelf.of("genre-stations", "Genre Stations", "grid-lockups", stationItems("genre")));
+            // Reference layout: a row of square live-station tiles first, then nonstop genre stations.
+            add(shelves, Shelf.of("live-stations", "Listen to Live Radio", "grid-lockups", stationItems("live")));
+            add(shelves, Shelf.of("genre-stations", "Hear Nonstop Music", "grid-lockups", stationItems("genre")));
             add(shelves, Shelf.of("artist-stations", "Artist Stations", "grid-lockups", stationItems("artist")));
             add(shelves, Shelf.of("song-stations", "Song Stations", "grid-lockups", stationItems("song")));
             add(shelves, Shelf.of("radio-shows", "Radio Shows", "grid-lockups",
