@@ -1,5 +1,7 @@
 # Vybe
 
+Built by **[Yadav Saurav](https://github.com/yadav-saurav)**.
+
 A premium music streaming web app: curated playlists, personalized discovery, synced lyrics, a queue and seamless playback. Its layout and interaction patterns follow Apple Music on the web. Everything else is original to Vybe: the brand, icons, catalog, artwork, lyrics and audio.
 
 ![Home](docs/screenshots/01-home.png)
