@@ -20,7 +20,7 @@ public class LibraryRepository {
 
     /** Idempotent: re-adding keeps the original date. */
     public void addItem(String userId, String type, String id, String addedAt) {
-        jdbc.update("INSERT OR IGNORE INTO library_items (user_id, type, item_id, added_at) VALUES (?,?,?,?)",
+        jdbc.update("INSERT INTO library_items (user_id, type, item_id, added_at) VALUES (?,?,?,?) ON CONFLICT DO NOTHING",
                 userId, type, id, addedAt);
     }
 
@@ -47,7 +47,7 @@ public class LibraryRepository {
     }
 
     public void addLove(String userId, String type, String id, String lovedAt) {
-        jdbc.update("INSERT OR IGNORE INTO loves (user_id, type, item_id, loved_at) VALUES (?,?,?,?)",
+        jdbc.update("INSERT INTO loves (user_id, type, item_id, loved_at) VALUES (?,?,?,?) ON CONFLICT DO NOTHING",
                 userId, type, id, lovedAt);
     }
 

@@ -64,11 +64,13 @@ public class ImportService {
     }
 
     /** A track's audio file and its content type. */
-    public record Audio(Resource resource, String mime) {
+    public record Audio(Resource resource, String mime, java.net.URI redirect) {
+        Audio(Resource resource, String mime) { this(resource, mime, null); }
     }
 
     /** A track's artwork: the stored JPEG, or a generated gradient PNG. */
-    public record Image(Resource resource, String mime) {
+    public record Image(Resource resource, String mime, java.net.URI redirect) {
+        Image(Resource resource, String mime) { this(resource, mime, null); }
     }
 
     private final ImportRepository repo;
@@ -77,10 +79,14 @@ public class ImportService {
     private final CatalogStore catalog;
     private final Path root;
     private final long maxFileBytes;
+    private final app.vybe.api.storage.BlobStore blobs;
+    private static final java.time.Duration SIGNED_TTL = java.time.Duration.ofHours(2);
 
     public ImportService(ImportRepository repo, PlaylistRepository playlists, TagReader tags, CatalogStore catalog,
                          VybeProperties props,
-                         @Value("${spring.servlet.multipart.max-file-size:50MB}") DataSize maxFileSize) {
+                         @Value("${spring.servlet.multipart.max-file-size:50MB}") DataSize maxFileSize,
+                         app.vybe.api.storage.BlobStore blobs) {
+        this.blobs = blobs;
         this.repo = repo;
         this.playlists = playlists;
         this.tags = tags;
@@ -198,6 +204,17 @@ public class ImportService {
                     clip(t.albumArtist(), 200), Math.max(0, t.trackNumber()), Math.max(0, t.discNumber()), t.year(),
                     t.genre(), Math.max(0, t.durationMs()), ext, format.mime(), size, hasArt, colors.bg(),
                     colors.text1(), colors.text2(), colors.text3(), Timestamps.now());
+            if (blobs.remote()) {
+                // Ephemeral hosts: push to private object storage, keep nothing on local disk.
+                Path audio = dir.resolve(id + "." + ext);
+                blobs.put(userId + "/" + id + "." + ext, audio, format.mime());
+                Files.deleteIfExists(audio);
+                if (hasArt) {
+                    Path art = dir.resolve(id + ".jpg");
+                    blobs.put(userId + "/" + id + ".jpg", art, "image/jpeg");
+                    Files.deleteIfExists(art);
+                }
+            }
             repo.insert(row);
             return Optional.of(toSong(row));
         } finally {
@@ -240,6 +257,9 @@ public class ImportService {
 
     public Audio audio(String userId, String id) {
         ImportRepository.Row r = row(userId, id).orElseThrow(ImportService::notFound);
+        if (blobs.remote()) {
+            return new Audio(null, r.mime(), signed(userId + "/" + r.id() + "." + r.fileExt()));
+        }
         Path p = file(userId, r.id() + "." + r.fileExt());
         if (!Files.isRegularFile(p)) {
             throw notFound();
@@ -249,6 +269,9 @@ public class ImportService {
 
     public Image artwork(String userId, String id) {
         ImportRepository.Row r = row(userId, id).orElseThrow(ImportService::notFound);
+        if (r.hasArt() && blobs.remote()) {
+            return new Image(null, "image/jpeg", signed(userId + "/" + r.id() + ".jpg"));
+        }
         if (r.hasArt()) {
             Path p = file(userId, r.id() + ".jpg");
             if (Files.isRegularFile(p)) {
@@ -273,11 +296,24 @@ public class ImportService {
             playlists.touch(playlistId, Timestamps.now());
         }
         repo.delete(userId, r.id());
+        if (blobs.remote()) {
+            blobs.delete(userId + "/" + r.id() + "." + r.fileExt(), userId + "/" + r.id() + ".jpg");
+            return;
+        }
         try {
             Files.deleteIfExists(file(userId, r.id() + "." + r.fileExt()));
             Files.deleteIfExists(file(userId, r.id() + ".jpg"));
         } catch (IOException e) {
             log.warn("could not delete files of import {}: {}", r.id(), e.toString());
+        }
+    }
+
+    private java.net.URI signed(String key) {
+        try {
+            return blobs.signedUrl(key, SIGNED_TTL);
+        } catch (IOException e) {
+            log.warn("could not sign {}: {}", key, e.toString());
+            throw notFound();
         }
     }
 

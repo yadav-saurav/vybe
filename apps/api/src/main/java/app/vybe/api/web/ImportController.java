@@ -54,6 +54,9 @@ public class ImportController {
     @GetMapping("/api/imports/{id}/stream")
     public ResponseEntity<Resource> stream(@CurrentUser User user, @PathVariable String id) {
         ImportService.Audio audio = imports.audio(user.id(), id);
+        if (audio.redirect() != null) {
+            return ResponseEntity.status(302).location(audio.redirect()).cacheControl(CacheControl.noStore()).build();
+        }
         return ResponseEntity.ok()
                 .header(HttpHeaders.ACCEPT_RANGES, "bytes")
                 .cacheControl(CacheControl.maxAge(Duration.ofHours(1)).cachePrivate())
@@ -64,6 +67,9 @@ public class ImportController {
     @GetMapping("/api/imports/{id}/artwork")
     public ResponseEntity<Resource> artwork(@CurrentUser User user, @PathVariable String id) {
         ImportService.Image image = imports.artwork(user.id(), id);
+        if (image.redirect() != null) {
+            return ResponseEntity.status(302).location(image.redirect()).cacheControl(CacheControl.noStore()).build();
+        }
         return ResponseEntity.ok()
                 .cacheControl(CacheControl.maxAge(Duration.ofDays(1)).cachePrivate())
                 .contentType(MediaType.parseMediaType(image.mime()))

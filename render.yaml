@@ -1,0 +1,25 @@
+# Render Blueprint: https://render.com/docs/blueprint-spec
+# Secrets are marked sync:false: Render asks for them when you create the Blueprint; they never live in git.
+services:
+  - type: web
+    name: vybe
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: VYBE_DATABASE_URL        # Neon connection string: postgresql://user:pass@host/db?sslmode=require
+        sync: false
+      - key: VYBE_MEDIA_BASE_URL      # https://<project>.supabase.co/storage/v1/object/public/vybe-catalog
+        sync: false
+      - key: SUPABASE_URL             # https://<project>.supabase.co  (private imports bucket)
+        sync: false
+      - key: SUPABASE_SERVICE_KEY     # Supabase service_role key (server-side only)
+        sync: false
+      - key: VYBE_IMPORTS_BUCKET
+        value: vybe-imports
+      - key: VYBE_AUTOSEED            # creates the demo account on first boot
+        value: "true"
+      - key: JAVA_TOOL_OPTIONS        # fit the free instance's 512 MB
+        value: "-XX:MaxRAMPercentage=70 -XX:+UseSerialGC -Xss512k"
