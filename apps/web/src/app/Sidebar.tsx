@@ -91,6 +91,9 @@ export function Sidebar() {
             <button className={s.account} onClick={(e) => openMenuAt(e, [
               { label: `Signed in as ${user.displayName}`, disabled: true, onSelect: () => {} },
               'separator',
+              { label: 'Profile', icon: 'user', onSelect: () => navigate(`/profile/${user.id}`) },
+              { label: 'Settings', icon: 'edit', onSelect: () => navigate('/settings') },
+              'separator',
               { label: 'Appearance: System', icon: useUI.getState().theme === 'system' ? 'check' : undefined, onSelect: () => useUI.getState().setTheme('system') },
               { label: 'Appearance: Light', icon: useUI.getState().theme === 'light' ? 'check' : undefined, onSelect: () => useUI.getState().setTheme('light') },
               { label: 'Appearance: Dark', icon: useUI.getState().theme === 'dark' ? 'check' : undefined, onSelect: () => useUI.getState().setTheme('dark') },

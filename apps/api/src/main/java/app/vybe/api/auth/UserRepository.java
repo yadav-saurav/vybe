@@ -76,6 +76,40 @@ class UserRepository {
         jdbc.update("DELETE FROM sessions WHERE token_hash = ?", tokenHash);
     }
 
+    void updateProfile(String id, String displayName, String avatarColor) {
+        jdbc.update("UPDATE users SET display_name = ?, avatar_color = ? WHERE id = ?", displayName, avatarColor, id);
+    }
+
+    void follow(String followerId, String followeeId, String at) {
+        jdbc.update("INSERT INTO user_follows (follower_id, followee_id, created_at) VALUES (?,?,?) ON CONFLICT DO NOTHING",
+                followerId, followeeId, at);
+    }
+
+    void unfollow(String followerId, String followeeId) {
+        jdbc.update("DELETE FROM user_follows WHERE follower_id = ? AND followee_id = ?", followerId, followeeId);
+    }
+
+    long followers(String userId) {
+        Long n = jdbc.queryForObject("SELECT COUNT(*) FROM user_follows WHERE followee_id = ?", Long.class, userId);
+        return n == null ? 0 : n;
+    }
+
+    long following(String userId) {
+        Long n = jdbc.queryForObject("SELECT COUNT(*) FROM user_follows WHERE follower_id = ?", Long.class, userId);
+        return n == null ? 0 : n;
+    }
+
+    boolean isFollowing(String followerId, String followeeId) {
+        Long n = jdbc.queryForObject("SELECT COUNT(*) FROM user_follows WHERE follower_id = ? AND followee_id = ?",
+                Long.class, followerId, followeeId);
+        return n != null && n > 0;
+    }
+
+    java.util.List<String> followingIds(String userId) {
+        return jdbc.queryForList("SELECT followee_id FROM user_follows WHERE follower_id = ? ORDER BY created_at DESC",
+                String.class, userId);
+    }
+
     void deleteExpiredSessions(String nowIso) {
         jdbc.update("DELETE FROM sessions WHERE expires_at <= ?", nowIso);
     }

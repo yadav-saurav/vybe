@@ -93,3 +93,12 @@ CREATE TABLE IF NOT EXISTS imported_tracks (
     gain_db       REAL
 );
 CREATE INDEX IF NOT EXISTS idx_imported_tracks_user ON imported_tracks(user_id, created_at);
+
+-- Listener-to-listener follows (profiles, friend activity).
+CREATE TABLE IF NOT EXISTS user_follows (
+    follower_id  TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    followee_id  TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    created_at   TEXT NOT NULL,
+    PRIMARY KEY (follower_id, followee_id)
+);
+CREATE INDEX IF NOT EXISTS idx_user_follows_followee ON user_follows(followee_id);

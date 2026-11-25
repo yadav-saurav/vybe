@@ -1,0 +1,16 @@
+.head { display: flex; align-items: flex-end; gap: 28px; padding: 40px 0 30px; }
+.avatar { width: 180px; height: 180px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-size: 76px; font-weight: 700; box-shadow: var(--shadow-hero-artwork); flex-shrink: 0; }
+.meta { min-width: 0; }
+.eyebrow { font-size: var(--fs-caption); font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-2); }
+.name { font-family: var(--font-display); font-size: 48px; line-height: 1.05; font-weight: 800; letter-spacing: -0.02em; margin: 4px 0 8px; overflow-wrap: anywhere; }
+.counts { color: var(--text-2); font-size: var(--fs-callout); }
+.counts b { color: var(--text-1); }
+.actions { display: flex; align-items: center; gap: 12px; margin-top: 16px; }
+.editLink { height: 36px; display: inline-flex; align-items: center; padding: 0 20px; border-radius: var(--r-pill); border: 1px solid var(--separator); font-weight: 600; }
+.editLink:hover { background: var(--bg-hover); }
+.share { color: var(--key); font-weight: 600; }
+.grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 24px 20px; margin-top: 14px; }
+.skelAvatar { width: 180px; height: 180px; border-radius: 50%; }
+.skelName { width: 280px; height: 48px; border-radius: 8px; }
+@media (max-width: 1000px) { .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 760px) { .head { flex-direction: column; align-items: center; text-align: center; padding: 24px 0; } .avatar { width: 130px; height: 130px; font-size: 54px; } .name { font-size: 34px; } .actions { justify-content: center; } .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

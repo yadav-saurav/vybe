@@ -54,6 +54,12 @@ export const api = {
   search: (term: string, s?: AbortSignal) => get<T.SearchResults>(`/search?term=${enc(term)}&limit=25`, s),
   suggestions: (term: string, s?: AbortSignal) => get<{ suggestions: T.SearchSuggestion[] }>(`/search/suggestions?term=${enc(term)}`, s),
 
+  // profile
+  updateProfile: (patch: { displayName?: string; avatarColor?: string }) => request<{ user: T.User }>('PATCH', '/me', patch),
+  userProfile: (id: string, s?: AbortSignal) => get<PublicProfile>(`/users/${enc(id)}`, s),
+  follow: (id: string) => request<PublicProfile>('PUT', `/me/following/${enc(id)}`),
+  unfollow: (id: string) => request<PublicProfile>('DELETE', `/me/following/${enc(id)}`),
+
   // replay
   stats: (period: 'week' | 'month' | 'year' | 'all', s?: AbortSignal) => get<ReplayStats>(`/me/stats?period=${period}`, s),
 
@@ -122,4 +128,9 @@ export interface ReplayStats {
   topArtists: { id: string; name: string; artist?: T.Artist; plays: number; ms: number }[];
   topGenres: { id: string; name: string; color: string; plays: number; share: number }[];
   byHour: number[]; byWeekday: number[]; byMonth: number[];
+}
+
+export interface PublicProfile {
+  user: { id: string; displayName: string; avatarColor: string; createdAt: string };
+  followers: number; following: number; isFollowing: boolean; isMe: boolean; playlists: T.Playlist[];
 }

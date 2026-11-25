@@ -16,6 +16,8 @@ const Station = lazy(() => import('../pages/Station'));
 const Library = lazy(() => import('../pages/Library'));
 const SeeAll = lazy(() => import('../pages/SeeAll'));
 const Replay = lazy(() => import('../pages/Replay'));
+const Settings = lazy(() => import('../pages/Settings'));
+const Profile = lazy(() => import('../pages/Profile'));
 
 export const router = createBrowserRouter([
   {
@@ -29,6 +31,8 @@ export const router = createBrowserRouter([
       { path: '/genre/:id', element: <Genre /> },
       { path: '/see-all/:page/:shelfId', element: <SeeAll /> },
       { path: '/replay', element: <Replay /> },
+      { path: '/settings', element: <Settings /> },
+      { path: '/profile/:id', element: <Profile /> },
       { path: '/album/:id', element: <Album /> },
       { path: '/playlist/:id', element: <Playlist /> },
       { path: '/artist/:id', element: <Artist /> },
