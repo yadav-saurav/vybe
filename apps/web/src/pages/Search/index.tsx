@@ -15,6 +15,8 @@ import { SearchSuggestions } from '../../features/search/SearchSuggestions';
 import { richSubtitle } from '../../features/search/labels';
 import { clearRecent, loadRecent, saveRecent, type RecentEntry } from '../../features/search/recent';
 import { ListenerList } from '../../features/social/ListenerList';
+import { WorldRows, WorldSkeleton } from '../../features/world/WorldRows';
+import { worldDefaultCountry, worldSearchHref } from '../../lib/world';
 import s from './Search.module.css';
 
 type Tab = 'top' | 'artists' | 'albums' | 'songs' | 'playlists' | 'stations' | 'listeners';
@@ -111,6 +113,15 @@ function Landing() {
   return (
     <>
       <header className="page-header"><h1 className="t-large-title">Search</h1></header>
+
+      <Link to="/world" className={s.worldBanner}>
+        <span className={s.worldIcon} aria-hidden><Icon name="globe" size={26} /></span>
+        <span className={s.worldText}>
+          <span className={s.worldTitle}>Worldwide</span>
+          <span className={s.worldSub}>Famous artists and top charts from every country</span>
+        </span>
+        <Icon name="chevron-right" size={18} />
+      </Link>
 
       <section aria-labelledby="browse-title">
         <h2 id="browse-title" className={s.sectionTitle}>Browse Categories</h2>
@@ -234,6 +245,7 @@ function TopResults({ q, data, setTab }: { q: string; data: SearchResults; setTa
         </Shelf>
       )}
       <ListenerPreview q={q} onSeeAll={() => setTab('listeners')} />
+      <WorldPreview q={q} />
     </>
   );
 }
@@ -241,6 +253,21 @@ function TopResults({ q, data, setTab }: { q: string; data: SearchResults; setTa
 /** No music matched: listeners may still match (people search by name), otherwise the usual empty state. */
 function NoMusicResults({ q }: { q: string }) {
   const { data } = useAsync(q.length >= 2 ? `listeners:${q}` : null, (sig) => api.searchListeners(q, sig));
+  const world = useAsync(q.length >= 2 ? `world:${worldDefaultCountry()}:${q}` : null, (sig) => api.worldSearch(q, worldDefaultCountry(), sig));
+  if (world.data?.songs.length || (!world.error && !world.data && q.length >= 2)) {
+    return (
+      <>
+        <h1 className="visually-hidden">Search results for “{q}”</h1>
+        <WorldPreview q={q} count={10} />
+        {data?.listeners.length ? (
+          <section className={s.block} aria-labelledby="listeners-only-title">
+            <h2 id="listeners-only-title" className={s.sectionTitle}>Listeners</h2>
+            <ListenerList listeners={data.listeners} empty="" />
+          </section>
+        ) : null}
+      </>
+    );
+  }
   if (data?.listeners.length) {
     return (
       <>
@@ -258,6 +285,22 @@ function NoMusicResults({ q }: { q: string }) {
       <p className={s.emptyTitle}>No results for “{q}”</p>
       <p className={s.emptyText}>Check the spelling, or try a shorter or different search.</p>
     </div>
+  );
+}
+
+/** Famous songs from around the world for this search (Apple previews), with a link to see them all. */
+function WorldPreview({ q, count = 5 }: { q: string; count?: number }) {
+  const cc = worldDefaultCountry();
+  const { data, error } = useAsync(q.length >= 2 ? `world:${cc}:${q}` : null, (sig) => api.worldSearch(q, cc, sig));
+  if (error || (data && !data.songs.length)) return null;
+  return (
+    <section className={s.block} aria-labelledby="world-title" aria-busy={!data}>
+      <div className={s.rowHead}>
+        <h2 id="world-title" className={s.sectionTitle}>Worldwide <span className={s.previewTag}>Previews</span></h2>
+        {data && data.songs.length > count && <Link className={s.seeAll} to={worldSearchHref(q, cc)}>See All</Link>}
+      </div>
+      {data ? <WorldRows songs={data.songs.slice(0, count)} title={`“${q}” worldwide`} /> : <WorldSkeleton count={3} />}
+    </section>
   );
 }
 

@@ -19,6 +19,8 @@ const Replay = lazy(() => import('../pages/Replay'));
 const Settings = lazy(() => import('../pages/Settings'));
 const Profile = lazy(() => import('../pages/Profile'));
 const JamInvite = lazy(() => import('../pages/Jam'));
+const World = lazy(() => import('../pages/World'));
+const WorldArtist = lazy(() => import('../pages/WorldArtist'));
 
 export const router = createBrowserRouter([
   {
@@ -35,6 +37,8 @@ export const router = createBrowserRouter([
       { path: '/settings', element: <Settings /> },
       { path: '/profile/:id', element: <Profile /> },
       { path: '/jam/:code', element: <JamInvite /> },
+      { path: '/world', element: <World /> },
+      { path: '/world/artist/:id', element: <WorldArtist /> },
       { path: '/album/:id', element: <Album /> },
       { path: '/playlist/:id', element: <Playlist /> },
       { path: '/artist/:id', element: <Artist /> },

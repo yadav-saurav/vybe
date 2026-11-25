@@ -74,3 +74,11 @@
 .skelLine.short { width: 45%; margin-top: 6px; }
 .skelRow { height: 46px; margin-bottom: 8px; border-radius: 8px; background: var(--bg-placeholder); }
 .skelCategory { aspect-ratio: 16 / 9; border-radius: 10px; background: var(--bg-placeholder); }
+
+.worldBanner { display: flex; align-items: center; gap: 14px; padding: 14px 16px; margin-bottom: 24px; border-radius: var(--r-lg, 14px); background: linear-gradient(120deg, #1f3b6e, #6b2f6b 55%, #b2453b); color: #fff; }
+.worldBanner:hover { filter: brightness(1.06); }
+.worldIcon { flex: none; width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; background: rgba(255,255,255,0.16); }
+.worldText { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.worldTitle { font-size: 20px; line-height: 24px; font-weight: 800; }
+.worldSub { font-size: var(--fs-callout); opacity: 0.9; }
+.previewTag { display: inline-block; margin-left: 6px; padding: 2px 8px; border-radius: var(--r-pill); background: var(--bg-hover); color: var(--text-2); font-size: var(--fs-caption); font-weight: 700; vertical-align: 3px; }

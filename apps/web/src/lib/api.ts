@@ -80,6 +80,13 @@ export const api = {
   jamSettings: (code: string, patch: { guestsCanControl?: boolean }) => request<JamView>('PATCH', `/jams/${enc(code)}`, patch),
   jamEventsUrl: (code: string) => `/api/jams/${enc(code)}/events`,
 
+  // worldwide (Apple previews)
+  worldCountries: () => get<{ countries: { code: string; name: string }[] }>('/world/countries'),
+  worldChart: (country: string, s?: AbortSignal) => get<WorldList>(`/world/charts?country=${enc(country)}`, s),
+  worldHome: (s?: AbortSignal) => get<WorldHome>('/world/home', s),
+  worldArtist: (id: string, country: string, s?: AbortSignal) => get<{ artist: WorldArtist; songs: T.Song[] }>(`/world/artists/${enc(id)}?country=${enc(country)}`, s),
+  worldSearch: (term: string, country: string, s?: AbortSignal) => get<WorldList>(`/world/search?term=${enc(term)}&country=${enc(country)}`, s),
+
   // replay
   stats: (period: 'week' | 'month' | 'year' | 'all', s?: AbortSignal) => get<ReplayStats>(`/me/stats?period=${period}`, s),
 
@@ -166,3 +173,8 @@ export interface JamView {
   queue: JamEntry[]; index: number; positionMs: number; playing: boolean;
   serverTime: number; version: number; listeners: JamListener[]; ended: boolean;
 }
+
+export interface WorldList { title: string; country: string; songs: T.Song[] }
+export interface WorldArtist { id: string; name: string; genre: string; artwork: T.Artwork | null; country: string }
+export interface WorldShelf { id: string; title: string; subtitle: string; kind: 'hero' | 'cards' | 'artists'; songs: T.Song[]; artists: WorldArtist[] }
+export interface WorldHome { shelves: WorldShelf[]; complete: boolean }

@@ -4,6 +4,7 @@ import app.vybe.api.catalog.CatalogStore;
 import app.vybe.api.error.ApiException;
 import app.vybe.api.model.Song;
 import app.vybe.api.model.User;
+import app.vybe.api.world.WorldService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -48,12 +49,14 @@ public class JamService {
     private static final SecureRandom RANDOM = new SecureRandom();
 
     private final CatalogStore catalog;
+    private final WorldService world;
     private final Map<String, Jam> jams = new ConcurrentHashMap<>();
     private final Map<String, String> jamOfUser = new ConcurrentHashMap<>();
     private LongSupplier clock = System::currentTimeMillis;
 
-    public JamService(CatalogStore catalog) {
+    public JamService(CatalogStore catalog, WorldService world) {
         this.catalog = catalog;
+        this.world = world;
     }
 
     /** Tests move time forward without sleeping. */
@@ -506,12 +509,15 @@ public class JamService {
         }
     }
 
-    /** Only Vybe catalog songs: imported files are private to the person who imported them. */
+    /** Only public songs: imported files are private to the person who imported them. */
     private List<Song> catalogSongs(Collection<String> ids) {
         if (ids == null || ids.isEmpty()) {
             return List.of();
         }
-        List<Song> songs = ids.stream().distinct().map(catalog::song).filter(s -> s != null).limit(MAX_QUEUE).toList();
+        // Catalog songs and worldwide previews (both public); never imports, which are private.
+        List<Song> songs = ids.stream().distinct()
+                .map(id -> WorldService.isWorldId(id) ? world.find(id) : catalog.song(id))
+                .filter(s -> s != null).limit(MAX_QUEUE).toList();
         if (songs.isEmpty()) {
             throw ApiException.badRequest("jam_unsupported_songs", "Imported songs are private, so they can't be played in a Jam.");
         }

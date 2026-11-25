@@ -1,0 +1,32 @@
+.list { display: flex; flex-direction: column; }
+.stale { opacity: 0.55; transition: opacity var(--dur) var(--ease); }
+.row { display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 6px 8px; border-radius: var(--r-md); }
+.row + .row { box-shadow: 0 -1px 0 var(--separator); }
+.row:hover, .rowOn { background: var(--bg-hover); }
+.rank { flex: none; width: 26px; text-align: center; color: var(--text-2); font-weight: 700; font-variant-numeric: tabular-nums; }
+.art { position: relative; flex: none; width: 48px; height: 48px; border-radius: 6px; overflow: hidden; }
+.artPlay { position: absolute; inset: 0; display: grid; place-items: center; color: #fff; background: rgba(0,0,0,0.45); opacity: 0; transition: opacity var(--dur-fast); }
+.row:hover .artPlay, .art:focus-visible .artPlay, .artPlayOn { opacity: 1; }
+.text { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; text-align: left; gap: 2px; }
+.songTitle { font-size: var(--fs-body); font-weight: 500; max-width: 100%; }
+.rowOn .songTitle { color: var(--key); }
+.songSub { color: var(--text-2); font-size: var(--fs-footnote); max-width: 100%; }
+.explicit { display: inline-grid; place-items: center; width: 14px; height: 14px; margin-left: 6px; border-radius: 3px; background: var(--text-3); color: var(--bg); font-size: 9px; font-weight: 700; vertical-align: 1px; }
+.year { flex: none; color: var(--text-2); font-size: var(--fs-footnote); font-variant-numeric: tabular-nums; }
+.badge { flex: none; padding: 2px 8px; border-radius: var(--r-pill); background: var(--bg-hover); color: var(--text-2); font-size: var(--fs-caption); font-weight: 700; }
+.more { flex: none; width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; color: var(--key); }
+.more:hover { background: var(--bg-selected); }
+
+.sk { background: var(--bg-hover); animation: shimmer 1.4s ease-in-out infinite; }
+.skLine { display: block; height: 12px; width: 60%; border-radius: 6px; }
+.skShort { width: 35%; }
+@keyframes shimmer { 50% { opacity: 0.5; } }
+@media (prefers-reduced-motion: reduce) { .sk { animation: none; } }
+
+@media (max-width: 760px) {
+  .year { display: none; }
+  .row { gap: 10px; padding: 6px 2px; }
+  .rank { width: 20px; font-size: var(--fs-footnote); }
+  .more { width: 44px; height: 44px; }
+}
+@media (max-width: 420px) { .badge { display: none; } }

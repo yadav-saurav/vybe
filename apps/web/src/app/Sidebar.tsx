@@ -16,6 +16,7 @@ const primary = [
   { to: '/home', label: 'Home', icon: 'home' },
   { to: '/new', label: 'New', icon: 'new' },
   { to: '/radio', label: 'Radio', icon: 'radio' },
+  { to: '/world', label: 'Worldwide', icon: 'globe' },
 ];
 const library = [
   { to: '/library/recently-added', label: 'Recently Added', icon: 'clock' },

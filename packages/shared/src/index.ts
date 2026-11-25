@@ -91,7 +91,7 @@ export interface Song {
    * signed-in user imported from their own computer (id "im_…", private to that user, no album or
    * artist page: `artist.id` is "imar_<slug>" and `album.id` is "imal_<slug>").
    */
-  source?: 'catalog' | 'import';
+  source?: 'catalog' | 'import' | 'world';
 }
 
 export type Mood = 'chill' | 'upbeat' | 'melancholy' | 'energetic' | 'romantic' | 'dreamy' | 'dark' | 'focus';

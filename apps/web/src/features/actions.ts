@@ -7,6 +7,7 @@ import { useAuth } from '../stores/auth';
 import { invalidate } from '../lib/useAsync';
 import { IMPORTED_PATH, isImported } from '../lib/imports';
 import { useJam } from '../stores/jam';
+import { appleMusicUrl, isWorld, worldArtistHref } from '../lib/world';
 
 /**
  * Central content actions so every surface (lockups, rows, headers, Now Playing) behaves identically.
@@ -65,6 +66,7 @@ export function menuFor(item: ContentItem, opts: { extra?: MenuEntry[]; navigate
   const nav = opts.navigate;
   // Imported tracks are always in the library (removing them is "Delete from Vybe") and have no public page.
   const imported = item.type === 'song' && isImported(item.data);
+  if (item.type === 'song' && isWorld(item.data)) return worldMenu(item.data, opts);
   const inLib = !!t && lib.has(t, item.data.id);
   const ownPlaylist = item.type === 'playlist' && (item.data as Playlist).kind === 'user' && (item.data as Playlist).ownerId === useAuth.getState().user?.id;
 
@@ -112,6 +114,24 @@ export function menuFor(item: ContentItem, opts: { extra?: MenuEntry[]; navigate
 
   const groups = [play, library, [...goTo, ...share], destructive].filter((g) => g.length);
   return groups.flatMap((g, i) => (i ? ['separator' as const, ...g] : g));
+}
+
+/** Worldwide previews: queue them, find more, or open the full song on Apple Music. No library/playlists (not Vybe's to keep). */
+function worldMenu(song: Song, opts: { navigate?: (to: string) => void; sleepTimer?: boolean }): MenuEntry[] {
+  const item: ContentItem = { type: 'song', data: song };
+  const nav = opts.navigate;
+  const out: MenuEntry[] = [
+    { label: 'Play Next', icon: 'play-next', onSelect: () => queueItem(item, 'next') },
+    { label: 'Play Last', icon: 'play-later', onSelect: () => queueItem(item, 'later') },
+    'separator',
+  ];
+  if (nav) out.push({ label: `More by ${song.artist.name}`, icon: 'artist', onSelect: () => nav(worldArtistHref(song)) });
+  out.push({ label: 'Listen on Apple Music', icon: 'arrow-up-right', onSelect: () => { window.open(appleMusicUrl(song), '_blank', 'noopener'); } });
+  if (opts.sleepTimer) {
+    out.push({ label: useJam.getState().jam ? 'Jam…' : 'Start a Jam…', icon: 'jam', onSelect: () => useJam.getState().setSheetOpen(true) });
+    out.push({ label: 'Sleep Timer…', icon: 'clock', onSelect: () => useUI.getState().setSleepOpen(true) });
+  }
+  return out;
 }
 
 /** Open a context menu at a mouse event or anchored under a button. */

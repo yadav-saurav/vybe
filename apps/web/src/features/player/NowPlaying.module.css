@@ -148,3 +148,6 @@
 .jamChip { background: rgba(255,255,255,0.92); color: #111; }
 .sleepChip { align-self: center; display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 12px; border-radius: var(--r-pill); background: rgba(255,255,255,0.16); color: #fff; font-size: var(--fs-footnote); font-weight: 600; backdrop-filter: blur(12px); font-variant-numeric: tabular-nums; }
 .sleepChip:hover { background: rgba(255,255,255,0.26); }
+
+.previewPill { flex: none; display: inline-flex; align-items: center; gap: 4px; height: 28px; padding: 0 10px; border-radius: var(--r-pill); background: rgba(255,255,255,0.18); color: #fff; font-size: var(--fs-footnote); font-weight: 700; }
+.previewPill:hover { background: rgba(255,255,255,0.28); }

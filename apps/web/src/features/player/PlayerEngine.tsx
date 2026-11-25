@@ -5,6 +5,7 @@ import { artUrl } from '../../lib/color';
 import { usePlayer, type PlayerState } from '../../stores/player';
 import { useUI } from '../../stores/ui';
 import { useAuth } from '../../stores/auth';
+import { isWorld } from '../../lib/world';
 import { getAudioTime, getDurationMs, setTimeHook, startEngine } from './engine';
 
 const P = () => usePlayer.getState();
@@ -33,7 +34,7 @@ function usePlayHistory() {
       const total = dur || item.song.durationMs;
       if (heard < 30_000 && !(total > 0 && heard >= total * 0.5)) return;
       loggedUid = item.uid;
-      if (!useAuth.getState().user) return;
+      if (!useAuth.getState().user || isWorld(item.song)) return; // previews aren't Vybe plays
       const ctx = s.context;
       const contextType = ctx?.type && (CONTENT_TYPES as string[]).includes(ctx.type) ? (ctx.type as ContentType) : undefined;
       const contextId = contextType && ctx?.id && !ctx.id.startsWith('seed:') ? ctx.id : undefined;
@@ -84,6 +85,7 @@ function useQueueTopUp() {
         if (s.contextQueue.length >= 3 || s.autoplay.length >= 3) return;
         if (s.contextQueue.length > 0 && s.autoplay.length > 0) return;
         const last = s.autoplay.at(-1)?.song ?? s.contextQueue.at(-1)?.song ?? s.current.song;
+        if (isWorld(last)) return; // Vybe's recommendations only know its own catalog
         key = `ap:${last.id}:${s.autoplay.length}`;
         const exclude = knownIds(s).slice(-60);
         const ctxRef = s.context;

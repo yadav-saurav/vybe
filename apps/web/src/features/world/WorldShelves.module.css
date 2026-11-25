@@ -1,0 +1,83 @@
+/* Worldwide home: big cards, bold tight type, and artwork that glows. */
+.shelf { position: relative; z-index: 1; }
+.head { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.title { font-size: 24px; line-height: 30px; font-weight: 800; letter-spacing: -0.02em; }
+.subtitle { color: var(--text-2); font-size: var(--fs-callout); margin-top: 2px; }
+.arrows { display: flex; gap: 8px; }
+.arrows button { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; background: var(--bg-hover); }
+.arrows button:hover:not(:disabled) { background: var(--bg-selected); }
+.arrows button:disabled { opacity: 0.35; }
+.track { display: grid; grid-auto-flow: column; grid-auto-columns: 184px; gap: 8px; overflow-x: auto; scroll-snap-type: x proximity; scrollbar-width: none;
+  margin: 0 calc(-1 * var(--content-pad)); padding: 4px var(--content-pad) 12px; scroll-padding: 0 var(--content-pad); }
+.track::-webkit-scrollbar { display: none; }
+
+.card, .artist { position: relative; display: flex; flex-direction: column; gap: 4px; padding: 12px; border-radius: 10px; scroll-snap-align: start; transition: background var(--dur) var(--ease); min-width: 0; }
+.card:hover, .card:focus-within, .artist:hover, .artist:focus-visible, .cardOn { background: var(--bg-hover); }
+.art { position: relative; aspect-ratio: 1; margin-bottom: 8px; }
+.artInner { position: relative; z-index: 1; height: 100%; border-radius: 8px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28); }
+.artInner > * { width: 100%; height: 100%; }
+.artRound .artInner { border-radius: 50%; }
+.card:hover :global(img[aria-hidden]), .card:focus-within :global(img[aria-hidden]), .artist:hover :global(img[aria-hidden]), .artist:focus-visible :global(img[aria-hidden]), .heroMain :global(img[aria-hidden]) { opacity: 1; transform: translateY(16px) scale(1.08); }
+.noArt { display: grid; place-items: center; width: 100%; height: 100%; border-radius: 50%; background: var(--bg-selected); color: var(--text-2); }
+
+.play { position: absolute; right: 8px; bottom: 8px; z-index: 2; width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; background: var(--key); color: var(--text-on-key);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.35); opacity: 0; transform: translateY(8px); transition: opacity 0.25s var(--ease), transform 0.25s var(--ease); }
+.play :global(svg) { margin-left: 2px; }
+.card:hover .play, .card:focus-within .play, .playOn { opacity: 1; transform: none; }
+.play:hover { transform: scale(1.06); }
+@media (hover: none) { .play { opacity: 1; transform: none; width: 40px; height: 40px; } }
+
+.cardText { display: flex; flex-direction: column; gap: 3px; text-align: left; min-width: 0; padding-right: 22px; }
+.cardTitle { font-size: 15px; line-height: 20px; font-weight: 700; letter-spacing: -0.01em; color: var(--text-1); }
+.cardOn .cardTitle { color: var(--key); }
+.cardSub { font-size: 13px; line-height: 17px; color: var(--text-2); }
+.cardMore { position: absolute; right: 6px; bottom: 12px; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; color: var(--text-2); opacity: 0; }
+.card:hover .cardMore, .cardMore:focus-visible { opacity: 1; }
+.cardMore:hover { background: var(--bg-selected); color: var(--text-1); }
+@media (hover: none) { .cardMore { opacity: 1; } }
+.artist { text-align: center; align-items: center; }
+.artist .art { width: 100%; }
+
+/* Hero */
+.hero { position: relative; z-index: 1; display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 20px; align-items: stretch; }
+.hero > *, .heroText, .heroList li { min-width: 0; }
+.heroArt .artInner { overflow: hidden; }
+.heroMain { display: flex; align-items: flex-end; gap: 24px; padding: 20px; border-radius: 16px; background: color-mix(in srgb, var(--bg-elevated) 40%, transparent); backdrop-filter: blur(20px); }
+.heroArt { position: relative; flex: none; width: min(240px, 38%); aspect-ratio: 1; }
+.heroText { min-width: 0; display: flex; flex-direction: column; gap: 6px; padding-bottom: 6px; }
+.eyebrow { font-size: var(--fs-footnote); font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--key); }
+.heroTitle { font-size: 40px; line-height: 44px; font-weight: 900; letter-spacing: -0.03em; overflow-wrap: anywhere; }
+.heroSub { font-size: 17px; font-weight: 600; color: var(--text-2); }
+.heroActions { display: flex; align-items: center; gap: 14px; margin-top: 10px; flex-wrap: wrap; }
+.heroPlay { display: inline-flex; align-items: center; gap: 8px; height: 48px; padding: 0 26px; border-radius: var(--r-pill); background: var(--key); color: var(--text-on-key); font-size: 16px; font-weight: 800; box-shadow: 0 10px 26px color-mix(in srgb, var(--key) 45%, transparent); }
+.heroPlay:hover { transform: scale(1.03); }
+.previewNote { font-size: var(--fs-footnote); color: var(--text-2); font-weight: 600; }
+.heroList { display: flex; flex-direction: column; gap: 4px; justify-content: center; }
+.heroItem { width: 100%; display: flex; align-items: center; gap: 12px; padding: 8px; border-radius: 10px; text-align: left; font-weight: 700; font-size: 15px; background: color-mix(in srgb, var(--bg-elevated) 35%, transparent); }
+.heroItem:hover { background: var(--bg-hover); }
+.heroRank { width: 22px; flex: none; text-align: center; font-weight: 900; color: var(--text-2); font-variant-numeric: tabular-nums; }
+.heroItemArt { flex: none; width: 52px; height: 52px; border-radius: 6px; overflow: hidden; }
+.heroItemArt > * { width: 100%; height: 100%; }
+.heroItemText { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+
+.sk { background: var(--bg-hover); border-radius: 8px; animation: shimmer 1.4s ease-in-out infinite; }
+.skTitle { display: block; width: 220px; height: 24px; }
+.skLine { display: block; height: 12px; width: 70%; margin-top: 6px; }
+@keyframes shimmer { 50% { opacity: 0.5; } }
+@media (prefers-reduced-motion: reduce) { .sk { animation: none; } .play, .artInner { transition: none; } }
+
+@media (max-width: 1000px) {
+  .hero { grid-template-columns: 1fr; }
+  .heroTitle { font-size: 32px; line-height: 36px; }
+}
+@media (max-width: 760px) {
+  .track { grid-auto-columns: 148px; gap: 4px; }
+  .card, .artist { padding: 8px; }
+  .arrows { display: none; }
+  .title { font-size: 21px; line-height: 26px; }
+  .heroMain { flex-direction: column; align-items: flex-start; padding: 16px; }
+  .heroMain { width: 100%; }
+  .heroArt { width: min(62%, 240px); }
+  .heroTitle { font-size: 28px; line-height: 32px; }
+  .heroItem { min-height: 56px; }
+}

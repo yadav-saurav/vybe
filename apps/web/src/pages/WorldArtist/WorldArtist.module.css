@@ -1,0 +1,31 @@
+.page { position: relative; display: flex; flex-direction: column; gap: 22px; padding-top: 18px; }
+.page > *:not(:first-child) { position: relative; z-index: 1; }
+.back { align-self: flex-start; display: inline-flex; align-items: center; gap: 4px; height: 32px; padding: 0 12px 0 8px; border-radius: var(--r-pill); background: var(--bg-hover); font-size: var(--fs-footnote); font-weight: 700; }
+.back:hover { background: var(--bg-selected); }
+.header { display: flex; align-items: flex-end; gap: 28px; }
+.photo { position: relative; flex: none; width: 220px; aspect-ratio: 1; }
+.photo :global(img[aria-hidden]) { opacity: 0.9; transform: translateY(16px) scale(1.06); }
+.photoInner { position: relative; z-index: 1; width: 100%; height: 100%; border-radius: 50%; overflow: hidden; box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35); }
+.photoInner > * { width: 100%; height: 100%; }
+.meta { min-width: 0; display: flex; flex-direction: column; gap: 6px; padding-bottom: 8px; }
+.eyebrow { font-size: var(--fs-footnote); font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-2); }
+.name { font-size: 64px; line-height: 66px; font-weight: 900; letter-spacing: -0.04em; overflow-wrap: anywhere; }
+.sub { color: var(--text-2); font-size: var(--fs-callout); font-weight: 600; }
+.actions { display: flex; gap: 10px; margin-top: 10px; }
+.play, .shuffle { display: inline-flex; align-items: center; gap: 8px; height: 46px; padding: 0 24px; border-radius: var(--r-pill); font-weight: 800; font-size: 15px; }
+.play { background: var(--key); color: var(--text-on-key); box-shadow: 0 10px 26px color-mix(in srgb, var(--key) 45%, transparent); }
+.play:hover { transform: scale(1.03); }
+.shuffle { background: var(--bg-hover); }
+.shuffle:hover { background: var(--bg-selected); }
+.sectionTitle { font-size: 24px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 8px; }
+.state { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; color: var(--text-2); }
+.credit { color: var(--text-2); font-size: var(--fs-footnote); }
+.sk { background: var(--bg-hover); }
+@media (max-width: 1000px) { .name { font-size: 48px; line-height: 52px; } }
+@media (max-width: 760px) {
+  .header { flex-direction: column; align-items: center; text-align: center; gap: 18px; }
+  .photo { width: 58%; max-width: 240px; }
+  .meta { align-items: center; }
+  .name { font-size: 36px; line-height: 40px; }
+  .actions { justify-content: center; }
+}
