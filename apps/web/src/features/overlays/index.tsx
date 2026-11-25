@@ -1,2 +1,14 @@
-// Global modal sheets: Sign In, Add to Playlist, Playlist Editor. Implemented by the library stage.
-export function Overlays() { return null; }
+import { SignInSheet } from './SignInSheet';
+import { AddToPlaylistSheet } from './AddToPlaylistSheet';
+import { PlaylistEditorSheet } from './PlaylistEditorSheet';
+
+/** Global modal sheets, mounted once in Layout. Each one is driven by a flag or payload in the ui store. */
+export function Overlays() {
+  return (
+    <>
+      <SignInSheet />
+      <AddToPlaylistSheet />
+      <PlaylistEditorSheet />
+    </>
+  );
+}

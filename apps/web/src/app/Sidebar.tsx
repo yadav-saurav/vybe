@@ -8,6 +8,7 @@ import { useLibrary } from '../stores/library';
 import { useAsync } from '../lib/useAsync';
 import { api } from '../lib/api';
 import { menuFor, openMenuAt } from '../features/actions';
+import { SearchSuggestions } from '../features/search/SearchSuggestions';
 import s from './Sidebar.module.css';
 
 const primary = [
@@ -36,6 +37,11 @@ export function Sidebar() {
   const searchRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => { setMobileOpen(false); }, [location.pathname, setMobileOpen]);
+  // Keep the field in step with ?term= (the page's own field on mobile can change it) without fighting the caret.
+  useEffect(() => {
+    if (!location.pathname.startsWith('/search') || document.activeElement === searchRef.current) return;
+    setTerm(new URLSearchParams(location.search).get('term') ?? '');
+  }, [location.pathname, location.search]);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'f') { e.preventDefault(); searchRef.current?.focus(); } };
     addEventListener('keydown', onKey); return () => removeEventListener('keydown', onKey);
@@ -53,6 +59,7 @@ export function Sidebar() {
           <input ref={searchRef} type="search" placeholder="Search" aria-label="Search" value={term}
             onFocus={() => { if (!location.pathname.startsWith('/search')) navigate('/search'); }}
             onChange={(e) => { setTerm(e.target.value); navigate(`/search${e.target.value ? `?term=${encodeURIComponent(e.target.value)}` : ''}`, { replace: location.pathname.startsWith('/search') }); }} />
+          <SearchSuggestions inputRef={searchRef} term={term} onPickTerm={(t) => { setTerm(t); navigate(`/search?term=${encodeURIComponent(t)}`); }} />
         </form>
         <div className={s.scroll}>
           <ul className={s.group}>

@@ -1,0 +1,16 @@
+.panel { width: min(420px, 100%); }
+.list { display: flex; flex-direction: column; gap: 2px; margin: 0 -8px; }
+.row {
+  width: 100%; display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 6px 8px; border-radius: 10px;
+  text-align: left; color: var(--text-1); transition: background var(--dur-fast) var(--ease);
+}
+.row:hover:not(:disabled) { background: var(--bg-hover); }
+.row:disabled { opacity: 0.6; }
+.thumb { width: 44px; flex-shrink: 0; }
+.newThumb { width: 44px; height: 44px; flex-shrink: 0; border-radius: 6px; display: grid; place-items: center; color: var(--key); background: var(--key-soft); }
+.text { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.name { font-size: var(--fs-body); font-weight: 600; color: var(--text-1); min-width: 0; }
+.meta { font-size: var(--fs-footnote); color: var(--text-2); }
+.skeleton { height: 56px; margin: 0 8px; border-radius: 10px; background: var(--bg-placeholder); animation: pulse 1.2s var(--ease) infinite alternate; }
+@keyframes pulse { to { opacity: 0.5; } }
+.note { padding: 10px 8px; font-size: var(--fs-callout); color: var(--text-2); }

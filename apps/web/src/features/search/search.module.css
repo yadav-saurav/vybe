@@ -1,0 +1,24 @@
+.mark { color: var(--key); font-weight: 700; background: none; }
+.option.active .mark { color: inherit; }
+
+/* Suggestions dropdown (desktop sidebar field and mobile page field). */
+.panel {
+  position: absolute; top: calc(100% + 6px); left: 0; z-index: var(--z-menu);
+  width: max(100%, 300px); max-height: min(440px, 60vh); overflow-y: auto;
+  margin: 0; padding: 6px; border-radius: var(--r-lg);
+  background: var(--bg-menu); backdrop-filter: blur(40px) saturate(180%); -webkit-backdrop-filter: blur(40px) saturate(180%);
+  box-shadow: var(--shadow-menu); transform-origin: top; animation: pop 0.14s var(--ease-out);
+}
+@keyframes pop { from { opacity: 0; transform: scale(0.97); } }
+.caption { padding: 6px 10px 4px; font-size: var(--fs-caption); font-weight: 600; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.02em; list-style: none; }
+.option {
+  display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 4px 8px; border-radius: 7px;
+  color: var(--text-1); font-size: var(--fs-callout); cursor: pointer; list-style: none;
+}
+.option.active { background: var(--key); color: #fff; }
+.optIcon { width: 36px; height: 36px; flex-shrink: 0; display: grid; place-items: center; color: var(--text-2); }
+.thumb { width: 36px; flex-shrink: 0; }
+.optText { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.optTitle { font-size: var(--fs-callout); line-height: var(--lh-callout); }
+.optSub { font-size: var(--fs-footnote); line-height: var(--lh-footnote); color: var(--text-2); }
+.option.active .optIcon, .option.active .optSub { color: rgba(255, 255, 255, 0.85); }

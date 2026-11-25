@@ -1,4 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
+import type { ReactNode } from 'react';
 import clsx from 'clsx';
 import type { ContentItem } from '@vybe/shared';
 import { Artwork } from './Artwork';
@@ -25,7 +26,7 @@ export const subtitleOf = (item: ContentItem) => {
 };
 
 /** Square artwork + title/subtitle with hover play & more buttons (reference "product lockup"). */
-export function Lockup({ item, size = 'md', showSubtitle = true, subtitle }: { item: ContentItem; size?: 'sm' | 'md' | 'lg'; showSubtitle?: boolean; subtitle?: string }) {
+export function Lockup({ item, size = 'md', showSubtitle = true, subtitle, titleNode }: { item: ContentItem; size?: 'sm' | 'md' | 'lg'; showSubtitle?: boolean; subtitle?: string; /** Optional rich title (e.g. search highlight); defaults to the plain title. */ titleNode?: ReactNode }) {
   const navigate = useNavigate();
   const isCircle = item.type === 'artist';
   const ctxId = usePlayer((p) => p.context?.id);
@@ -49,7 +50,7 @@ export function Lockup({ item, size = 'md', showSubtitle = true, subtitle }: { i
         )}
       </div>
       <div className={s.meta}>
-        <Link to={hrefFor(item)} className={clsx(s.title, 'clamp-1')}>{titleOf(item)}{explicit && <ExplicitBadge />}</Link>
+        <Link to={hrefFor(item)} className={clsx(s.title, 'clamp-1')}>{titleNode ?? titleOf(item)}{explicit && <ExplicitBadge />}</Link>
         {showSubtitle && !isCircle && (
           item.type === 'album' || item.type === 'song'
             ? <Link to={`/artist/${item.data.artist.id}`} className={clsx(s.subtitle, 'clamp-1')}>{subtitle ?? subtitleOf(item)}</Link>
