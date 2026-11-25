@@ -1,0 +1,864 @@
+{
+ "version": 1,
+ "genres": [
+  {
+   "id": "pop",
+   "name": "Pop",
+   "color": "#ff4d8d",
+   "artwork": {
+    "url": "/media/art/al_001.webp",
+    "width": 1000,
+    "height": 1000,
+    "bgColor": "#ff4d8d",
+    "textColor1": "#ffffff",
+    "textColor2": "#e6e6e6",
+    "textColor3": "#ffd166"
+   }
+  },
+  {
+   "id": "rock",
+   "name": "Rock",
+   "color": "#e0523b",
+   "artwork": {
+    "url": "/media/art/al_002.webp",
+    "width": 1000,
+    "height": 1000,
+    "bgColor": "#e0523b",
+    "textColor1": "#ffffff",
+    "textColor2": "#e6e6e6",
+    "textColor3": "#ffd166"
+   }
+  },
+  {
+   "id": "lofi",
+   "name": "Lo-fi",
+   "color": "#6b8e9f",
+   "artwork": {
+    "url": "/media/art/al_003.webp",
+    "width": 1000,
+    "height": 1000,
+    "bgColor": "#6b8e9f",
+    "textColor1": "#ffffff",
+    "textColor2": "#e6e6e6",
+    "textColor3": "#ffd166"
+   }
+  }
+ ],
+ "artists": [
+  {
+   "id": "ar_001",
+   "name": "Mira Vale",
+   "genreIds": [
+    "pop"
+   ],
+   "bio": "Pop singer-songwriter known for glassy synth hooks.",
+   "origin": "Lisbon, Portugal",
+   "bornOrFormed": "2016",
+   "artwork": {
+    "url": "/media/art/ar_001.webp",
+    "width": 1000,
+    "height": 1000,
+    "bgColor": "#ff4d8d",
+    "textColor1": "#ffffff",
+    "textColor2": "#e6e6e6",
+    "textColor3": "#ffd166"
+   },
+   "heroArtwork": {
+    "url": "/media/art/al_001.webp",
+    "width": 1000,
+    "height": 1000,
+    "bgColor": "#ff4d8d",
+    "textColor1": "#ffffff",
+    "textColor2": "#e6e6e6",
+    "textColor3": "#ffd166"
+   },
+   "monthlyListeners": 2400000
+  },
+  {
+   "id": "ar_002",
+   "name": "The Static Parade",
+   "genreIds": [
+    "rock"
+   ],
+   "bio": "Four-piece guitar band from a harbour town.",
+   "origin": "Glasgow, Scotland",
+   "bornOrFormed": "2009",
+   "artwork": {
+    "url": "/media/art/ar_002.webp",
+    "width": 1000,
+    "height": 1000,
+    "bgColor": "#e0523b",
+    "textColor1": "#ffffff",
+    "textColor2": "#e6e6e6",
+    "textColor3": "#ffd166"
+   },
+   "heroArtwork": {
+    "url": "/media/art/al_001.webp",
+    "width": 1000,
+    "height": 1000,
+    "bgColor": "#e0523b",
+    "textColor1": "#ffffff",
+    "textColor2": "#e6e6e6",
+    "textColor3": "#ffd166"
+   },
+   "monthlyListeners": 830000
+  },
+  {
+   "id": "ar_003",
+   "name": "Noor Lantern",
+   "genreIds": [
+    "lofi",
+    "pop"
+   ],
+   "bio": "Bedroom producer making warm, dusty beats.",
+   "origin": "Osaka, Japan",
+   "bornOrFormed": "2019",
+   "artwork": {
+    "url": "/media/art/ar_003.webp",
+    "width": 1000,
+    "height": 1000,
+    "bgColor": "#6b8e9f",
+    "textColor1": "#ffffff",
+    "textColor2": "#e6e6e6",
+    "textColor3": "#ffd166"
+   },
+   "heroArtwork": {
+    "url": "/media/art/al_001.webp",
+    "width": 1000,
+    "height": 1000,
+    "bgColor": "#6b8e9f",
+    "textColor1": "#ffffff",
+    "textColor2": "#e6e6e6",
+    "textColor3": "#ffd166"
+   },
+   "monthlyListeners": 510000
+  },
+  {
+   "id": "ar_004",
+   "name": "Dune Kettle",
+   "genreIds": [
+    "lofi"
+   ],
+   "bio": "Ambient-leaning duo built around tape hiss.",
+   "origin": "Porto, Portugal",
+   "bornOrFormed": "2021",
+   "artwork": {
+    "url": "/media/art/ar_004.webp",
+    "width": 1000,
+    "height": 1000,
+    "bgColor": "#3d5a6c",
+    "textColor1": "#ffffff",
+    "textColor2": "#e6e6e6",
+    "textColor3": "#ffd166"
+   },
+   "heroArtwork": {
+    "url": "/media/art/al_001.webp",
+    "width": 1000,
+    "height": 1000,
+    "bgColor": "#3d5a6c",
+    "textColor1": "#ffffff",
+    "textColor2": "#e6e6e6",
+    "textColor3": "#ffd166"
+   },
+   "monthlyListeners": 120000
+  }
+ ],
+ "albums": [
+  {
+   "id": "al_001",
+   "title": "Glass Hours",
+   "artist": {
+    "id": "ar_001",
+    "name": "Mira Vale"
+   },
+   "type": "album",
+   "genreId": "pop",
+   "releaseDate": "2026-10-02",
+   "copyright": "℗ 2026 Vybe Originals",
+   "editorialNotes": "Mira Vale's second record trades sharp hooks for slow, glowing textures.",
+   "recordLabel": "Vybe Originals",
+   "isExplicit": false,
+   "artwork": {
+    "url": "/media/art/al_001.webp",
+    "width": 1000,
+    "height": 1000,
+    "bgColor": "#222244",
+    "textColor1": "#ffffff",
+    "textColor2": "#e6e6e6",
+    "textColor3": "#ffd166"
+   },
+   "trackIds": [
+    "so_0001",
+    "so_0002",
+    "so_0003"
+   ],
+   "durationMs": 597000
+  },
+  {
+   "id": "al_002",
+   "title": "Loose Wires",
+   "artist": {
+    "id": "ar_002",
+    "name": "The Static Parade"
+   },
+   "type": "ep",
+   "genreId": "rock",
+   "releaseDate": "2026-09-18",
+   "copyright": "℗ 2026 Vybe Originals",
+   "editorialNotes": "Three fast songs about bridges, ferries and the last train home.",
+   "recordLabel": "Vybe Originals",
+   "isExplicit": false,
+   "artwork": {
+    "url": "/media/art/al_002.webp",
+    "width": 1000,
+    "height": 1000,
+    "bgColor": "#222244",
+    "textColor1": "#ffffff",
+    "textColor2": "#e6e6e6",
+    "textColor3": "#ffd166"
+   },
+   "trackIds": [
+    "so_0004",
+    "so_0005",
+    "so_0006"
+   ],
+   "durationMs": 630000
+  },
+  {
+   "id": "al_003",
+   "title": "Paper Moon Cafe",
+   "artist": {
+    "id": "ar_003",
+    "name": "Noor Lantern"
+   },
+   "type": "album",
+   "genreId": "lofi",
+   "releaseDate": "2026-08-01",
+   "copyright": "℗ 2026 Vybe Originals",
+   "editorialNotes": "Rainy-afternoon instrumentals recorded on a four-track in a kitchen.",
+   "recordLabel": "Vybe Originals",
+   "isExplicit": false,
+   "artwork": {
+    "url": "/media/art/al_003.webp",
+    "width": 1000,
+    "height": 1000,
+    "bgColor": "#222244",
+    "textColor1": "#ffffff",
+    "textColor2": "#e6e6e6",
+    "textColor3": "#ffd166"
+   },
+   "trackIds": [
+    "so_0007",
+    "so_0008",
+    "so_0009",
+    "so_0010"
+   ],
+   "durationMs": 880000
+  },
+  {
+   "id": "al_004",
+   "title": "Night Tides",
+   "artist": {
+    "id": "ar_004",
+    "name": "Dune Kettle"
+   },
+   "type": "single",
+   "genreId": "lofi",
+   "releaseDate": "2026-11-10",
+   "copyright": "℗ 2026 Vybe Originals",
+   "editorialNotes": "A slow tide of tape hiss and a single warm bass note.",
+   "recordLabel": "Vybe Originals",
+   "isExplicit": false,
+   "artwork": {
+    "url": "/media/art/al_004.webp",
+    "width": 1000,
+    "height": 1000,
+    "bgColor": "#222244",
+    "textColor1": "#ffffff",
+    "textColor2": "#e6e6e6",
+    "textColor3": "#ffd166"
+   },
+   "trackIds": [
+    "so_0011",
+    "so_0012"
+   ],
+   "durationMs": 410000
+  }
+ ],
+ "songs": [
+  {
+   "id": "so_0001",
+   "title": "Glass Hours",
+   "artist": {
+    "id": "ar_001",
+    "name": "Mira Vale"
+   },
+   "featuring": [],
+   "album": {
+    "id": "al_001",
+    "title": "Glass Hours"
+   },
+   "genreId": "pop",
+   "trackNumber": 1,
+   "discNumber": 1,
+   "durationMs": 199000,
+   "isExplicit": false,
+   "hasLyrics": true,
+   "audioUrl": "/api/stream/so_0001",
+   "artwork": {
+    "url": "/media/art/al_001.webp",
+    "width": 1000,
+    "height": 1000,
+    "bgColor": "#222244",
+    "textColor1": "#ffffff",
+    "textColor2": "#e6e6e6",
+    "textColor3": "#ffd166"
+   },
+   "releaseDate": "2026-10-02",
+   "bpm": 118,
+   "mood": "dreamy",
+   "energy": 0.62,
+   "popularity": 96,
+   "composer": "Mira Vale"
+  },
+  {
+   "id": "so_0002",
+   "title": "Halflight",
+   "artist": {
+    "id": "ar_001",
+    "name": "Mira Vale"
+   },
+   "featuring": [],
+   "album": {
+    "id": "al_001",
+    "title": "Glass Hours"
+   },
+   "genreId": "pop",
+   "trackNumber": 2,
+   "discNumber": 1,
+   "durationMs": 201000,
+   "isExplicit": false,
+   "hasLyrics": false,
+   "audioUrl": "/api/stream/so_0002",
+   "artwork": {
+    "url": "/media/art/al_001.webp",
+    "width": 1000,
+    "height": 1000,
+    "bgColor": "#222244",
+    "textColor1": "#ffffff",
+    "textColor2": "#e6e6e6",
+    "textColor3": "#ffd166"
+   },
+   "releaseDate": "2026-10-02",
+   "bpm": 104,
+   "mood": "romantic",
+   "energy": 0.55,
+   "popularity": 88,
+   "composer": "Mira Vale"
+  },
+  {
+   "id": "so_0003",
+   "title": "Lanterns (Slow)",
+   "artist": {
+    "id": "ar_001",
+    "name": "Mira Vale"
+   },
+   "featuring": [
+    {
+     "id": "ar_003",
+     "name": "Noor Lantern"
+    }
+   ],
+   "album": {
+    "id": "al_001",
+    "title": "Glass Hours"
+   },
+   "genreId": "pop",
+   "trackNumber": 3,
+   "discNumber": 1,
+   "durationMs": 197000,
+   "isExplicit": true,
+   "hasLyrics": false,
+   "audioUrl": "/api/stream/so_0003",
+   "artwork": {
+    "url": "/media/art/al_001.webp",
+    "width": 1000,
+    "height": 1000,
+    "bgColor": "#222244",
+    "textColor1": "#ffffff",
+    "textColor2": "#e6e6e6",
+    "textColor3": "#ffd166"
+   },
+   "releaseDate": "2026-10-02",
+   "bpm": 92,
+   "mood": "melancholy",
+   "energy": 0.31,
+   "popularity": 71,
+   "composer": "Mira Vale, Noor Lantern"
+  },
+  {
+   "id": "so_0004",
+   "title": "Ferry Lights",
+   "artist": {
+    "id": "ar_002",
+    "name": "The Static Parade"
+   },
+   "featuring": [],
+   "album": {
+    "id": "al_002",
+    "title": "Loose Wires"
+   },
+   "genreId": "rock",
+   "trackNumber": 1,
+   "discNumber": 1,
+   "durationMs": 212000,
+   "isExplicit": false,
+   "hasLyrics": true,
+   "audioUrl": "/api/stream/so_0004",
+   "artwork": {
+    "url": "/media/art/al_002.webp",
+    "width": 1000,
+    "height": 1000,
+    "bgColor": "#222244",
+    "textColor1": "#ffffff",
+    "textColor2": "#e6e6e6",
+    "textColor3": "#ffd166"
+   },
+   "releaseDate": "2026-09-18",
+   "bpm": 146,
+   "mood": "energetic",
+   "energy": 0.91,
+   "popularity": 83,
+   "composer": "The Static Parade"
+  },
+  {
+   "id": "so_0005",
+   "title": "Last Train",
+   "artist": {
+    "id": "ar_002",
+    "name": "The Static Parade"
+   },
+   "featuring": [],
+   "album": {
+    "id": "al_002",
+    "title": "Loose Wires"
+   },
+   "genreId": "rock",
+   "trackNumber": 2,
+   "discNumber": 1,
+   "durationMs": 205000,
+   "isExplicit": false,
+   "hasLyrics": false,
+   "audioUrl": "/api/stream/so_0005",
+   "artwork": {
+    "url": "/media/art/al_002.webp",
+    "width": 1000,
+    "height": 1000,
+    "bgColor": "#222244",
+    "textColor1": "#ffffff",
+    "textColor2": "#e6e6e6",
+    "textColor3": "#ffd166"
+   },
+   "releaseDate": "2026-09-18",
+   "bpm": 138,
+   "mood": "upbeat",
+   "energy": 0.84,
+   "popularity": 74,
+   "composer": "The Static Parade"
+  },
+  {
+   "id": "so_0006",
+   "title": "Harbour Wire",
+   "artist": {
+    "id": "ar_002",
+    "name": "The Static Parade"
+   },
+   "featuring": [],
+   "album": {
+    "id": "al_002",
+    "title": "Loose Wires"
+   },
+   "genreId": "rock",
+   "trackNumber": 3,
+   "discNumber": 1,
+   "durationMs": 213000,
+   "isExplicit": false,
+   "hasLyrics": false,
+   "audioUrl": "/api/stream/so_0006",
+   "artwork": {
+    "url": "/media/art/al_002.webp",
+    "width": 1000,
+    "height": 1000,
+    "bgColor": "#222244",
+    "textColor1": "#ffffff",
+    "textColor2": "#e6e6e6",
+    "textColor3": "#ffd166"
+   },
+   "releaseDate": "2026-09-18",
+   "bpm": 152,
+   "mood": "dark",
+   "energy": 0.95,
+   "popularity": 52,
+   "composer": "The Static Parade"
+  },
+  {
+   "id": "so_0007",
+   "title": "Rain on the Awning",
+   "artist": {
+    "id": "ar_003",
+    "name": "Noor Lantern"
+   },
+   "featuring": [],
+   "album": {
+    "id": "al_003",
+    "title": "Paper Moon Cafe"
+   },
+   "genreId": "lofi",
+   "trackNumber": 1,
+   "discNumber": 1,
+   "durationMs": 188000,
+   "isExplicit": false,
+   "hasLyrics": false,
+   "audioUrl": "/api/stream/so_0007",
+   "artwork": {
+    "url": "/media/art/al_003.webp",
+    "width": 1000,
+    "height": 1000,
+    "bgColor": "#222244",
+    "textColor1": "#ffffff",
+    "textColor2": "#e6e6e6",
+    "textColor3": "#ffd166"
+   },
+   "releaseDate": "2026-08-01",
+   "bpm": 82,
+   "mood": "chill",
+   "energy": 0.22,
+   "popularity": 90,
+   "composer": "Noor Lantern"
+  },
+  {
+   "id": "so_0008",
+   "title": "Kettle Steam",
+   "artist": {
+    "id": "ar_003",
+    "name": "Noor Lantern"
+   },
+   "featuring": [
+    {
+     "id": "ar_004",
+     "name": "Dune Kettle"
+    }
+   ],
+   "album": {
+    "id": "al_003",
+    "title": "Paper Moon Cafe"
+   },
+   "genreId": "lofi",
+   "trackNumber": 2,
+   "discNumber": 1,
+   "durationMs": 221000,
+   "isExplicit": false,
+   "hasLyrics": false,
+   "audioUrl": "/api/stream/so_0008",
+   "artwork": {
+    "url": "/media/art/al_003.webp",
+    "width": 1000,
+    "height": 1000,
+    "bgColor": "#222244",
+    "textColor1": "#ffffff",
+    "textColor2": "#e6e6e6",
+    "textColor3": "#ffd166"
+   },
+   "releaseDate": "2026-08-01",
+   "bpm": 78,
+   "mood": "focus",
+   "energy": 0.25,
+   "popularity": 77,
+   "composer": "Noor Lantern, Dune Kettle"
+  },
+  {
+   "id": "so_0009",
+   "title": "Dusty Keys",
+   "artist": {
+    "id": "ar_003",
+    "name": "Noor Lantern"
+   },
+   "featuring": [],
+   "album": {
+    "id": "al_003",
+    "title": "Paper Moon Cafe"
+   },
+   "genreId": "lofi",
+   "trackNumber": 3,
+   "discNumber": 1,
+   "durationMs": 204000,
+   "isExplicit": false,
+   "hasLyrics": false,
+   "audioUrl": "/api/stream/so_0009",
+   "artwork": {
+    "url": "/media/art/al_003.webp",
+    "width": 1000,
+    "height": 1000,
+    "bgColor": "#222244",
+    "textColor1": "#ffffff",
+    "textColor2": "#e6e6e6",
+    "textColor3": "#ffd166"
+   },
+   "releaseDate": "2026-08-01",
+   "bpm": 86,
+   "mood": "chill",
+   "energy": 0.2,
+   "popularity": 61,
+   "composer": "Noor Lantern"
+  },
+  {
+   "id": "so_0010",
+   "title": "Window Seat",
+   "artist": {
+    "id": "ar_003",
+    "name": "Noor Lantern"
+   },
+   "featuring": [],
+   "album": {
+    "id": "al_003",
+    "title": "Paper Moon Cafe"
+   },
+   "genreId": "lofi",
+   "trackNumber": 4,
+   "discNumber": 1,
+   "durationMs": 267000,
+   "isExplicit": false,
+   "hasLyrics": false,
+   "audioUrl": "/api/stream/so_0010",
+   "artwork": {
+    "url": "/media/art/al_003.webp",
+    "width": 1000,
+    "height": 1000,
+    "bgColor": "#222244",
+    "textColor1": "#ffffff",
+    "textColor2": "#e6e6e6",
+    "textColor3": "#ffd166"
+   },
+   "releaseDate": "2026-08-01",
+   "bpm": 80,
+   "mood": "dreamy",
+   "energy": 0.28,
+   "popularity": 44,
+   "composer": "Noor Lantern"
+  },
+  {
+   "id": "so_0011",
+   "title": "Night Tides",
+   "artist": {
+    "id": "ar_004",
+    "name": "Dune Kettle"
+   },
+   "featuring": [],
+   "album": {
+    "id": "al_004",
+    "title": "Night Tides"
+   },
+   "genreId": "lofi",
+   "trackNumber": 1,
+   "discNumber": 1,
+   "durationMs": 205000,
+   "isExplicit": false,
+   "hasLyrics": false,
+   "audioUrl": "/api/stream/so_0011",
+   "artwork": {
+    "url": "/media/art/al_004.webp",
+    "width": 1000,
+    "height": 1000,
+    "bgColor": "#222244",
+    "textColor1": "#ffffff",
+    "textColor2": "#e6e6e6",
+    "textColor3": "#ffd166"
+   },
+   "releaseDate": "2026-11-10",
+   "bpm": 72,
+   "mood": "dreamy",
+   "energy": 0.18,
+   "popularity": 68,
+   "composer": "Dune Kettle"
+  },
+  {
+   "id": "so_0012",
+   "title": "Low Bass Bloom",
+   "artist": {
+    "id": "ar_004",
+    "name": "Dune Kettle"
+   },
+   "featuring": [],
+   "album": {
+    "id": "al_004",
+    "title": "Night Tides"
+   },
+   "genreId": "lofi",
+   "trackNumber": 2,
+   "discNumber": 1,
+   "durationMs": 205000,
+   "isExplicit": false,
+   "hasLyrics": false,
+   "audioUrl": "/api/stream/so_0012",
+   "artwork": {
+    "url": "/media/art/al_004.webp",
+    "width": 1000,
+    "height": 1000,
+    "bgColor": "#222244",
+    "textColor1": "#ffffff",
+    "textColor2": "#e6e6e6",
+    "textColor3": "#ffd166"
+   },
+   "releaseDate": "2026-11-10",
+   "bpm": 70,
+   "mood": "chill",
+   "energy": 0.21,
+   "popularity": 38,
+   "composer": "Dune Kettle"
+  }
+ ],
+ "playlists": [
+  {
+   "id": "pl_ed_001",
+   "kind": "editorial",
+   "name": "Glass & Rain",
+   "curatorName": "Vybe Pop",
+   "description": "A pop mood board for rainy windows and late trains.",
+   "shortDescription": "Soft pop for grey days.",
+   "artwork": {
+    "url": "/media/art/al_001.webp",
+    "width": 1000,
+    "height": 1000,
+    "bgColor": "#334455",
+    "textColor1": "#ffffff",
+    "textColor2": "#e6e6e6",
+    "textColor3": "#ffd166"
+   },
+   "trackIds": [
+    "so_0001",
+    "so_0004",
+    "so_0011"
+   ],
+   "durationMs": 616000,
+   "updatedAt": "2026-11-20T10:00:00Z",
+   "isPublic": true
+  },
+  {
+   "id": "pl_ed_002",
+   "kind": "editorial",
+   "name": "Focus Hours",
+   "curatorName": "Vybe Lofi",
+   "description": "Warm, steady beats for long work sessions.",
+   "shortDescription": "Beats to think to.",
+   "artwork": {
+    "url": "/media/art/al_003.webp",
+    "width": 1000,
+    "height": 1000,
+    "bgColor": "#334455",
+    "textColor1": "#ffffff",
+    "textColor2": "#e6e6e6",
+    "textColor3": "#ffd166"
+   },
+   "trackIds": [
+    "so_0007",
+    "so_0008",
+    "so_0009",
+    "so_0010",
+    "so_0012"
+   ],
+   "durationMs": 1085000,
+   "updatedAt": "2026-11-18T08:30:00Z",
+   "isPublic": true
+  },
+  {
+   "id": "pl_ed_003",
+   "kind": "editorial",
+   "name": "Loud Kitchen",
+   "curatorName": "Vybe Rock",
+   "description": "Guitars for cooking, dancing and shouting over the radio.",
+   "shortDescription": "Loud and proud.",
+   "artwork": {
+    "url": "/media/art/al_002.webp",
+    "width": 1000,
+    "height": 1000,
+    "bgColor": "#334455",
+    "textColor1": "#ffffff",
+    "textColor2": "#e6e6e6",
+    "textColor3": "#ffd166"
+   },
+   "trackIds": [
+    "so_0005",
+    "so_0006",
+    "so_0002"
+   ],
+   "durationMs": 619000,
+   "updatedAt": "2026-11-12T12:00:00Z",
+   "isPublic": true
+  }
+ ],
+ "stations": [
+  {
+   "id": "st_001",
+   "name": "Vybe Hits",
+   "tagline": "The biggest songs, all day.",
+   "kind": "live",
+   "artwork": {
+    "url": "/media/art/al_001.webp",
+    "width": 1000,
+    "height": 1000,
+    "bgColor": "#553366",
+    "textColor1": "#ffffff",
+    "textColor2": "#e6e6e6",
+    "textColor3": "#ffd166"
+   }
+  },
+  {
+   "id": "st_002",
+   "name": "Pop Station",
+   "tagline": "Pop from every corner of the catalog.",
+   "kind": "genre",
+   "artwork": {
+    "url": "/media/art/al_001.webp",
+    "width": 1000,
+    "height": 1000,
+    "bgColor": "#553366",
+    "textColor1": "#ffffff",
+    "textColor2": "#e6e6e6",
+    "textColor3": "#ffd166"
+   },
+   "seedId": "pop"
+  },
+  {
+   "id": "st_003",
+   "name": "Mira Vale Radio",
+   "tagline": "Mira Vale and the artists she loves.",
+   "kind": "artist",
+   "artwork": {
+    "url": "/media/art/al_001.webp",
+    "width": 1000,
+    "height": 1000,
+    "bgColor": "#553366",
+    "textColor1": "#ffffff",
+    "textColor2": "#e6e6e6",
+    "textColor3": "#ffd166"
+   },
+   "seedId": "ar_001"
+  },
+  {
+   "id": "st_004",
+   "name": "Lo-fi Station",
+   "tagline": "Beats for studying and sleep.",
+   "kind": "genre",
+   "artwork": {
+    "url": "/media/art/al_003.webp",
+    "width": 1000,
+    "height": 1000,
+    "bgColor": "#553366",
+    "textColor1": "#ffffff",
+    "textColor2": "#e6e6e6",
+    "textColor3": "#ffd166"
+   },
+   "seedId": "lofi"
+  }
+ ]
+}

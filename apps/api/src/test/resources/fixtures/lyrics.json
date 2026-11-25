@@ -1,0 +1,41 @@
+{
+ "so_0001": [
+  {
+   "startMs": 0,
+   "endMs": 4000,
+   "text": ""
+  },
+  {
+   "startMs": 4000,
+   "endMs": 8000,
+   "text": "Glass hours, we keep them close"
+  },
+  {
+   "startMs": 8000,
+   "endMs": 12000,
+   "text": "Light through the window, slow and gold"
+  },
+  {
+   "startMs": 12000,
+   "endMs": 16000,
+   "text": ""
+  },
+  {
+   "startMs": 16000,
+   "endMs": 20000,
+   "text": "Hold on to me until the morning"
+  }
+ ],
+ "so_0004": [
+  {
+   "startMs": 0,
+   "endMs": 6000,
+   "text": "Ferry lights across the water"
+  },
+  {
+   "startMs": 6000,
+   "endMs": 12000,
+   "text": "Carry me home before the bell"
+  }
+ ]
+}
