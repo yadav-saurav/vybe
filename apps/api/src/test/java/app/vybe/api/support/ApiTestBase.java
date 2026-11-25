@@ -36,6 +36,7 @@ public abstract class ApiTestBase {
         registry.add("vybe.data-dir", () -> "src/test/resources/fixtures");
         registry.add("vybe.db-path", () -> DB_DIR.resolve("vybe.db").toString());
         registry.add("vybe.autoseed", () -> "true");
+        registry.add("vybe.imports-dir", () -> DB_DIR.resolve("imports").toString());
     }
 
     @Autowired

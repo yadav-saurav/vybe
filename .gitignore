@@ -9,3 +9,4 @@ data/media/art/*
 test-results
 playwright-report
 __pycache__
+data/imports/
