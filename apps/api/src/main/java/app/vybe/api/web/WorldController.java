@@ -61,6 +61,13 @@ public class WorldController {
         return ResponseEntity.ok().cacheControl(cc).body(Map.of("covers", covers));
     }
 
+    /** Artist photos by name (the Library's Artists section). */
+    @GetMapping("/api/world/artist-photos")
+    public ResponseEntity<Map<String, Object>> artistPhotos(@RequestParam("names") List<String> names) {
+        return ResponseEntity.ok().cacheControl(CacheControl.maxAge(Duration.ofHours(6)).cachePrivate())
+                .body(Map.of("photos", world.photosFor(names)));
+    }
+
     @GetMapping("/api/world/artists/{id}")
     public ResponseEntity<WorldService.ArtistPage> artist(@org.springframework.web.bind.annotation.PathVariable String id,
                                                           @RequestParam(value = "country", required = false) String country) {

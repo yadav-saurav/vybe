@@ -30,6 +30,10 @@ export const tintVars = (a?: Artwork): CSSProperties => {
  */
 export const artUrl = (a: Artwork | undefined, size: number) => {
   if (!a) return undefined;
+  if (a.url.includes('dzcdn.net') && /\/\d+x\d+-[^/]+\.jpg$/.test(a.url)) {
+    const px = size <= 120 ? 250 : size <= 320 ? 500 : 1000; // the photo service's own sizes
+    return a.url.replace(/\/\d+x\d+-/, `/${px}x${px}-`);
+  }
   if (a.url.includes('mzstatic.com') && /\/\d+x\d+bb\.jpg$/.test(a.url)) {
     const px = Math.min(1000, Math.max(60, Math.ceil(size / 50) * 50)); // a few sizes, so the browser cache gets hits
     return a.url.replace(/\/\d+x\d+bb\.jpg$/, `/${px}x${px}bb.jpg`);

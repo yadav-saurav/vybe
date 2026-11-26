@@ -446,7 +446,7 @@ public class WorldService {
             Artwork pic = mine.stream().map(Song::artwork).filter(x -> usedArt.add(x.url())).findFirst().orElse(mine.get(0).artwork());
             ordered.add(new WorldArtist(a.id(), a.name(), a.genre(), pic, a.country()));
         }
-        return new Stars(ordered, songs);
+        return new Stars(withPhotos(ordered, 20_000), songs);
     }
 
     /** An artist's page: their most popular songs with previews. */
@@ -468,7 +468,7 @@ public class WorldService {
         Song first = list.songs().isEmpty() ? null : list.songs().get(0);
         WorldArtist a = new WorldArtist("wa_" + raw, nameGenre[0], nameGenre.length > 1 ? nameGenre[1] : "",
                 first == null ? null : first.artwork(), cc);
-        return new ArtistPage(a, list.songs());
+        return new ArtistPage(withPhotos(List.of(a), 2_500).get(0), list.songs());
     }
 
     // ---------------------------------------------------------------- famous songs on every page
@@ -612,8 +612,106 @@ public class WorldService {
         }
         // Lead artist names only ("A & B" and "A, B" are separate people on Apple).
         List<WorldArtist> solo = artists.values().stream().filter(a -> !a.name().contains(",") && !a.name().contains(" & ")).limit(12).toList();
-        return new SearchAll(list.songs(), solo.isEmpty() ? artists.values().stream().limit(12).toList() : solo,
-                albums.values().stream().limit(20).toList());
+        List<WorldArtist> shown = solo.isEmpty() ? artists.values().stream().limit(12).toList() : solo;
+        return new SearchAll(list.songs(), withPhotos(shown, 2_500), albums.values().stream().limit(20).toList());
+    }
+
+    // ---------------------------------------------------------------- artist photos
+
+    /** Name -> photo (empty when none found). Apple's free API has no artist photos; Deezer's public API does. */
+    private final Map<String, java.util.Optional<Artwork>> photos = new java.util.concurrent.ConcurrentHashMap<>();
+    private java.util.function.Function<String, String> photoFetcher = this::plainGet;
+    private final java.util.concurrent.ExecutorService photoPool = java.util.concurrent.Executors.newFixedThreadPool(6, r -> {
+        Thread t = new Thread(r, "world-photos");
+        t.setDaemon(true);
+        return t;
+    });
+
+    /** Tests swap in canned photo lookups. */
+    void setPhotoFetcher(java.util.function.Function<String, String> f) {
+        this.photoFetcher = f;
+        photos.clear();
+    }
+
+    private static String key(String name) {
+        return name.toLowerCase(Locale.ROOT).replaceAll("[^\\p{L}\\p{N}]", "");
+    }
+
+    /** A real photo of the artist, or empty. Exact (normalised) name matches only, so a duet partner is never shown. */
+    public java.util.Optional<Artwork> photoFor(String name) {
+        if (name == null || name.isBlank()) {
+            return java.util.Optional.empty();
+        }
+        String k = key(name);
+        java.util.Optional<Artwork> hit = photos.get(k);
+        if (hit != null) {
+            return hit;
+        }
+        java.util.Optional<Artwork> found = java.util.Optional.empty();
+        try {
+            JsonNode data = json.readTree(photoFetcher.apply("https://api.deezer.com/search/artist?limit=5&q="
+                    + URLEncoder.encode(name, StandardCharsets.UTF_8))).path("data");
+            for (JsonNode a : data) {
+                String url = a.path("picture_xl").asText("");
+                if (key(a.path("name").asText()).equals(k) && url.startsWith("https://") && !url.contains("/artist//")) {
+                    found = java.util.Optional.of(new Artwork(url, 1000, 1000, PALETTE[Math.abs(k.hashCode()) % PALETTE.length], "#ffffff", "#e6e6eb", "#ffffff"));
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            return java.util.Optional.empty(); // not remembered: try again next time
+        }
+        photos.put(k, found);
+        return found;
+    }
+
+    /** Swap each artist's cover for their photo where one exists (looked up in parallel, bounded wait). */
+    private List<WorldArtist> withPhotos(List<WorldArtist> list, long waitMs) {
+        Map<String, java.util.concurrent.Future<java.util.Optional<Artwork>>> jobs = new LinkedHashMap<>();
+        for (WorldArtist a : list) {
+            jobs.computeIfAbsent(a.name(), n -> photoPool.submit(() -> photoFor(n)));
+        }
+        long deadline = System.currentTimeMillis() + waitMs;
+        List<WorldArtist> out = new ArrayList<>(list.size());
+        for (WorldArtist a : list) {
+            Artwork pic = null;
+            try {
+                long left = Math.max(1, deadline - System.currentTimeMillis());
+                pic = jobs.get(a.name()).get(left, java.util.concurrent.TimeUnit.MILLISECONDS).orElse(null);
+            } catch (Exception ignored) {
+                // slow or failed: keep the cover for now (the lookup finishes in the background)
+            }
+            out.add(pic == null ? a : new WorldArtist(a.id(), a.name(), a.genre(), pic, a.country()));
+        }
+        return out;
+    }
+
+    /** Photos for a set of names (the Library's Artists section). */
+    public Map<String, Artwork> photosFor(List<String> names) {
+        List<WorldArtist> probe = names.stream().distinct().limit(60).map(n -> new WorldArtist("", n, "", null, "")).toList();
+        Map<String, Artwork> out = new LinkedHashMap<>();
+        for (WorldArtist a : withPhotos(probe, 4_000)) {
+            if (a.artwork() != null) {
+                out.put(a.name(), a.artwork());
+            }
+        }
+        return out;
+    }
+
+    private String plainGet(String url) {
+        try {
+            HttpRequest req = HttpRequest.newBuilder(URI.create(url)).timeout(Duration.ofSeconds(5)).header("Accept", "application/json").GET().build();
+            HttpResponse<String> res = http.send(req, HttpResponse.BodyHandlers.ofString());
+            if (res.statusCode() != 200) {
+                throw new IllegalStateException("HTTP " + res.statusCode());
+            }
+            return res.body();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException(e);
+        } catch (java.io.IOException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     public static boolean isWorldId(String id) {

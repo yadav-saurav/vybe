@@ -25,7 +25,11 @@
 .track::-webkit-scrollbar { display: none; }
 
 .card, .artist { position: relative; display: flex; flex-direction: column; gap: 4px; padding: 12px; border-radius: 10px; scroll-snap-align: start; transition: background var(--dur) var(--ease); min-width: 0; }
-.card:hover, .card:focus-within, .artist:hover, .artist:focus-visible, .cardOn { background: var(--bg-hover); }
+/* No box behind cards: the picture lifts and its glow lights up instead. */
+.artInner { transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease); }
+.card:hover .artInner, .card:focus-within .artInner, .artist:hover .artInner, .artist:focus-visible .artInner { transform: translateY(-4px); box-shadow: 0 14px 30px rgba(0, 0, 0, 0.32); }
+.artist:focus-visible { outline: none; }
+.artist:focus-visible .artInner { outline: 2px solid var(--key); outline-offset: 3px; }
 .art { position: relative; aspect-ratio: 1; margin-bottom: 8px; }
 .artInner { position: relative; z-index: 1; height: 100%; border-radius: 8px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28); }
 .artInner > * { width: 100%; height: 100%; }

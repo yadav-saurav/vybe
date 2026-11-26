@@ -3,6 +3,7 @@ import { Link, Navigate, useParams } from 'react-router-dom';
 import clsx from 'clsx';
 import { formatLongDuration, type ContentItem, type Playlist, type Song } from '@vybe/shared';
 import { api } from '../../lib/api';
+import { useAsync } from '../../lib/useAsync';
 import { useLibraryAsync } from '../../features/library/useLibraryAsync';
 import { Artwork } from '../../components/Artwork';
 import { Icon } from '../../components/Icon';
@@ -154,6 +155,9 @@ function ArtistsView() {
     });
     return [...map.values()].sort((x, y) => x.at - y.at);
   }, [data]);
+  // Their photos (a song's cover stays until a photo arrives, or if none exists).
+  const names = artists.map((a) => a.name).join('|');
+  const { data: photos } = useAsync(names ? `artist-photos:${names}` : null, (sig) => api.artistPhotos(artists.map((a) => a.name), sig));
   if (error) return <LoadError />;
   if (loading && !data) return <GridSkeleton />;
   if (!artists.length) return <Empty title="No artists yet" text="Artists of the songs you add to your library appear here." />;
@@ -161,7 +165,7 @@ function ArtistsView() {
     <div className={s.grid}>
       {artists.map((a) => (
         <Link key={a.id} to={a.href} className={clsx(s.tile, s.tileArtist)}>
-          <span className={s.tileArt}><Artwork artwork={a.artwork} size={300} rounded="circle" /></span>
+          <span className={s.tileArt}><Artwork artwork={photos?.photos[a.name] ?? a.artwork} size={300} rounded="circle" /></span>
           <span className={clsx(s.tileTitle, 'clamp-1')}>{a.name}</span>
           <span className={s.tileSub}>{a.count} {a.count === 1 ? 'song' : 'songs'}</span>
         </Link>

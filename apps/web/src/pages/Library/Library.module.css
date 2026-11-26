@@ -80,7 +80,8 @@
 }
 
 .tile { display: flex; flex-direction: column; gap: 3px; min-width: 0; padding: 8px; border-radius: 10px; }
-.tile:hover { background: var(--bg-hover); }
+.tile:hover .tileArt { transform: translateY(-4px); box-shadow: 0 14px 30px rgba(0,0,0,0.32); }
+.tileArt { transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease); }
 .tileArt { display: block; aspect-ratio: 1; margin-bottom: 6px; border-radius: 8px; overflow: hidden; box-shadow: 0 6px 18px rgba(0,0,0,0.2); }
 .tileArt > * { width: 100%; height: 100%; }
 .tileArtist { text-align: center; }

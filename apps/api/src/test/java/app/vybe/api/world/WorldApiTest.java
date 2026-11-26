@@ -48,6 +48,23 @@ class WorldApiTest extends ApiTestBase {
         });
     }
 
+    @org.junit.jupiter.api.BeforeEach
+    void noPhotosByDefault() {
+        world.setPhotoFetcher(url -> { throw new IllegalStateException("offline"); });
+    }
+
+    @Test
+    void artistPhotosMatchTheExactNameAndFallBackToCovers() throws Exception {
+        world.setPhotoFetcher(url -> url.contains("Star+One") || url.contains("Star%20One")
+                ? "{\"data\":[{\"name\":\"Someone Else\",\"picture_xl\":\"https://cdn-images.dzcdn.net/images/artist/x/1000x1000-000000-80-0-0.jpg\"},"
+                  + "{\"name\":\"Star  One\",\"picture_xl\":\"https://cdn-images.dzcdn.net/images/artist/star/1000x1000-000000-80-0-0.jpg\"}]}"
+                : "{\"data\":[{\"name\":\"Not Them\",\"picture_xl\":\"https://cdn-images.dzcdn.net/images/artist/no/1000x1000-000000-80-0-0.jpg\"}]}");
+        JsonNode r = json.readTree(mvc.perform(get("/api/world/artist-photos?names=Star One,Nobody Known"))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
+        assertThat(r.get("photos").get("Star One").get("url").asText()).contains("/artist/star/");
+        assertThat(r.get("photos").has("Nobody Known")).isFalse(); // no exact match: keep the cover
+    }
+
     @AfterEach
     void reset() {
         world.setFetcher(url -> { throw new IllegalStateException("offline"); });
