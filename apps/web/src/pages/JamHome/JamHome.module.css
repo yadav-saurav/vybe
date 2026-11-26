@@ -68,7 +68,11 @@
 /* Search inside the Jam */
 .search { width: 100%; display: flex; flex-direction: column; gap: 10px; }
 .searchField { display: flex; align-items: center; gap: 8px; height: 42px; padding: 0 12px; border-radius: 12px; background: color-mix(in srgb, var(--text-1) 8%, transparent); color: var(--text-2); }
-.searchField input { flex: 1; min-width: 0; height: 100%; border: 0; background: none; outline: none; color: var(--text-1); font-size: 15px; }
+.searchField input { flex: 1; min-width: 0; height: 100%; border: 0; background: none; outline: none; box-shadow: none; color: var(--text-1); font-size: 16px;
+  -webkit-appearance: none; appearance: none; border-radius: 0; padding: 0; }
+/* One box only: no browser focus ring or native search styling inside the rounded field. */
+.searchField input:focus, .searchField input:focus-visible { outline: none; box-shadow: none; }
+.searchField input::-webkit-search-decoration, .searchField input::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; display: none; }
 .searchField:focus-within { box-shadow: 0 0 0 2px var(--key); }
 .iconBtn { flex: none; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: color-mix(in srgb, var(--text-1) 10%, transparent); }
 .iconBtn:hover { background: color-mix(in srgb, var(--text-1) 16%, transparent); }
