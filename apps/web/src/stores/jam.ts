@@ -32,6 +32,10 @@ interface JamState {
   leave: () => Promise<void>;
   setGuestsCanControl: (v: boolean) => Promise<void>;
   removeEntry: (entryId: string) => Promise<void>;
+  /** Add songs to the end of the Jam queue (a playlist or a mood). */
+  addSongs: (songs: Song[], label: string) => Promise<void>;
+  /** Play a queued song now. */
+  jumpTo: (index: number) => Promise<void>;
   /** Reconnect after a reload if the server says we're still in a Jam. */
   resume: () => Promise<void>;
   reset: () => void;
@@ -201,15 +205,13 @@ export const useJam = create<JamState>((set, get) => {
 
     start: async () => {
       if (!useAuth.getState().user) { useUI.getState().openSignIn(); return; }
-      const p = usePlayer.getState();
-      const songs = [p.current?.song, ...p.userQueue.map((q) => q.song), ...p.contextQueue.map((q) => q.song)]
-        .filter((x): x is Song => !!x && !isImported(x));
+      // A Jam starts empty: the host and friends fill it with their own playlists and moods.
+      usePlayer.getState().pause();
       set({ busy: true });
       try {
-        const keepPos = !!p.current && !isImported(p.current.song);
-        const view = await api.startJam({ songIds: songs.map((x) => x.id), index: 0, positionMs: keepPos ? Math.round(p.positionMs) : 0, playing: keepPos ? p.isPlaying : false });
+        const view = await api.startJam({ songIds: [] });
         connect(view);
-        toast('Jam started. Invite friends with the link.');
+        toast('Jam started. Invite your friends, then add a playlist or a mood.');
       } catch (e) { fail(e); } finally { set({ busy: false }); }
     },
 
@@ -242,6 +244,10 @@ export const useJam = create<JamState>((set, get) => {
       if (!j) return;
       try { apply(await api.jamRemove(j.code, entryId)); } catch (e) { fail(e); }
     },
+
+    addSongs: (songs, label) => add(songs, 'last', label),
+
+    jumpTo: (index) => send('jump', { index }),
 
     resume: async () => {
       if (get().jam) return;
