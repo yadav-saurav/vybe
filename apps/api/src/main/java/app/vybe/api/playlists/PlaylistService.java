@@ -233,7 +233,10 @@ public class PlaylistService {
     private List<Song> tracks(List<String> ids) {
         List<Song> out = new ArrayList<>(ids.size());
         for (String id : ids) {
-            Song s = app.vybe.api.world.WorldService.isWorldId(id) ? songs.resolve(null, id) : catalog.song(id);
+            if (!app.vybe.api.world.WorldService.isWorldId(id)) {
+                continue; // old generated-catalog tracks are no longer shown
+            }
+            Song s = songs.resolve(null, id);
             if (s != null) {
                 out.add(s);
             }

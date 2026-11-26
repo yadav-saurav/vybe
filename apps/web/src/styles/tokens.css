@@ -14,7 +14,7 @@
   --bg: #ffffff;
   --bg-elevated: #ffffff;
   --bg-sidebar: rgba(0, 0, 0, 0.03);
-  --bg-sidebar-border: rgba(0, 0, 0, 0.08);
+  --bg-sidebar-border: transparent;
   --bg-hover: rgba(0, 0, 0, 0.05);
   --bg-selected: rgba(0, 0, 0, 0.08);
   --bg-input: rgba(0, 0, 0, 0.04);
@@ -105,7 +105,7 @@
     --bg: #1f1f1f;
     --bg-elevated: #2a2a2c;
     --bg-sidebar: rgba(38, 38, 40, 0.6);
-    --bg-sidebar-border: rgba(255, 255, 255, 0.1);
+    --bg-sidebar-border: transparent;
     --bg-hover: rgba(255, 255, 255, 0.06);
     --bg-selected: rgba(255, 255, 255, 0.08);
     --bg-input: rgba(255, 255, 255, 0.06);
@@ -134,7 +134,7 @@
   --bg: #1f1f1f;
   --bg-elevated: #2a2a2c;
   --bg-sidebar: rgba(38, 38, 40, 0.6);
-  --bg-sidebar-border: rgba(255, 255, 255, 0.1);
+  --bg-sidebar-border: transparent;
   --bg-hover: rgba(255, 255, 255, 0.06);
   --bg-selected: rgba(255, 255, 255, 0.08);
   --bg-input: rgba(255, 255, 255, 0.06);
@@ -188,7 +188,7 @@
   --key: var(--tint-3);
   --bg: var(--tint-bg);
   --bg-sidebar: transparent;
-  --bg-sidebar-border: color-mix(in srgb, var(--tint-1) 10%, transparent);
+  --bg-sidebar-border: transparent;
   --bg-selected: color-mix(in srgb, var(--tint-1) 10%, transparent);
   --bg-input: color-mix(in srgb, var(--tint-1) 8%, transparent);
   --bg-player: color-mix(in srgb, var(--tint-bg) 70%, transparent);

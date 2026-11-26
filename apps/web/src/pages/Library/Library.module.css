@@ -56,7 +56,7 @@
 .artistHead h2 { margin: 0; }
 .artistMeta { color: var(--text-2); margin-top: 4px; font-size: var(--fs-callout); }
 .albumGroup { margin-bottom: 28px; }
-.groupHead { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--separator); margin-bottom: 4px; }
+.groupHead { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding-bottom: 8px;  margin-bottom: 4px; }
 .groupTitle { font-size: var(--fs-title-3); font-weight: 700; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .groupTitle:hover { text-decoration: underline; }
 .groupMeta { color: var(--text-2); font-size: var(--fs-footnote); white-space: nowrap; }

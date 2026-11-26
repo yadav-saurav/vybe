@@ -38,6 +38,7 @@ public abstract class ApiTestBase {
         registry.add("vybe.autoseed", () -> "true");
         registry.add("vybe.imports-dir", () -> DB_DIR.resolve("imports").toString());
         registry.add("vybe.world.autowarm", () -> "false"); // tests never call Apple
+        registry.add("vybe.demo.refresh", () -> "false"); // other tests rely on the fixture demo library
     }
 
     @Autowired

@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-class UserRepository {
+public class UserRepository {
 
     /** A user row plus the password hash, which never leaves this package. */
     record StoredUser(User user, String passwordHash) {
@@ -34,6 +34,11 @@ class UserRepository {
     void insert(User user, String passwordHash) {
         jdbc.update("INSERT INTO users (id, email, password_hash, display_name, avatar_color, created_at) VALUES (?,?,?,?,?,?)",
                 user.id(), user.email(), passwordHash, user.displayName(), user.avatarColor(), user.createdAt());
+    }
+
+    /** The id of the account with this email, if any. */
+    public Optional<String> idByEmail(String email) {
+        return jdbc.query("SELECT id FROM users WHERE email = ?", (rs, n) -> rs.getString(1), email).stream().findFirst();
     }
 
     Optional<StoredUser> findStoredByEmail(String email) {

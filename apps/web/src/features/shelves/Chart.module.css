@@ -5,10 +5,10 @@
   position: relative; display: flex; align-items: center; gap: 4px; min-height: 56px;
   margin: 0 -8px; padding: 0 8px; border-radius: var(--r-md); color: var(--text-1);
 }
-.row::before { content: ""; position: absolute; top: 0; left: 8px; right: 8px; height: 1px; background: var(--separator); transition: opacity var(--dur) var(--ease); }
-.row + .row::before { display: block; }
+.row::before { content: none; }
+.row + .row::before { content: none; }
 .row:hover, .row:focus-within { background: var(--bg-hover); }
-.row:hover::before, .row:focus-within::before, .row:hover + .row::before, .row:focus-within + .row::before { opacity: 0; }
+.row:hover::before, .row:focus-within::before, .row:hover + .row::before, .row:focus-within + .row::before { content: none; }
 .current { background: var(--bg-hover); }
 .current::before { opacity: 0; }
 

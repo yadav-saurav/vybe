@@ -162,10 +162,11 @@ class ImportApiTest extends ApiTestBase {
                 .andExpect(jsonPath("$.songIds", hasItem(idA)));
         mvc.perform(put("/api/me/loves/song/" + idA).cookie(cookie(token))).andExpect(status().isOk())
                 .andExpect(jsonPath("$.lovedIds", hasItem(idA)));
+        // Imports are retired from the Library: they're no longer listed there.
         mvc.perform(get("/api/me/library/songs").cookie(cookie(token)))
-                .andExpect(jsonPath("$.songs[*].id", hasItems(idA, idB)));
+                .andExpect(jsonPath("$.songs.length()").value(0));
         mvc.perform(get("/api/me/recently-added").cookie(cookie(token)))
-                .andExpect(jsonPath("$.items[*].data.id", hasItems(idA, idB)));
+                .andExpect(jsonPath("$.items.length()").value(0));
 
         // Playlists: own imports resolve; they stay hidden from everyone else.
         MvcResult created = mvc.perform(post("/api/me/playlists").cookie(cookie(token)).contentType("application/json")

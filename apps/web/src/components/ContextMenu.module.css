@@ -5,4 +5,4 @@
 .item:hover, .item:focus-visible { background: var(--key); color: #fff; box-shadow: none; }
 .item:hover :global(svg), .item:focus-visible :global(svg) { color: #fff; }
 .destructive { color: #ff453a; }
-.sep { height: 1px; margin: 5px 10px; background: var(--separator); }
+.sep { height: 8px; }

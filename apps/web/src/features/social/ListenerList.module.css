@@ -1,5 +1,5 @@
 .list { display: flex; flex-direction: column; }
-.row { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 56px; border-top: 1px solid var(--separator); }
+.row { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 56px;  }
 .row:first-child { border-top: 0; }
 .who { display: flex; align-items: center; gap: 12px; min-width: 0; font-size: var(--fs-body); font-weight: 500; }
 .who:hover span:last-child { text-decoration: underline; }

@@ -2,7 +2,7 @@
 
 /* Slim header that slides in once the hero has scrolled away. Zero height in flow (negative margin). */
 .bar { position: sticky; top: 0; z-index: 4; display: flex; align-items: center; justify-content: space-between; gap: 12px; height: 52px; margin-bottom: -52px; padding: 0 var(--content-pad);
-  background: color-mix(in srgb, var(--bg) 82%, transparent); backdrop-filter: blur(20px) saturate(1.4); border-bottom: 1px solid var(--separator);
+  background: color-mix(in srgb, var(--bg) 82%, transparent); backdrop-filter: blur(20px) saturate(1.4); 
   opacity: 0; transform: translateY(-6px); visibility: hidden; pointer-events: none; transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease), visibility var(--dur); }
 .barOn { opacity: 1; transform: none; visibility: visible; pointer-events: auto; }
 .barName { font-size: var(--fs-title-3); line-height: var(--lh-title-3); font-weight: 700; color: var(--text-1); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
@@ -44,7 +44,7 @@
 
 .top { min-width: 0; }
 .topGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(3, auto); grid-auto-flow: column; column-gap: 28px; }
-.topRow { position: relative; display: flex; align-items: center; gap: 4px; min-height: 56px; padding-right: 4px; border-top: 1px solid var(--separator); border-radius: 0; }
+.topRow { position: relative; display: flex; align-items: center; gap: 4px; min-height: 56px; padding-right: 4px;  border-radius: 0; }
 .topRow:hover { background: var(--bg-hover); border-radius: var(--r-md); border-top-color: transparent; }
 .topMain { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; padding: 6px 4px 6px 6px; border-radius: var(--r-md); text-align: left; cursor: pointer; }
 .topArt { width: 40px; flex-shrink: 0; }

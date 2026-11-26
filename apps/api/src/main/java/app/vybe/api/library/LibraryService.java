@@ -179,7 +179,8 @@ public class LibraryService {
         }
         List<Map.Entry<String, String>> entries = new ArrayList<>(at.entrySet());
         entries.sort((a, b) -> b.getValue().compareTo(a.getValue()));
-        return songs.resolveAll(userId, entries.stream().map(Map.Entry::getKey).toList());
+        // Only worldwide songs: Vybe's old generated catalog and imports are no longer part of the app.
+        return songs.resolveAll(userId, entries.stream().map(Map.Entry::getKey).filter(app.vybe.api.world.WorldService::isWorldId).toList());
     }
 
     public List<Album> albums(String userId) {
@@ -205,12 +206,8 @@ public class LibraryService {
                 if (row.isPublic() || row.isCollaborative()) {
                     out.add(playlists.toPlaylist(row, playlistRows.trackIds(id), userId));
                 }
-            } else {
-                Playlist editorial = catalog.playlist(id);
-                if (editorial != null) {
-                    out.add(editorial);
-                }
             }
+            // Vybe's old editorial playlists are no longer shown.
         }
         return out;
     }
@@ -250,6 +247,12 @@ public class LibraryService {
         for (Entry e : entries) {
             if (out.size() >= RECENTLY_ADDED_LIMIT) {
                 break;
+            }
+            // Only worldwide songs and listeners' own playlists (old catalog albums and imports are retired).
+            if (e.type().equals("album") || e.type().equals("import")
+                    || (e.type().equals("song") && !app.vybe.api.world.WorldService.isWorldId(e.id()))
+                    || (e.type().equals("playlist") && playlistRows.find(e.id()).isEmpty())) {
+                continue;
             }
             switch (e.type()) {
                 case "album" -> addAlbum(out, seenAlbums, e.id());

@@ -87,10 +87,10 @@ class AuthAndLibraryApiTest extends ApiTestBase {
                 .andExpect(jsonPath("$.artistIds[0]").value("ar_002"))
                 .andExpect(jsonPath("$.addedAt.al_002").isString());
 
+        // Vybe's old generated catalog is retired: its songs are no longer listed in the Library.
         mvc.perform(get("/api/me/library/songs").cookie(cookie(token)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.songs.length()").value(3))
-                .andExpect(jsonPath("$.songs[0].album.id").value("al_002"));
+                .andExpect(jsonPath("$.songs.length()").value(0));
 
         mvc.perform(get("/api/me/library/albums").cookie(cookie(token)))
                 .andExpect(jsonPath("$.albums[0].id").value("al_002"));
@@ -114,15 +114,13 @@ class AuthAndLibraryApiTest extends ApiTestBase {
     }
 
     @Test
-    void recentlyAddedGroupsSongsIntoAlbums() throws Exception {
+    void recentlyAddedHidesRetiredCatalogSongs() throws Exception {
         String token = newUserSession();
         mvc.perform(put("/api/me/library/song/so_0001").cookie(cookie(token))).andExpect(status().isOk());
         mvc.perform(put("/api/me/library/song/so_0002").cookie(cookie(token))).andExpect(status().isOk());
         mvc.perform(get("/api/me/recently-added").cookie(cookie(token)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.items.length()").value(1))
-                .andExpect(jsonPath("$.items[0].type").value("album"))
-                .andExpect(jsonPath("$.items[0].data.id").value("al_001"));
+                .andExpect(jsonPath("$.items.length()").value(0));
     }
 
     @Test

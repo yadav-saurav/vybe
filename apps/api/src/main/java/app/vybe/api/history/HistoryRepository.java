@@ -20,6 +20,10 @@ public class HistoryRepository {
         this.jdbc = jdbc;
     }
 
+    public void deleteAll(String userId) {
+        jdbc.update("DELETE FROM play_history WHERE user_id = ?", userId);
+    }
+
     public void insert(String userId, String songId, String playedAt, int playedMs,
                        String contextType, String contextId) {
         jdbc.update("""

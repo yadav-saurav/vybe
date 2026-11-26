@@ -15,7 +15,7 @@
 .link { color: var(--key); font-weight: 600; font-size: var(--fs-callout); }
 .err { color: #e5484d; font-size: var(--fs-footnote); }
 .hint { font-size: var(--fs-footnote); color: var(--text-2); }
-.rowItem { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 60px; padding: 10px 0; border-top: 1px solid var(--separator); }
+.rowItem { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 60px; padding: 10px 0;  }
 .rowItem:first-child { border-top: 0; }
 .rowText { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .rowLabel { font-size: var(--fs-body); font-weight: 600; }
@@ -34,7 +34,7 @@
 .textBtn { color: var(--key); font-weight: 600; font-size: var(--fs-callout); padding: 6px 4px; border-radius: var(--r-sm); }
 .textBtn:hover { text-decoration: underline; }
 .danger { color: #e5484d; }
-.eq { display: flex; align-items: flex-end; gap: 14px; padding: 8px 0 16px; border-top: 1px solid var(--separator); flex-wrap: wrap; }
+.eq { display: flex; align-items: flex-end; gap: 14px; padding: 8px 0 16px;  flex-wrap: wrap; }
 .band { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 64px; }
 .bandRange { writing-mode: vertical-lr; direction: rtl; height: 110px; accent-color: var(--key); }
 .bandGain { font-size: var(--fs-caption); color: var(--text-2); font-variant-numeric: tabular-nums; }

@@ -52,7 +52,7 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
 
 /* Page scaffolding */
 .page { padding: 0 var(--content-pad) 140px; max-width: var(--content-max); }
-.page-header { padding: 34px 0 20px; }
+.page-header { position: relative; z-index: 1; padding: 34px 0 20px; } /* above page glows */
 @media (max-width: 760px) { .page-header { padding: 20px 0 12px; } .page { padding-bottom: calc(150px + var(--tabbar-h)); } }
 
 @media (prefers-reduced-motion: reduce) {

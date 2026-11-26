@@ -18,7 +18,7 @@
 .hint { color: var(--text-2); }
 .error { color: var(--key); font-weight: 500; }
 .alert { padding: 10px 12px; border-radius: 10px; background: var(--key-soft); color: var(--key); font-size: var(--fs-callout); font-weight: 500; }
-.row { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 0; border-top: 1px solid var(--separator); border-bottom: 1px solid var(--separator); }
+.row { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 0;  border-bottom: 1px solid var(--separator); }
 .rowText { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .rowTitle { font-size: var(--fs-callout); font-weight: 600; }
 .switch {

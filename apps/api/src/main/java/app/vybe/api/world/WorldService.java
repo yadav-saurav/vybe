@@ -358,6 +358,29 @@ public class WorldService {
         t.start();
     }
 
+    private org.springframework.context.ApplicationEventPublisher events;
+
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    void setEvents(org.springframework.context.ApplicationEventPublisher events) {
+        this.events = events;
+    }
+
+    /** Tell listeners (the demo account) which real songs are available now. */
+    private void announce() {
+        if (events == null) {
+            return;
+        }
+        Map<String, List<Song>> songs = new LinkedHashMap<>();
+        homeShelves.forEach((id, b) -> {
+            if (!b.shelf().songs().isEmpty()) {
+                songs.put(id, b.shelf().songs());
+            }
+        });
+        if (songs.containsKey("trending")) {
+            events.publishEvent(new WorldWarmedEvent(songs));
+        }
+    }
+
     /** Build every missing or stale shelf in display order. A failure skips that shelf until next time. */
     void warm() {
         long now = System.currentTimeMillis();
@@ -375,6 +398,7 @@ public class WorldService {
                 log.info("Worldwide shelf {} not ready: {}", d.id(), e.getMessage());
             }
         }
+        announce();
     }
 
     /** Several artists' top songs in one Apple call: each artist record is followed by its tracks. */
