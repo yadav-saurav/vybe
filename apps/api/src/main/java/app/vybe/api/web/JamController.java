@@ -77,7 +77,10 @@ public class JamController {
     }
 
     @GetMapping(value = "/api/jams/{code}/events", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter events(@CurrentUser User user, @PathVariable String code) {
+    public SseEmitter events(@CurrentUser User user, @PathVariable String code, jakarta.servlet.http.HttpServletResponse response) {
+        // Live updates must never be held back by a proxy's buffering or compression.
+        response.setHeader("X-Accel-Buffering", "no");
+        response.setHeader("Cache-Control", "no-cache, no-transform");
         return jams.subscribe(user, code);
     }
 }

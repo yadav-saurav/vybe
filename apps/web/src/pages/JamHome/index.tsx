@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import clsx from 'clsx';
 import type { Song } from '@vybe/shared';
@@ -7,26 +7,13 @@ import { Icon } from '../../components/Icon';
 import { api } from '../../lib/api';
 import { useAsync } from '../../lib/useAsync';
 import { avatarBg } from '../../lib/color';
+import { worldDefaultCountry } from '../../lib/world';
+import { usePlayer } from '../../stores/player';
 import { useAuth } from '../../stores/auth';
 import { useUI } from '../../stores/ui';
 import { canControl, inviteLink, useJam } from '../../stores/jam';
 import { AmbientGlow } from '../../features/world/Ambient';
 import s from './JamHome.module.css';
-
-/** Moods: each adds about 20 famous songs of that feel (searched worldwide in the store where it's biggest). */
-const MOODS: { id: string; label: string; term: string; c: string; from: string; to: string }[] = [
-  { id: 'rock', label: 'Rock', term: 'rock classics', c: 'gb', from: '#e5484d', to: '#5a1020' },
-  { id: 'rap', label: 'Rap', term: 'rap', c: 'us', from: '#f5a524', to: '#5a2a0f' },
-  { id: 'sad', label: 'Sad', term: 'sad songs', c: 'in', from: '#4c6ef5', to: '#1b1f4f' },
-  { id: 'romantic', label: 'Romantic', term: 'romantic hindi', c: 'in', from: '#ff5c8a', to: '#5a1636' },
-  { id: 'party', label: 'Party', term: 'party hits', c: 'in', from: '#ae3ec9', to: '#2f0f4f' },
-  { id: 'chill', label: 'Chill', term: 'chill', c: 'us', from: '#20c997', to: '#0f3d38' },
-  { id: 'workout', label: 'Workout', term: 'workout', c: 'us', from: '#ff6b35', to: '#4a1a0a' },
-  { id: 'bollywood', label: 'Bollywood', term: 'bollywood', c: 'in', from: '#fab005', to: '#5a3a0a' },
-  { id: 'punjabi', label: 'Punjabi', term: 'punjabi', c: 'in', from: '#40c057', to: '#14401f' },
-  { id: 'lofi', label: 'Lo-Fi', term: 'lofi', c: 'us', from: '#748ffc', to: '#262a5a' },
-  { id: 'kpop', label: 'K-Pop', term: 'k-pop', c: 'us', from: '#f06595', to: '#4a1030' },
-];
 
 /** Jam: listen together. Start one and invite friends, or join theirs; then fill it with playlists and moods. */
 export default function JamHomePage() {
@@ -38,7 +25,7 @@ export default function JamHomePage() {
       <header className="page-header">
         <p className={s.eyebrow}><Icon name="jam" size={14} />Jam</p>
         <h1 className={s.title}>Listen together</h1>
-        <p className={s.sub}>Start a Jam and invite your friends, or join theirs. Add your playlists or pick a mood, and everyone hears the same song at the same moment.</p>
+        <p className={s.sub}>Start a Jam and invite your friends, or join theirs. Add your playlists or search any song, and everyone hears the same song at the same moment.</p>
       </header>
       {!user ? <SignedOut /> : jam ? <Live /> : <StartOrJoin />}
     </div>
@@ -120,7 +107,7 @@ function Live() {
           ) : (
             <div className={s.empty}>
               <h2 className={s.h2}>Your Jam is empty</h2>
-              <p className={s.sub}>Add one of your playlists or pick a mood. The first song starts for everyone.</p>
+              <p className={s.sub}>Add one of your playlists or search for a song. The first song starts for everyone.</p>
             </div>
           )}
         </section>
@@ -147,7 +134,7 @@ function Live() {
                 );
               })}
             </ol>
-          ) : <p className={s.muted}>Nothing queued yet. Add a playlist or a mood.</p>}
+          ) : <p className={s.muted}>Nothing queued yet. Add a playlist or search for a song.</p>}
         </section>
       </div>
 
@@ -177,9 +164,9 @@ function Live() {
   );
 }
 
-/** Fill the Jam: your own playlists, or a mood. */
+/** Fill the Jam: your own playlists, or search for any song. */
 function AddMusic() {
-  const [tab, setTab] = useState<'playlists' | 'moods'>('playlists');
+  const [tab, setTab] = useState<'playlists' | 'search'>('playlists');
   const [adding, setAdding] = useState<string | null>(null);
   const { data } = useAsync('jam:my-playlists', (sig) => api.libraryPlaylists(sig));
   const mine = data?.playlists ?? [];
@@ -193,20 +180,13 @@ function AddMusic() {
       await useJam.getState().addSongs(songs, `Added “${name}” to the Jam`);
     } catch { useUI.getState().toast('Couldn’t add that playlist. Try again.'); } finally { setAdding(null); }
   };
-  const addMood = async (m: (typeof MOODS)[number]) => {
-    setAdding(m.id);
-    try {
-      const list = await api.worldSearch(m.term, m.c);
-      await useJam.getState().addSongs(list.songs.slice(0, 20), `Added ${m.label} songs to the Jam`);
-    } catch { useUI.getState().toast('Couldn’t add that mood right now. Try again.'); } finally { setAdding(null); }
-  };
 
   return (
     <section className={s.glass} aria-labelledby="add-music-title">
       <h2 id="add-music-title" className={s.h2}>Add music</h2>
       <div className={s.tabs} role="tablist" aria-label="Add music from">
         <button role="tab" aria-selected={tab === 'playlists'} className={clsx(s.tab, tab === 'playlists' && s.tabOn)} onClick={() => setTab('playlists')}>Your playlists</button>
-        <button role="tab" aria-selected={tab === 'moods'} className={clsx(s.tab, tab === 'moods' && s.tabOn)} onClick={() => setTab('moods')}>Moods</button>
+        <button role="tab" aria-selected={tab === 'search'} className={clsx(s.tab, tab === 'search' && s.tabOn)} onClick={() => setTab('search')}>Search</button>
       </div>
       {tab === 'playlists' ? (
         mine.length ? (
@@ -221,17 +201,44 @@ function AddMusic() {
               </li>
             ))}
           </ul>
-        ) : <p className={s.muted}>You don’t have playlists yet. Make one from any song’s ··· menu (Add to a Playlist), or pick a mood.</p>
-      ) : (
-        <div className={s.moods}>
-          {MOODS.map((m) => (
-            <button key={m.id} className={s.mood} disabled={adding !== null} style={{ background: `linear-gradient(135deg, ${m.from}, ${m.to})` }} onClick={() => void addMood(m)}>
-              <span>{adding === m.id ? 'Adding…' : m.label}</span>
-              <Icon name="plus" size={16} />
-            </button>
-          ))}
-        </div>
-      )}
+        ) : <p className={s.muted}>You don’t have playlists yet. Make one from any song’s ··· menu (Add to a Playlist), or use Search.</p>
+      ) : <JamSearch />}
     </section>
+  );
+}
+
+/** Search any song or artist and put it in the Jam: play it now for everyone, or add it to the queue. */
+function JamSearch() {
+  const [term, setTerm] = useState('');
+  const [q, setQ] = useState('');
+  useEffect(() => { const t = setTimeout(() => setQ(term.trim()), 300); return () => clearTimeout(t); }, [term]);
+  const { data, error } = useAsync(q.length >= 2 ? `jam-search:${q}` : null, (sig) => api.worldSearch(q, worldDefaultCountry(), sig));
+  const songs = data?.songs.slice(0, 20) ?? [];
+  const playNow = (song: Song) => usePlayer.getState().playSongs([song], 0); // in a Jam: goes next and plays for everyone
+  const add = (song: Song) => void useJam.getState().addSongs([song], `Added “${song.title}” to the Jam`);
+  return (
+    <div className={s.search}>
+      <label className={s.searchField}>
+        <Icon name="search" size={16} />
+        <span className="visually-hidden">Search songs and artists</span>
+        <input type="search" value={term} onChange={(e) => setTerm(e.target.value)} placeholder="Search any song or artist" autoComplete="off" enterKeyHint="search" />
+      </label>
+      {q.length < 2 ? <p className={s.muted}>Find anything to play: a song, an artist, a film soundtrack.</p>
+        : error ? <p className={s.muted}>Search isn’t available right now. Try again in a moment.</p>
+        : !data ? <p className={s.muted} aria-busy="true">Searching…</p>
+        : !songs.length ? <p className={s.muted}>No songs found for “{q}”.</p>
+        : (
+          <ul className={s.playlists}>
+            {songs.map((song) => (
+              <li key={song.id}>
+                <span className={s.qArt}><Artwork artwork={song.artwork} size={80} rounded="xs" /></span>
+                <span className={s.qText}><span className="clamp-1">{song.title}</span><span className={clsx(s.muted, 'clamp-1')}>{song.artist.name}</span></span>
+                <button className={s.iconBtn} aria-label={`Play ${song.title} now`} title="Play now" onClick={() => playNow(song)}><Icon name="play" size={14} /></button>
+                <button className={s.addBtn} aria-label={`Add ${song.title} to the Jam`} onClick={() => add(song)}><Icon name="plus" size={14} />Add</button>
+              </li>
+            ))}
+          </ul>
+        )}
+    </div>
   );
 }

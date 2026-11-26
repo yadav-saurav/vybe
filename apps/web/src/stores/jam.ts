@@ -96,7 +96,24 @@ export const useJam = create<JamState>((set, get) => {
     const j = get().jam;
     if (!j) return;
     if (action !== 'ended' && !canControl(j, useAuth.getState().user?.id)) { toast('The host has turned off controls for guests'); return; }
-    try { apply(await api.jamControl(j.code, action, extra)); } catch (e) { fail(e); }
+    try { apply(await api.jamControl(j.code, action, extra)); } catch (e) {
+      fail(e);
+      api.jam(j.code).then(apply).catch(() => {}); // undo an instant change the server didn't accept
+    }
+  };
+
+  /**
+   * Play/pause react on your screen at once (no wait for the server); the server confirms and tells
+   * everyone else. Returns the position to anchor at, or null when you can't control playback.
+   */
+  const setPlayingNow = (playing: boolean): number | null => {
+    const j = get().jam;
+    if (!j || !j.queue[j.index]) return null;
+    if (!canControl(j, useAuth.getState().user?.id)) { toast('The host has turned off controls for guests'); return null; }
+    const at = Math.round(usePlayer.getState().positionMs);
+    set({ jam: { ...j, playing, positionMs: at, serverTime: Date.now() + get().offsetMs } });
+    usePlayer.setState({ isPlaying: playing });
+    return at;
   };
 
   const add = async (songs: Song[], position: 'next' | 'last', label: string) => {
@@ -113,12 +130,16 @@ export const useJam = create<JamState>((set, get) => {
   /** Player commands while in a Jam. Anything without a shared meaning says so instead of silently diverging. */
   const overrides = (): Partial<PlayerState> => {
     const notInJam = () => toast('Not available during a Jam');
-    const pos = () => usePlayer.getState().positionMs;
     const indexOf = (uid: string) => get().jam?.queue.findIndex((e) => e.entryId === uid) ?? -1;
     return {
-      togglePlay: () => { const j = get().jam; if (j) void send(j.playing ? 'pause' : 'play', { positionMs: Math.round(pos()) }); },
-      play: () => void send('play', { positionMs: Math.round(pos()) }),
-      pause: () => void send('pause', { positionMs: Math.round(pos()) }),
+      togglePlay: () => {
+        const j = get().jam; if (!j) return;
+        const want = !j.playing;
+        const at = setPlayingNow(want);
+        if (at !== null) void send(want ? 'play' : 'pause', { positionMs: at });
+      },
+      play: () => { const at = setPlayingNow(true); if (at !== null) void send('play', { positionMs: at }); },
+      pause: () => { const at = setPlayingNow(false); if (at !== null) void send('pause', { positionMs: at }); },
       next: () => void send('next'),
       previous: () => void send('previous'),
       seek: (ms) => {
