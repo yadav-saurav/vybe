@@ -53,6 +53,14 @@ public class WorldController {
         return ResponseEntity.ok().cacheControl(cc).body(h);
     }
 
+    /** Real album covers for the Browse Categories cards, keyed by genre id. */
+    @GetMapping("/api/world/genre-covers")
+    public ResponseEntity<Map<String, Object>> genreCovers() {
+        Map<String, app.vybe.api.model.Artwork> covers = world.genreCovers();
+        CacheControl cc = covers.size() >= 12 ? CacheControl.maxAge(Duration.ofHours(1)).cachePublic() : CacheControl.noStore();
+        return ResponseEntity.ok().cacheControl(cc).body(Map.of("covers", covers));
+    }
+
     @GetMapping("/api/world/artists/{id}")
     public ResponseEntity<WorldService.ArtistPage> artist(@org.springframework.web.bind.annotation.PathVariable String id,
                                                           @RequestParam(value = "country", required = false) String country) {

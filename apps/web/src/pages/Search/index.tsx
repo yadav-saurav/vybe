@@ -105,6 +105,8 @@ function FieldWithSuggestions({ raw, onChange, onPickTerm }: { raw: string; onCh
 
 function Landing() {
   const { data: genres } = useAsync('search:genres', (sig) => api.browseCategories(sig));
+  // Real album covers for each genre (the cards keep their own artwork until these arrive).
+  const { data: covers } = useAsync('search:genre-covers', (sig) => api.worldGenreCovers(sig));
   // Re-read on every mount: the landing unmounts while results are shown.
   const [recent, setRecent] = useState<RecentEntry[]>(() => loadRecent());
 
@@ -118,7 +120,9 @@ function Landing() {
           {genres
             ? genres.genres.map((g) => (
               <Link key={g.id} to={`/genre/${g.id}`} className={s.tile} style={{ background: g.color }} aria-label={g.name}>
-                <img className={s.tileArt} src={artUrl(g.artwork, 500)} alt="" loading="lazy" decoding="async" />
+                {covers?.covers[g.id]
+                  ? <img className={clsx(s.tileArt, s.tileCover)} src={artUrl(covers.covers[g.id], 500)} alt="" loading="lazy" decoding="async" />
+                  : <img className={s.tileArt} src={artUrl(g.artwork, 500)} alt="" loading="lazy" decoding="async" />}
                 <span className={s.tileTitle}>{g.name}</span>
               </Link>
             ))

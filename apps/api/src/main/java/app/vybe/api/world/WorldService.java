@@ -398,6 +398,7 @@ public class WorldService {
                 log.info("Worldwide shelf {} not ready: {}", d.id(), e.getMessage());
             }
         }
+        warmGenreCovers();
         announce();
     }
 
@@ -484,6 +485,42 @@ public class WorldService {
     private List<Song> shelfSongs(String id) {
         Built b = homeShelves.get(id);
         return b == null ? List.of() : b.shelf().songs();
+    }
+
+    // ---------------------------------------------------------------- genre card covers
+
+    private static final List<String> GENRE_ORDER = List.of("pop", "hiphop", "rnb", "electronic", "rock", "indie", "jazz",
+            "classical", "country", "latin", "ambient", "lofi");
+    private final Map<String, Artwork> genreCovers = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** One real cover per genre (no cover used twice), gathered in the background after the home rows. */
+    private void warmGenreCovers() {
+        Set<String> used = new java.util.HashSet<>();
+        genreCovers.values().forEach(a -> used.add(a.url()));
+        for (String id : GENRE_ORDER) {
+            if (genreCovers.containsKey(id)) {
+                continue;
+            }
+            String[] g = GENRE_SEARCH.get(id);
+            try {
+                for (Song song : search(g[0], g[1]).songs()) {
+                    if (used.add(song.artwork().url())) {
+                        genreCovers.put(id, song.artwork());
+                        break;
+                    }
+                }
+            } catch (RuntimeException e) {
+                log.info("Genre cover {} not ready: {}", id, e.getMessage());
+            }
+        }
+    }
+
+    /** Covers gathered so far (the cards keep their own artwork until theirs arrives). */
+    public Map<String, Artwork> genreCovers() {
+        if (genreCovers.size() < GENRE_ORDER.size()) {
+            warmInBackground();
+        }
+        return Map.copyOf(genreCovers);
     }
 
     /** A genre page: famous songs from around the world in that genre (one cached search). */

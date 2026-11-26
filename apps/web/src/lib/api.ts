@@ -115,6 +115,7 @@ export const api = {
   worldCountries: () => get<{ countries: { code: string; name: string }[] }>('/world/countries'),
   worldChart: (country: string, s?: AbortSignal) => get<WorldList>(`/world/charts?country=${enc(country)}`, s),
   worldHome: (s?: AbortSignal) => get<WorldHome>('/world/home', s),
+  worldGenreCovers: (s?: AbortSignal) => get<{ covers: Record<string, T.Artwork> }>('/world/genre-covers', s),
   worldSection: (name: string, s?: AbortSignal) => get<WorldHome>(`/world/section/${name}`, s),
   worldShelf: (id: string, s?: AbortSignal) => withSignal(cachedGet<WorldShelf>(`/world/shelves/${enc(id)}`), s),
   worldAlbum: (id: string, s?: AbortSignal) => withSignal(cachedGet<{ album: WorldAlbum; songs: T.Song[] }>(`/world/albums/${enc(id)}`), s),

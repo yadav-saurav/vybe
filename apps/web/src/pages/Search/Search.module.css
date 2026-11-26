@@ -97,3 +97,10 @@
 .cardGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 8px; }
 @media (max-width: 1000px) { .topGrid { grid-template-columns: 1fr; } .cardRow { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (max-width: 760px) { .cardRow, .cardGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* Real album cover filling the card; a soft fade keeps the genre name readable. */
+.tileCover { inset: 0; z-index: 0; width: 100%; height: 100%; object-fit: cover; opacity: 1; mix-blend-mode: normal; }
+.tile:has(.tileCover)::after { z-index: 0; content: ''; position: absolute; inset: 0; background: linear-gradient(to top, rgba(0, 0, 0, 0.72) 0%, rgba(0, 0, 0, 0.18) 45%, rgba(0, 0, 0, 0) 70%); pointer-events: none; }
+.tile:has(.tileCover) .tileTitle { z-index: 1; }
+.tile:has(.tileCover):hover .tileCover { transform: scale(1.04); }
+.tileCover { transition: transform 0.4s var(--ease); }
