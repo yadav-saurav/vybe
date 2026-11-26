@@ -61,7 +61,7 @@
 .hero { position: relative; z-index: 1; display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 20px; align-items: stretch; }
 .hero > *, .heroText, .heroList li { min-width: 0; }
 .heroArt .artInner { overflow: hidden; }
-.heroMain { display: flex; align-items: flex-end; gap: 24px; padding: 20px; border-radius: 16px; background: color-mix(in srgb, var(--bg-elevated) 40%, transparent); backdrop-filter: blur(20px); }
+.heroMain { display: flex; align-items: flex-end; gap: 24px; padding: 20px; border-radius: 16px; background: color-mix(in srgb, var(--bg-elevated) 40%, transparent); }
 .heroArt { position: relative; flex: none; width: min(240px, 38%); aspect-ratio: 1; }
 .heroText { min-width: 0; display: flex; flex-direction: column; gap: 6px; padding-bottom: 6px; }
 .eyebrow { font-size: var(--fs-footnote); font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--key); }

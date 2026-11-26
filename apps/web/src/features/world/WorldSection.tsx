@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import type { Artwork } from '@vybe/shared';
 import { api, type WorldHome } from '../../lib/api';
@@ -53,7 +53,11 @@ export function WorldSection({ source, only, more = true, glow: withGlow = true 
           <ShelfSkeleton />
           <p className={s.note} role="status">Gathering the world’s hits… this takes a moment the first time.</p>
         </>
-      ) : shelves.map((sh) => <WorldShelfView key={sh.id} shelf={sh} onLight={withGlow ? setLight : undefined} />)}
+      ) : shelves.map((sh, i) => (
+        <LazyRow key={sh.id} eager={i < 2}>
+          <WorldShelfView shelf={sh} onLight={withGlow ? setLight : undefined} />
+        </LazyRow>
+      ))}
       {more && (
         <Link to={WORLD_PATH} className={s.more}>
           <Icon name="globe" size={18} />
@@ -63,4 +67,42 @@ export function WorldSection({ source, only, more = true, glow: withGlow = true 
       )}
     </div>
   );
+}
+
+/**
+ * Draws a row only once it's near the screen (Home has 15 rows of 20 cards). Until then a
+ * same-height placeholder keeps the page length stable, so scrolling never jumps.
+ */
+function LazyRow({ eager, children }: { eager: boolean; children: ReactNode }) {
+  const [show, setShow] = useState(eager);
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (show || !ref.current) return;
+    // Near the screen: draw now. Otherwise draw it while the browser is idle, one row at a time,
+    // so nothing is left to draw in the middle of a scroll.
+    const io = new IntersectionObserver((entries) => {
+      if (entries.some((e) => e.isIntersecting)) { setShow(true); io.disconnect(); }
+    }, { rootMargin: '900px 0px' });
+    io.observe(ref.current);
+    const cancel = whenIdle(() => setShow(true));
+    return () => { io.disconnect(); cancel(); };
+  }, [show]);
+  return <div ref={ref} className={show ? s.row : s.rowPending}>{show ? children : null}</div>;
+}
+
+/** Queue work for idle time, one task per idle period (rows appear one after another, never all at once). */
+const idleQueue: (() => void)[] = [];
+let idleScheduled = false;
+const ric: (cb: () => void) => void = (cb) =>
+  ('requestIdleCallback' in window ? (window as unknown as { requestIdleCallback: (f: () => void, o?: { timeout: number }) => void }).requestIdleCallback(cb, { timeout: 1500 }) : setTimeout(cb, 120));
+function pump() {
+  idleScheduled = false;
+  const next = idleQueue.shift();
+  next?.();
+  if (idleQueue.length) { idleScheduled = true; ric(pump); }
+}
+function whenIdle(task: () => void) {
+  idleQueue.push(task);
+  if (!idleScheduled) { idleScheduled = true; ric(pump); }
+  return () => { const i = idleQueue.indexOf(task); if (i >= 0) idleQueue.splice(i, 1); };
 }

@@ -1,6 +1,6 @@
 .list { display: flex; flex-direction: column; }
 .section { padding: 22px 10px 8px; font-size: var(--fs-footnote); line-height: var(--lh-footnote); font-weight: 600; color: var(--text-1); }
-.row { display: grid; align-items: center; min-height: 46px; padding: 0 8px 0 10px; border-radius: var(--r-md); position: relative; color: var(--text-1); font-size: var(--fs-callout); line-height: var(--lh-callout); }
+.row { content-visibility: auto; contain-intrinsic-size: auto 56px; display: grid; align-items: center; min-height: 46px; padding: 0 8px 0 10px; border-radius: var(--r-md); position: relative; color: var(--text-1); font-size: var(--fs-callout); line-height: var(--lh-callout); }
 .row:not(.head)::after { content: none; }
 .row:not(.head):hover, .row:not(.head):focus-within { background: var(--bg-hover); }
 .row:not(.head):hover::after, .row:not(.head):hover + .row::after, .row:focus-within::after { opacity: 0; }

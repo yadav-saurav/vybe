@@ -7,3 +7,7 @@
 .more b { font-size: var(--fs-body); font-weight: 800; }
 .more > span > span { color: var(--text-2); font-size: var(--fs-footnote); }
 .more > svg:first-child { color: var(--key); flex: none; }
+
+/* Rows off screen skip layout and painting until scrolled back to. */
+.row { content-visibility: auto; contain-intrinsic-size: auto 330px; }
+.rowPending { height: 330px; }
