@@ -11,8 +11,6 @@ services:
     envVars:
       - key: VYBE_DATABASE_URL        # Neon connection string: postgresql://user:pass@host/db?sslmode=require
         sync: false
-      - key: VYBE_MEDIA_BASE_URL      # https://<project>.supabase.co/storage/v1/object/public/vybe-catalog
-        sync: false
       - key: SUPABASE_URL             # https://<project>.supabase.co  (private imports bucket)
         sync: false
       - key: SUPABASE_SERVICE_KEY     # Supabase service_role key (server-side only)

@@ -516,7 +516,8 @@ public class JamService {
         }
         // Catalog songs and worldwide previews (both public); never imports, which are private.
         List<Song> songs = ids.stream().distinct()
-                .map(id -> WorldService.isWorldId(id) ? world.find(id) : catalog.song(id))
+                .filter(WorldService::isWorldId) // worldwide songs only
+                .map(world::find)
                 .filter(s -> s != null).limit(MAX_QUEUE).toList();
         if (songs.isEmpty()) {
             throw ApiException.badRequest("jam_unsupported_songs", "Imported songs are private, so they can't be played in a Jam.");

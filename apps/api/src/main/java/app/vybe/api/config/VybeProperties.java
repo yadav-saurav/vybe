@@ -7,7 +7,7 @@ import java.nio.file.Path;
 /**
  * Vybe-specific configuration, bound from the {@code vybe.*} namespace.
  *
- * @param dataDir  directory holding catalog.json, lyrics.json and media/ (relative paths resolve against the CWD)
+ * @param dataDir  directory for local state (relative paths resolve against the CWD)
  * @param dbPath   SQLite database file
  * @param autoseed whether to create the demo user when the database has no users
  * @param importsDir directory for users' imported audio ({@code <importsDir>/<userId>/}); defaults to {@code <dataDir>/imports}

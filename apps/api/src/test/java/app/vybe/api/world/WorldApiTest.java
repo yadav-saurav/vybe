@@ -205,7 +205,7 @@ class WorldApiTest extends ApiTestBase {
         String host = newUserSession();
         JsonNode jam = json.readTree(mvc.perform(post("/api/jams").cookie(cookie(host)).contentType("application/json")
                 .content("{\"songIds\":[\"wd_in_11\",\"so_0001\"]}")).andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
-        assertThat(jam.get("queue")).hasSize(2);
+        assertThat(jam.get("queue")).hasSize(1); // worldwide songs only
         assertThat(jam.get("queue").get(0).get("song").get("source").asText()).isEqualTo("world");
         mvc.perform(post("/api/jams/" + jam.get("code").asText() + "/leave").cookie(cookie(host))).andExpect(status().isNoContent());
     }

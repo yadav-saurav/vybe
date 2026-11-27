@@ -1,10 +1,7 @@
 import { useParams } from 'react-router-dom';
-import { api } from '../../lib/api';
-import { useAsync } from '../../lib/useAsync';
-import { Skel } from '../../features/shelves/PageBody';
 import { WorldSection } from '../../features/world/WorldSection';
+import { genreName } from '../../lib/genres';
 import { useDocumentTitle } from '../../features/shelves/useDocumentTitle';
-import s from './Genre.module.css';
 
 export default function GenrePage() {
   const { id = '' } = useParams();
@@ -13,14 +10,13 @@ export default function GenrePage() {
 }
 
 function GenreView({ id }: { id: string }) {
-  const { data, error } = useAsync(`genre:${id}`, (signal) => api.genre(id, signal));
-  const heading = data?.title ?? (error ? 'Genre' : null);
+  const heading = genreName(id);
   useDocumentTitle(heading ?? 'Genre');
 
   return (
     <div className="page">
       <header className="page-header">
-        {heading ? <h1 className="t-large-title">{heading}</h1> : <Skel className={s.titleSkel} />}
+        <h1 className="t-large-title">{heading}</h1>
       </header>
       {id && <WorldSection source={`genre/${id}`} more={false} />}
     </div>

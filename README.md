@@ -70,7 +70,6 @@ Open http://localhost:4000.
 
 ## Docs
 - [`docs/DESIGN.md`](docs/DESIGN.md): the design spec and tokens.
-- [`docs/catalog.md`](docs/catalog.md): the catalog generator.
 - [`apps/api/README.md`](apps/api/README.md): API architecture and configuration.
 
 ## Keyboard shortcuts

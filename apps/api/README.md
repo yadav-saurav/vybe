@@ -16,13 +16,11 @@ java -jar target/vybe-api.jar                  # production-style run
 ./mvnw test                                    # JUnit 5 + MockMvc suite (fixture catalog, temp DB)
 ```
 
-The catalog must exist before startup. Generate it with `python3 scripts/generate_catalog.py` (writes
-`data/catalog.json`, `data/lyrics.json` and `data/media/`). If `catalog.json` is missing, the application
-fails fast with a message that says so.
+Songs come from the worldwide catalogue at runtime; no local catalogue is needed.
 
 On first start with an empty database, the demo account `demo@vybe.app` / `vybe1234` (display name "Alex") is
-seeded. It has about 40 library songs, 8 albums, 4 editorial playlists, 2 user playlists, some loves and 120
-plays spread over the last 30 days. The seed is deterministic for a given catalog.
+seeded. Once the worldwide charts are gathered, it gets a library of real songs, favourites, two playlists and
+recent plays.
 
 ## Configuration
 
@@ -30,7 +28,7 @@ plays spread over the last 30 days. The seed is deterministic for a given catalo
 | --- | --- | --- | --- |
 | `server.port` | `PORT` | `4000` | HTTP port |
 | `server.address` | | `127.0.0.1` | bind address |
-| `vybe.data-dir` | `VYBE_DATA_DIR` | `../../data` | catalog.json, lyrics.json, media/art, media/audio (resolved to an absolute path) |
+| `vybe.data-dir` | `VYBE_DATA_DIR` | `../../data` | data directory (database and other local state; resolved to an absolute path) |
 | `vybe.db-path` | `VYBE_DB_PATH` | `../../data/vybe.db` | SQLite database file (created if missing) |
 | `vybe.autoseed` | `VYBE_AUTOSEED` | `true` | seed the demo user when the database has no users |
 

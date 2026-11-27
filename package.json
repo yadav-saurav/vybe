@@ -12,7 +12,6 @@
     "start": "npm run build && cd apps/api && VYBE_WEB_DIR=../web/dist java -jar target/vybe-api.jar",
     "test": "npm run test -w @vybe/web && cd apps/api && ./mvnw -q test",
     "typecheck": "npm run typecheck --workspaces --if-present",
-    "generate:catalog": "python3 scripts/generate_catalog.py",
     "seed": "echo 'Seeding runs automatically on API startup (VYBE_AUTOSEED=true)'",
     "dev:api": "cd apps/api && ./mvnw -q spring-boot:run"
   },

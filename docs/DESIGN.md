@@ -38,4 +38,4 @@ All values are in `apps/web/src/styles/tokens.css`; always use the CSS variables
   - Use the shared components in `src/components` (Artwork, Lockup, Shelf, TrackList, Buttons, Icon) and the actions in `src/features/actions.ts`.
   - The player API is `usePlayer` in `src/stores/player.ts`.
 - The API (`apps/api`) is Java 21 / Spring Boot 3.5 (Web MVC, JdbcTemplate, SQLite) and listens on port 4000; Vite proxies `/api` and `/media` to it. It implements exactly the HTTP contract documented in `packages/shared/src/index.ts`.
-- Catalog: `scripts/generate_catalog.py` produces `data/catalog.json` and `data/media/{art,audio}`.
+- Music: songs, albums, artists and charts come from the worldwide catalogue at runtime (no local catalogue).

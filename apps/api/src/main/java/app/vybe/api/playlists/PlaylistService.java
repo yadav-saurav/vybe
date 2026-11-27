@@ -209,7 +209,7 @@ public class PlaylistService {
                 : allTrackIds.stream().filter(t -> !ImportService.isImportId(t)).toList();
         List<Song> songs = this.songs.resolveAll(owner ? row.userId() : null, trackIds);
         long duration = songs.stream().mapToLong(Song::durationMs).sum();
-        Artwork artwork = songs.isEmpty() ? catalog.genres().get(0).artwork() : songs.get(0).artwork();
+        Artwork artwork = songs.isEmpty() ? new app.vybe.api.model.Artwork("", 600, 600, "#2b2d42", "#ffffff", "#d0d3e0", "#ffffff") : songs.get(0).artwork(); // empty playlist: plain tile
         String curator = auth.userById(row.userId()).map(User::displayName).orElse("Vybe listener");
         return new Playlist(row.id(), "user", row.name(), curator, row.description(),
                 Text.firstSentence(row.description(), 80), artwork, trackIds, duration,

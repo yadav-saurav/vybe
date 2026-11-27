@@ -133,6 +133,7 @@ export const api = {
   removeFromLibrary: (type: LibType, id: string) => request<T.LibraryState>('DELETE', `/me/library/${type}/${enc(id)}`),
   love: (type: LibType, id: string) => request<T.LibraryState>('PUT', `/me/loves/${type}/${enc(id)}`),
   unlove: (type: LibType, id: string) => request<T.LibraryState>('DELETE', `/me/loves/${type}/${enc(id)}`),
+  libraryLiked: (s?: AbortSignal) => get<{ songs: T.Song[] }>('/me/library/liked', s),
   librarySongs: (s?: AbortSignal) => get<{ songs: T.Song[] }>('/me/library/songs', s),
   libraryAlbums: (s?: AbortSignal) => get<{ albums: T.Album[] }>('/me/library/albums', s),
   libraryArtists: (s?: AbortSignal) => get<{ artists: T.Artist[] }>('/me/library/artists', s),

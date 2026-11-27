@@ -7,11 +7,8 @@ import { NotFound } from '../pages/NotFound';
 const Home = lazy(() => import('../pages/Home'));
 const Search = lazy(() => import('../pages/Search'));
 const Genre = lazy(() => import('../pages/Genre'));
-const Album = lazy(() => import('../pages/Album'));
 const Playlist = lazy(() => import('../pages/Playlist'));
-const Artist = lazy(() => import('../pages/Artist'));
 const Library = lazy(() => import('../pages/Library'));
-const SeeAll = lazy(() => import('../pages/SeeAll'));
 const Replay = lazy(() => import('../pages/Replay'));
 const Settings = lazy(() => import('../pages/Settings'));
 const Profile = lazy(() => import('../pages/Profile'));
@@ -35,7 +32,7 @@ export const router = createBrowserRouter([
       { path: '/library/imported', element: <Navigate to="/library/songs" replace /> },
       { path: '/search', element: <Search /> },
       { path: '/genre/:id', element: <Genre /> },
-      { path: '/see-all/:page/:shelfId', element: <SeeAll /> },
+      { path: '/see-all/:page/:shelfId', element: <Navigate to="/home" replace /> },
       { path: '/replay', element: <Replay /> },
       { path: '/settings', element: <Settings /> },
       { path: '/profile/:id', element: <Profile /> },
@@ -46,12 +43,12 @@ export const router = createBrowserRouter([
       { path: '/shelf/:id', element: <ShelfAll /> },
       { path: '/jam', element: <JamPage /> },
       { path: '/world/artist/:id', element: <WorldArtist /> },
-      { path: '/album/:id', element: <Album /> },
+      { path: '/album/:id', element: <Navigate to="/home" replace /> },
       { path: '/playlist/:id', element: <Playlist /> },
-      { path: '/artist/:id', element: <Artist /> },
+      { path: '/artist/:id', element: <Navigate to="/home" replace /> },
       { path: '/library/made-for-you', element: <Navigate to="/home" replace /> },
       { path: '/library/:section', element: <Library /> },
-      { path: '/library', element: <Navigate to="/library/recently-added" replace /> },
+      { path: '/library', element: <Navigate to="/library/liked-songs" replace /> },
       { path: '*', element: <NotFound /> },
     ],
   },

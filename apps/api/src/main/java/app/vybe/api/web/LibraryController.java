@@ -47,6 +47,11 @@ public class LibraryController {
         return library.unlove(user.id(), type, id);
     }
 
+    @GetMapping("/library/liked")
+    public Pages.Songs liked(@CurrentUser User user) {
+        return new Pages.Songs(library.liked(user.id()));
+    }
+
     @GetMapping("/library/songs")
     public Pages.Songs songs(@CurrentUser User user) {
         return new Pages.Songs(library.songs(user.id()));

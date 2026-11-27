@@ -6,9 +6,7 @@ import { Icon } from '../components/Icon';
 import { useAuth } from '../stores/auth';
 import { useUI, type MenuEntry } from '../stores/ui';
 import { useLibrary } from '../stores/library';
-import { useAsync } from '../lib/useAsync';
-import { api } from '../lib/api';
-import { menuFor, openMenuAt } from '../features/actions';
+import { openMenuAt } from '../features/actions';
 import { SearchSuggestions } from '../features/search/SearchSuggestions';
 import s from './Sidebar.module.css';
 
@@ -17,10 +15,9 @@ const primary = [
   { to: '/jam', label: 'Jam', icon: 'jam' },
 ];
 const library = [
-  { to: '/library/recently-added', label: 'Recently Added', icon: 'clock' },
+  { to: '/library/liked-songs', label: 'Liked Songs', icon: 'heart' },
+  { to: '/library/playlists', label: 'Playlists', icon: 'playlist' },
   { to: '/library/artists', label: 'Artists', icon: 'artist' },
-  { to: '/library/albums', label: 'Albums', icon: 'album' },
-  { to: '/library/songs', label: 'Songs', icon: 'note' },
 ];
 
 export function Sidebar() {
@@ -30,8 +27,6 @@ export function Sidebar() {
   const setMobileOpen = useUI((u) => u.setMobileNavOpen);
   const navigate = useNavigate();
   const location = useLocation();
-  const playlistIds = useLibrary((l) => l.playlistIds.join(','));
-  const { data: pls } = useAsync(user ? `library:playlists:${playlistIds}` : null, (sig) => api.libraryPlaylists(sig));
   const [term, setTerm] = useState(new URLSearchParams(location.search).get('term') ?? '');
   const searchRef = useRef<HTMLInputElement>(null);
 
@@ -75,20 +70,6 @@ export function Sidebar() {
           {user && <>
             <div className={s.groupTitle}>Library</div>
             <ul className={s.group}>{library.map((i) => <NavItem key={i.to} {...i} />)}</ul>
-            <div className={s.groupTitle}>
-              Playlists
-              <button className={s.groupAction} aria-label="New Playlist" title="New Playlist" onClick={() => useUI.getState().openPlaylistEditor({ mode: 'create' })}><Icon name="plus" size={14} /></button>
-            </div>
-            <ul className={s.group}>
-              <NavItem to="/library/playlists" label="All Playlists" icon="playlist" />
-              {pls?.playlists.map((p) => (
-                <li key={p.id} onContextMenu={(e) => openMenuAt(e, menuFor({ type: 'playlist', data: p }, { navigate }))}>
-                  <NavLink to={`/playlist/${p.id}`} className={({ isActive }) => clsx(s.item, isActive && s.active)}>
-                    <Icon name="playlist" size={18} className={s.icon} /><span className="clamp-1">{p.name}</span>
-                  </NavLink>
-                </li>
-              ))}
-            </ul>
           </>}
         </div>
         <div className={s.footer}>

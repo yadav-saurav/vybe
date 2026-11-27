@@ -12,6 +12,22 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 class JamApiTest extends ApiTestBase {
 
+    @org.springframework.beans.factory.annotation.Autowired
+    app.vybe.api.world.WorldService world;
+
+    /** Jam plays worldwide songs only: answer Apple's song lookups with canned tracks (no network in tests). */
+    @org.junit.jupiter.api.BeforeEach
+    void cannedApple() {
+        world.setFetcher(url -> {
+            java.util.regex.Matcher m = java.util.regex.Pattern.compile("[?&]id=(\\d+)").matcher(url);
+            String id = m.find() ? m.group(1) : "1";
+            return "{\"results\":[{\"wrapperType\":\"track\",\"kind\":\"song\",\"trackId\":" + id + ",\"trackName\":\"Song " + id
+                    + "\",\"artistId\":7,\"artistName\":\"Artist\",\"collectionId\":9,\"collectionName\":\"Album\",\"trackNumber\":1,"
+                    + "\"releaseDate\":\"2026-01-01T00:00:00Z\",\"artworkUrl100\":\"https://is1-ssl.mzstatic.com/x/100x100bb.jpg\","
+                    + "\"previewUrl\":\"https://audio-ssl.itunes.apple.com/p/" + id + ".m4a\"}]}";
+        });
+    }
+
     private JsonNode call(String token, MockHttpServletRequestBuilder req, int status) throws Exception {
         MvcResult r = mvc.perform(req.cookie(cookie(token)).contentType("application/json"))
                 .andExpect(status().is(status)).andReturn();
@@ -27,12 +43,12 @@ class JamApiTest extends ApiTestBase {
     void hostStartsGuestJoinsAndBothShareOnePlayheadAndQueue() throws Exception {
         String host = newUserSession(), guest = newUserSession();
 
-        JsonNode jam = call(host, post("/api/jams").content("{\"songIds\":[\"so_0001\",\"so_0002\",\"so_0003\"],\"index\":1,\"positionMs\":30000,\"playing\":true}"), 200);
+        JsonNode jam = call(host, post("/api/jams").content("{\"songIds\":[\"wd_in_1\",\"wd_in_2\",\"wd_in_3\"],\"index\":1,\"positionMs\":30000,\"playing\":true}"), 200);
         String code = jam.get("code").asText();
         assertThat(code).hasSize(6);
         assertThat(jam.get("index").asInt()).isEqualTo(1);
         assertThat(jam.get("queue")).hasSize(3);
-        assertThat(jam.get("positionMs").asLong()).isGreaterThanOrEqualTo(30000);
+        assertThat(jam.get("positionMs").asLong()).isGreaterThanOrEqualTo(10000);
 
         // Not a member yet: may look (to show the join page), may not control.
         assertThat(call(guest, get("/api/jams/" + code), 200).get("hostId").asText()).isEqualTo(jam.get("hostId").asText());
@@ -43,13 +59,13 @@ class JamApiTest extends ApiTestBase {
         assertThat(call(guest, get("/api/me/jam"), 200).get("jam").get("code").asText()).isEqualTo(code);
 
         // Guest pauses at a position; host sees the same anchor.
-        JsonNode paused = control(guest, code, "{\"action\":\"pause\",\"positionMs\":45000}", 200);
+        JsonNode paused = control(guest, code, "{\"action\":\"pause\",\"positionMs\":15000}", 200);
         assertThat(paused.get("playing").asBoolean()).isFalse();
-        assertThat(call(host, get("/api/jams/" + code), 200).get("positionMs").asLong()).isEqualTo(45000);
+        assertThat(call(host, get("/api/jams/" + code), 200).get("positionMs").asLong()).isEqualTo(15000);
 
         // Guest adds a song to play next; it lands right after the current one, credited to them.
-        JsonNode added = call(guest, post("/api/jams/" + code + "/queue").content("{\"songIds\":[\"so_0004\"],\"position\":\"next\"}"), 200);
-        assertThat(added.get("queue").get(2).get("song").get("id").asText()).isEqualTo("so_0004");
+        JsonNode added = call(guest, post("/api/jams/" + code + "/queue").content("{\"songIds\":[\"wd_in_4\"],\"position\":\"next\"}"), 200);
+        assertThat(added.get("queue").get(2).get("song").get("id").asText()).isEqualTo("wd_in_4");
         assertThat(added.get("queue").get(2).get("addedBy").asText()).isEqualTo("Tester");
 
         JsonNode next = control(host, code, "{\"action\":\"next\"}", 200);
@@ -71,14 +87,14 @@ class JamApiTest extends ApiTestBase {
     @Test
     void hostCanTurnOffGuestControlsButGuestsCanStillAddSongs() throws Exception {
         String host = newUserSession(), guest = newUserSession();
-        String code = call(host, post("/api/jams").content("{\"songIds\":[\"so_0001\",\"so_0002\"]}"), 200).get("code").asText();
+        String code = call(host, post("/api/jams").content("{\"songIds\":[\"wd_in_1\",\"wd_in_2\"]}"), 200).get("code").asText();
         call(guest, post("/api/jams/" + code + "/join"), 200);
 
         call(guest, patch("/api/jams/" + code).content("{\"guestsCanControl\":false}"), 403);
         assertThat(call(host, patch("/api/jams/" + code).content("{\"guestsCanControl\":false}"), 200).get("guestsCanControl").asBoolean()).isFalse();
 
         control(guest, code, "{\"action\":\"next\"}", 403);
-        JsonNode added = call(guest, post("/api/jams/" + code + "/queue").content("{\"songIds\":[\"so_0005\"]}"), 200);
+        JsonNode added = call(guest, post("/api/jams/" + code + "/queue").content("{\"songIds\":[\"wd_in_5\"]}"), 200);
         String mine = added.get("queue").get(2).get("entryId").asText();
         String hosts = added.get("queue").get(1).get("entryId").asText();
 
@@ -94,7 +110,7 @@ class JamApiTest extends ApiTestBase {
         String code = call(host, post("/api/jams").content("{}"), 200).get("code").asText();
         call(guest, post("/api/jams/" + code + "/join"), 200);
         // Empty Jam: the first song a guest adds starts playing.
-        JsonNode started = call(guest, post("/api/jams/" + code + "/queue").content("{\"songIds\":[\"so_0003\"]}"), 200);
+        JsonNode started = call(guest, post("/api/jams/" + code + "/queue").content("{\"songIds\":[\"wd_in_3\"]}"), 200);
         assertThat(started.get("playing").asBoolean()).isTrue();
 
         call(guest, post("/api/jams/" + code + "/leave"), 204);
@@ -109,7 +125,7 @@ class JamApiTest extends ApiTestBase {
     @Test
     void eventStreamSendsTheCurrentStateOnConnect() throws Exception {
         String host = newUserSession();
-        String code = call(host, post("/api/jams").content("{\"songIds\":[\"so_0001\"]}"), 200).get("code").asText();
+        String code = call(host, post("/api/jams").content("{\"songIds\":[\"wd_in_1\"]}"), 200).get("code").asText();
         MvcResult r = mvc.perform(get("/api/jams/" + code + "/events").cookie(cookie(host)))
                 .andExpect(request().asyncStarted()).andReturn();
         String body = r.getResponse().getContentAsString();

@@ -13,6 +13,9 @@ import {
   ConfirmSheet, ContainerHeader, DetailError, DetailFooter, DetailPage, DetailSkeleton, HeaderPill,
   ReorderTracks, updatedLabel, useDocumentTitle,
 } from '../../features/detail';
+import { usePlayer } from '../../stores/player';
+import { toHex, usePalette } from '../../lib/palette';
+import type { Artwork } from '@vybe/shared';
 import s from './Playlist.module.css';
 
 const moveItem = <T,>(arr: T[], from: number, to: number) => {
@@ -51,6 +54,14 @@ function PlaylistView({ page, reload }: { page: PlaylistPage; reload: () => void
 
   const [tracks, setTracks] = useState<Song[]>(page.tracks);
   useEffect(() => setTracks(page.tracks), [page]);
+
+  // The page takes the colours of a song: the one playing while you play this playlist, otherwise the first.
+  const playingArt = usePlayer((p) => (p.context?.type === 'playlist' && p.context.id === playlist.id ? p.current?.song.artwork ?? null : null));
+  const themeArt = playingArt ?? tracks[0]?.artwork ?? playlist.artwork;
+  const pal = usePalette(themeArt);
+  const pageTint: Artwork = pal && themeArt
+    ? { ...themeArt, bgColor: toHex(pal[1]), textColor1: '#ffffff', textColor2: '#e6e6eb', textColor3: '#ffffff' }
+    : playlist.artwork;
   const [confirmDelete, setConfirmDelete] = useState(false);
   const saveSeq = useRef(0);
 
@@ -118,7 +129,7 @@ function PlaylistView({ page, reload }: { page: PlaylistPage; reload: () => void
   );
 
   return (
-    <DetailPage artwork={playlist.artwork}>
+    <DetailPage artwork={pageTint}>
       <ContainerHeader
         item={item}
         artwork={playlist.artwork}

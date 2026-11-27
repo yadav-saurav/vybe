@@ -11,7 +11,7 @@ export function Artwork({ artwork, size = 300, alt = '', rounded = 'sm', classNa
   const [loaded, setLoaded] = useState(false);
   return (
     <div className={clsx(s.art, s[rounded], className)} style={{ backgroundColor: artwork?.bgColor }}>
-      {artwork && (
+      {artwork?.url && (
         <img src={artUrl(artwork, size <= 120 ? 160 : size <= 320 ? 400 : 1000)} alt={alt} loading={eager ? 'eager' : 'lazy'} decoding="async" draggable={false}
           className={clsx(s.img, loaded && s.loaded)} onLoad={() => setLoaded(true)} />
       )}

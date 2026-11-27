@@ -132,7 +132,7 @@ public class WorldService {
     }
 
     /** Tests swap in canned Apple responses. */
-    void setFetcher(Function<String, String> fetcher) {
+    public void setFetcher(Function<String, String> fetcher) {
         this.fetcher = fetcher;
         synchronized (cache) {
             cache.clear();
@@ -600,6 +600,54 @@ public class WorldService {
     public record SearchAll(List<Song> songs, List<WorldArtist> artists, List<WorldAlbum> albums) {
     }
 
+    private final Map<String, List<WorldArtist>> artistSearchCache = lru(300);
+
+    /** Apple's artist search for the term, ranked: exact name, then name starts with it, then contains it. */
+    private List<WorldArtist> artistMatches(String term, String cc, List<Song> songs) {
+        String q = key(term == null ? "" : term);
+        String cacheKey = cc + ":" + q;
+        synchronized (artistSearchCache) {
+            List<WorldArtist> hit = artistSearchCache.get(cacheKey);
+            if (hit != null) {
+                return hit;
+            }
+        }
+        JsonNode results = read("https://itunes.apple.com/search?entity=musicArtist&limit=10&country=" + cc
+                + "&term=" + URLEncoder.encode(term.strip(), StandardCharsets.UTF_8)).path("results");
+        // A cover per artist from the song results, used until (or if no) photo is found.
+        Map<String, Artwork> coverByArtist = new LinkedHashMap<>();
+        for (Song x : songs) {
+            coverByArtist.putIfAbsent(x.artist().id(), x.artwork());
+        }
+        List<WorldArtist> found = new ArrayList<>();
+        for (JsonNode r : results) {
+            if (!"artist".equals(r.path("wrapperType").asText())) {
+                continue;
+            }
+            String id = "wa_" + r.path("artistId").asLong();
+            found.add(new WorldArtist(id, clean(r.path("artistName").asText()), r.path("primaryGenreName").asText(""),
+                    coverByArtist.get(id), cc));
+        }
+        java.util.function.ToIntFunction<WorldArtist> rank = a -> {
+            String n = key(a.name());
+            return n.equals(q) ? 0 : n.startsWith(q) ? 1 : n.contains(q) ? 2 : 3;
+        };
+        // One entry per name (Apple lists re-uploads under the same name; its first is the real one),
+        // and no joined credits like "A , B , C".
+        Map<String, WorldArtist> unique = new LinkedHashMap<>();
+        for (WorldArtist a : found) {
+            if (a.name().contains(",") || a.name().contains(" & ")) {
+                continue;
+            }
+            unique.putIfAbsent(key(a.name()), a);
+        }
+        List<WorldArtist> ranked = unique.values().stream().sorted(java.util.Comparator.comparingInt(rank)).limit(8).toList();
+        synchronized (artistSearchCache) {
+            artistSearchCache.put(cacheKey, ranked);
+        }
+        return ranked;
+    }
+
     /** Search: songs, plus the artists and albums those songs come from (one Apple call). */
     public SearchAll searchAll(String term, String country) {
         SongList list = search(term, country);
@@ -610,10 +658,18 @@ public class WorldService {
             albums.putIfAbsent(x.album().id(), new WorldAlbum(x.album().id(), x.album().title(), x.artist().name(), x.artist().id(),
                     x.artwork(), x.releaseDate(), list.country()));
         }
-        // Lead artist names only ("A & B" and "A, B" are separate people on Apple).
-        List<WorldArtist> solo = artists.values().stream().filter(a -> !a.name().contains(",") && !a.name().contains(" & ")).limit(12).toList();
-        List<WorldArtist> shown = solo.isEmpty() ? artists.values().stream().limit(12).toList() : solo;
-        return new SearchAll(list.songs(), withPhotos(shown, 2_500), albums.values().stream().limit(20).toList());
+        // Real artist matches for what was typed ("arijit singh" -> Arijit Singh), best name match first.
+        // Songs credit only their lead artist, so a duet like "Sapphire (feat. Arijit Singh)" would otherwise show Ed Sheeran.
+        List<WorldArtist> shown;
+        try {
+            shown = artistMatches(term, list.country(), list.songs());
+        } catch (RuntimeException e) {
+            shown = List.of();
+        }
+        if (shown.isEmpty()) {
+            shown = artists.values().stream().filter(a -> !a.name().contains(",") && !a.name().contains(" & ")).limit(12).toList();
+        }
+        return new SearchAll(list.songs(), withPhotos(shown, 4_000), albums.values().stream().limit(20).toList());
     }
 
     // ---------------------------------------------------------------- artist photos

@@ -183,6 +183,15 @@ public class LibraryService {
         return songs.resolveAll(userId, entries.stream().map(Map.Entry::getKey).filter(app.vybe.api.world.WorldService::isWorldId).toList());
     }
 
+    /** Liked songs (hearted), newest first. Worldwide songs only. */
+    public List<Song> liked(String userId) {
+        List<String> ids = library.loves(userId).stream()
+                .filter(r -> "song".equals(r.type()) && app.vybe.api.world.WorldService.isWorldId(r.id()))
+                .sorted((a, b) -> b.at().compareTo(a.at()))
+                .map(LibraryRepository.Ref::id).toList();
+        return songs.resolveAll(userId, ids);
+    }
+
     public List<Album> albums(String userId) {
         return library.items(userId, "album").stream().map(r -> catalog.album(r.id()))
                 .filter(java.util.Objects::nonNull).toList();

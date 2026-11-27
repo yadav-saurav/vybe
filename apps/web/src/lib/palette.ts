@@ -74,3 +74,10 @@ export function usePalette(a: Artwork | null | undefined): Palette | null {
 /** A soft wash of light from three colours: layered radial gradients, no blur needed. */
 export const lightGradient = ([a, b, c]: Palette) =>
   `radial-gradient(60% 70% at 18% 20%, ${a} 0%, transparent 70%), radial-gradient(55% 65% at 82% 30%, ${b} 0%, transparent 72%), radial-gradient(70% 70% at 50% 95%, ${c} 0%, transparent 75%)`;
+
+/** "rgb(r, g, b)" -> "#rrggbb" (page tints work with hex colours). */
+export const toHex = (rgb: string) => {
+  const m = rgb.match(/\d+/g);
+  if (!m || m.length < 3) return rgb;
+  return '#' + m.slice(0, 3).map((v) => Math.max(0, Math.min(255, +v)).toString(16).padStart(2, '0')).join('');
+};

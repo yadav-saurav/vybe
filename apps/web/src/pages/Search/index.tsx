@@ -9,21 +9,20 @@ import { Artwork } from '../../components/Artwork';
 import { Icon } from '../../components/Icon';
 import { SearchSuggestions } from '../../features/search/SearchSuggestions';
 import { clearRecent, loadRecent, saveRecent, type RecentEntry } from '../../features/search/recent';
-import { ListenerList } from '../../features/social/ListenerList';
 import { WorldRows } from '../../features/world/WorldRows';
 import { AlbumCard, ArtistCard } from '../../features/world/WorldShelves';
 import { usePlayer } from '../../stores/player';
 import type { WorldAlbum, WorldArtist } from '../../lib/api';
 import { worldDefaultCountry } from '../../lib/world';
+import { GENRES } from '../../lib/genres';
 import s from './Search.module.css';
 
-type Tab = 'top' | 'songs' | 'artists' | 'albums' | 'listeners';
+type Tab = 'top' | 'songs' | 'artists' | 'albums';
 const TABS: { id: Tab; label: string }[] = [
   { id: 'top', label: 'Top Results' },
   { id: 'songs', label: 'Songs' },
   { id: 'artists', label: 'Artists' },
   { id: 'albums', label: 'Albums' },
-  { id: 'listeners', label: 'Listeners' },
 ];
 type Found = { songs: Song[]; artists: WorldArtist[]; albums: WorldAlbum[] };
 const DEBOUNCE_MS = 250;
@@ -104,7 +103,6 @@ function FieldWithSuggestions({ raw, onChange, onPickTerm }: { raw: string; onCh
 }
 
 function Landing() {
-  const { data: genres } = useAsync('search:genres', (sig) => api.browseCategories(sig));
   // Real album covers for each genre (the cards keep their own artwork until these arrive).
   const { data: covers } = useAsync('search:genre-covers', (sig) => api.worldGenreCovers(sig));
   // Re-read on every mount: the landing unmounts while results are shown.
@@ -117,16 +115,12 @@ function Landing() {
       <section aria-labelledby="browse-title">
         <h2 id="browse-title" className={s.sectionTitle}>Browse Categories</h2>
         <div className={s.categories}>
-          {genres
-            ? genres.genres.map((g) => (
+          {GENRES.map((g) => (
               <Link key={g.id} to={`/genre/${g.id}`} className={s.tile} style={{ background: g.color }} aria-label={g.name}>
-                {covers?.covers[g.id]
-                  ? <img className={clsx(s.tileArt, s.tileCover)} src={artUrl(covers.covers[g.id], 500)} alt="" loading="lazy" decoding="async" />
-                  : <img className={s.tileArt} src={artUrl(g.artwork, 500)} alt="" loading="lazy" decoding="async" />}
+                {covers?.covers[g.id] && <img className={clsx(s.tileArt, s.tileCover)} src={artUrl(covers.covers[g.id], 500)} alt="" loading="lazy" decoding="async" />}
                 <span className={s.tileTitle}>{g.name}</span>
               </Link>
-            ))
-            : Array.from({ length: 8 }, (_, i) => <span key={i} className={clsx(s.skelCategory, s.pulse)} />)}
+            ))}
         </div>
       </section>
 
@@ -182,7 +176,6 @@ function Results({ q, data, failed, tab, setTab }: {
           <p className={s.emptyTitle}>No results for “{q}”</p>
           <p className={s.emptyText}>Check the spelling, or try a shorter or different search.</p>
         </div>
-        <ListenerPreview q={q} onSeeAll={() => setTab('listeners')} />
       </>
     );
   }
@@ -200,7 +193,6 @@ function Results({ q, data, failed, tab, setTab }: {
       {tab === 'songs' && <WorldRows songs={data.songs} title={`“${q}”`} />}
       {tab === 'artists' && <div className={s.cardGrid}>{data.artists.map((a) => <ArtistCard key={a.id} artist={a} />)}</div>}
       {tab === 'albums' && <div className={s.cardGrid}>{data.albums.map((a) => <AlbumCard key={a.id} album={a} />)}</div>}
-      {tab === 'listeners' && <ListenerResults q={q} />}
     </>
   );
 }
@@ -241,32 +233,11 @@ function TopResults({ q, data, setTab }: { q: string; data: Found; setTab: (t: T
           <div className={s.cardRow}>{data.albums.slice(0, 6).map((a) => <AlbumCard key={a.id} album={a} />)}</div>
         </section>
       )}
-      <ListenerPreview q={q} onSeeAll={() => setTab('listeners')} />
     </>
   );
 }
 
-/** People whose display name matches. Search is the one place to find listeners. */
-function ListenerResults({ q }: { q: string }) {
-  const { data, error } = useAsync(`listeners:${q}`, (sig) => api.searchListeners(q, sig));
-  if (error) return <p className={s.none}>Couldn’t search listeners right now.</p>;
-  if (!data) return <div className={s.skelRow} aria-busy="true" />;
-  return <ListenerList listeners={data.listeners} empty={`No listeners match “${q}”.`} />;
-}
 
-function ListenerPreview({ q, onSeeAll }: { q: string; onSeeAll: () => void }) {
-  const { data } = useAsync(q.length >= 2 ? `listeners:${q}` : null, (sig) => api.searchListeners(q, sig));
-  if (!data?.listeners.length) return null;
-  return (
-    <section className={s.block} aria-labelledby="listeners-title">
-      <div className={s.rowHead}>
-        <h2 id="listeners-title" className={s.sectionTitle}>Listeners</h2>
-        {data.listeners.length > 3 && <button type="button" className={s.seeAll} onClick={onSeeAll}>See All</button>}
-      </div>
-      <ListenerList listeners={data.listeners.slice(0, 3)} empty="" />
-    </section>
-  );
-}
 
 function Skeletons() {
   return (

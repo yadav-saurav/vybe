@@ -253,7 +253,7 @@ public class PersonalMixService {
     private Artwork genreArtwork(String genreId) {
         Genre g = genreId == null ? null : catalog.genre(genreId);
         if (g == null) {
-            g = catalog.genres().get(0);
+            return new app.vybe.api.model.Artwork("", 600, 600, "#2b2d42", "#ffffff", "#d0d3e0", "#ffffff");
         }
         return g.artwork();
     }

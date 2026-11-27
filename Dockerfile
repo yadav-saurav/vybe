@@ -37,7 +37,7 @@ COPY --from=api /src/target/vybe-api.jar app.jar
 COPY --from=web /src/apps/web/dist web
 # Catalog metadata ships in the image (hosts like Render have no persistent disk); media comes from
 # a mounted volume (docker compose) or object storage via VYBE_MEDIA_BASE_URL.
-COPY data/catalog.json data/lyrics.json /app/data/
+RUN mkdir -p /app/data  # worldwide songs only: no local catalogue is shipped
 ENV HOST=0.0.0.0 \
     PORT=4000 \
     VYBE_DATA_DIR=/app/data \

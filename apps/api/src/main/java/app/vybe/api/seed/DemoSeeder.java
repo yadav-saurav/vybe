@@ -64,6 +64,9 @@ public class DemoSeeder implements ApplicationRunner {
             return;
         }
         User demo = auth.signUp(DEMO_EMAIL, DEMO_PASSWORD, DEMO_NAME);
+        if (catalog.songs().isEmpty()) {
+            return; // worldwide-only: DemoWorldSeeder fills the demo library with real songs
+        }
         Random rnd = new Random(SEED);
         Instant now = Instant.now();
 

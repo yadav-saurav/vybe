@@ -145,8 +145,9 @@ public class CatalogStore {
 
     private static CatalogFile read(ObjectMapper mapper, Path file) {
         if (!Files.isRegularFile(file)) {
-            throw new IllegalStateException("catalog not found at " + file
-                    + " (run scripts/generate_catalog.py or set VYBE_DATA_DIR)");
+            // Vybe plays worldwide songs only; the old generated catalogue is retired.
+            log.info("No local catalogue at {}: starting with worldwide songs only", file);
+            return new CatalogFile(1, List.of(), List.of(), List.of(), List.of(), List.of(), List.of());
         }
         try {
             return mapper.readValue(file.toFile(), CatalogFile.class);
